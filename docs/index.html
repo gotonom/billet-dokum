@@ -5,9 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Ergitme, döküm, homojenizasyon ve testere tek ekranda: canlı saha planı, metal yolculuğu, günlük döküm takvimi, KPI ve alarmlar. Created by GOTONOM.">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Dökümhane">
 <meta property="og:locale" content="tr_TR">
 <meta property="og:title" content="Billet Dökümhanesi · Kontrol Merkezi">
 <meta property="og:description" content="Ergitme, döküm, homojenizasyon ve testere tek ekranda: canlı saha planı, metal yolculuğu, günlük döküm takvimi, KPI ve alarmlar. Created by GOTONOM.">
+<meta property="og:url" content="https://billet-dokum-production.up.railway.app/">
+<meta property="og:image" content="https://billet-dokum-production.up.railway.app/og/index.png?v=1">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Billet Dökümhanesi · Kontrol Merkezi">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Billet Dökümhanesi · Kontrol Merkezi">
+<meta name="twitter:description" content="Ergitme, döküm, homojenizasyon ve testere tek ekranda: canlı saha planı, metal yolculuğu, günlük döküm takvimi, KPI ve alarmlar. Created by GOTONOM.">
+<meta name="twitter:image" content="https://billet-dokum-production.up.railway.app/og/index.png?v=1">
 <meta name="theme-color" content="#0a2463">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a2463'/%3E%3Crect x='11' y='5' width='10' height='22' rx='2' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Cpath d='M11 10h10' stroke='%23f97316' stroke-width='3'/%3E%3C/svg%3E">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -668,7 +678,7 @@ function lineChart(o) {
 const SV = 'http://www.w3.org/2000/svg';
 const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(SV, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
 let sel = 'd1';
-const heat = t => t == null ? 'var(--panel-2)' : `hsl(${lerp(212, 24, clamp((t - 40) / 540, 0, 1))} ${lerp(25, 92, clamp((t - 40) / 540, 0, 1))}% ${lerp(70, 55, clamp((t - 40) / 540, 0, 1))}%)`;
+const heat = t => t == null ? 'var(--panel-2)' : `color-mix(in srgb, #f97316 ${Math.round(clamp((t - 40) / 540, 0, 1) * 100)}%, #cbd5e1)`;   // cold steel → glowing orange, never through green
 // unit boxes on the plan: key → [x, y, w, h, label, href]
 const U = {
   hurda: [36, 52, 150, 300, 'HURDA SAHASI', 'firin.html'],

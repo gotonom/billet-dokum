@@ -29,10 +29,15 @@ PLC bağlantısı kurulana kadar paneller örnek veriyle çalışan bir simülas
 | `docs/` | Yayınlanan sayfalar |
 | `server.js` | `docs/` sayfalarını `$PORT` üzerinden sunan bağımlılıksız Node sunucusu. Sayfaları her istekte diskten okur |
 
+## Paylaşım kartları (Open Graph)
+
+Her sayfanın 1200 × 630 paylaşım görseli `docs/og/` içinde. Kartlar her panelin canlı şemasını gösterir: ergitme fırını, döküm hattı ve pit kesiti, son işlem hattı. Kontrol merkezi kartında bu üçü bir arada. Kaynağı `og/og.html` (#index, #firin, #dokum, #homojen): sayfaları yerel bir HTTP sunucusundan iframe ile yükler, tesisi anlamlı bir ana getirir (döküm ortası, ergitme sonu, soğutma) ve yalnızca şemayı alır. `python3 build.py && python3 og/render.py` headless Chrome ile yeniden üretir. Kartlar değişince `build.py` içindeki `OG_VERSION` artırılır, böylece eski önizlemeyi önbellekte tutan uygulamalar yenisini çeker.
+
 ## Güncelleme
 
 ```bash
 python3 build.py
+python3 og/render.py              # şemalar değiştiyse paylaşım kartları
 PORT=3060 node server.js          # yerel önizleme
 git commit -am "..." && git push   # GitHub Pages docs/'u yayınlar
 railway up --service billet-dokum --detach

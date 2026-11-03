@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Dökümhane OG kartı</title>
+<!-- 1200×630 share cards built around each panel's live diagram, same recipe as the MAKOM cards.
+     Variant from the hash: #index, #firin, #dokum, #homojen. The diagrams are the real pages in
+     same-origin iframes, so this file must be served over HTTP from the repo root: python3 og/render.py -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=block">
+<style>
+:root{
+  --ink:#ffffff; --ink-2:#d6dff2; --muted:#93a6cc; --melt:#fb923c; --line:rgba(255,255,255,.16);
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif; --f-ui:"Barlow Semi Condensed",Arial,sans-serif; --f-mono:"IBM Plex Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{position:relative;color:var(--ink);font-family:var(--f-ui);
+  background:
+    radial-gradient(860px 520px at 92% 4%, rgba(249,115,22,.34), transparent 60%),
+    radial-gradient(700px 480px at 0% 100%, rgba(56,189,248,.20), transparent 60%),
+    linear-gradient(160deg,#0b2a6b 0%,#071a45 55%,#050f2b 100%)}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);background-size:40px 40px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 55%,transparent 100%)}
+.stripe{position:absolute;left:0;right:0;bottom:0;height:8px;background:linear-gradient(90deg,#fde68a,#fb923c 28%,#c2410c 46%,#94a3b8 66%,#38bdf8)}
+.top{position:absolute;left:60px;right:60px;top:46px;display:flex;justify-content:space-between;align-items:center}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:50px;height:50px;border-radius:12px;background:#fff;display:grid;place-items:center;box-shadow:0 0 0 6px rgba(255,255,255,.08)}
+.brand b{font:800 28px var(--f-display);letter-spacing:.16em}
+.brand span{font:600 14px var(--f-mono);letter-spacing:.14em;color:#fdba74;margin-left:6px;padding-left:16px;border-left:1px solid var(--line)}
+.live{display:flex;align-items:center;gap:10px;font:600 14px var(--f-mono);letter-spacing:.14em;color:#86efac;padding:8px 14px;border-radius:999px;background:rgba(34,197,94,.10);border:1px solid rgba(134,239,172,.35)}
+.live i{width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 12px #22c55e}
+.head{position:absolute;left:60px;top:118px;right:60px;display:flex;align-items:flex-end;justify-content:space-between;gap:30px}
+h1{font:800 88px/.9 var(--f-display);letter-spacing:.005em;white-space:nowrap;text-shadow:0 6px 30px rgba(0,0,0,.35)}
+h1 span{background:linear-gradient(90deg,#fdba74,#fb923c 55%,#fbbf24);-webkit-background-clip:text;background-clip:text;color:transparent}
+.foot{position:absolute;left:60px;bottom:26px;font:600 14px var(--f-mono);letter-spacing:.08em;color:var(--muted)}
+.foot b{color:#fff;letter-spacing:.18em}
+.url{position:absolute;right:60px;bottom:26px;font:600 14px var(--f-mono);color:var(--muted)}
+.stage{position:absolute;left:0;right:0;top:232px;height:330px;perspective:1500px;perspective-origin:50% 0%}
+.screen{position:absolute;border-radius:14px;overflow:hidden;background:#eef3fa;
+  box-shadow:0 0 0 1px rgba(255,255,255,.35),0 0 0 8px rgba(255,255,255,.06),0 30px 60px rgba(0,0,0,.55),0 0 80px rgba(249,115,22,.30);
+  transform-origin:50% 0%}
+.screen iframe{border:0;display:block;transform-origin:0 0;background:#eef3fa}
+.screen .cap{position:absolute;left:14px;top:12px;z-index:2;font:700 13px var(--f-mono);letter-spacing:.12em;color:#fff;background:#0a2463;padding:5px 10px;border-radius:6px}
+.glare{position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,0) 35%)}
+.hb{display:flex;gap:12px;padding-bottom:8px}
+.badge{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:14px;background:rgba(255,255,255,.96);color:#0a2463;box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.badge i{width:12px;height:12px;border-radius:50%}
+.badge b{font:800 26px/1 var(--f-display);white-space:nowrap}
+.badge small{display:block;font:600 12px var(--f-mono);letter-spacing:.08em;color:#6a7fa4;margin-top:3px;white-space:nowrap}
+.flow{position:absolute;z-index:6;font:700 15px var(--f-mono);letter-spacing:.12em;color:#fff;background:rgba(10,36,99,.85);border:1px solid rgba(253,186,116,.7);padding:6px 12px;border-radius:999px}
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="top">
+  <div class="brand"><span class="logo"><svg width="30" height="30" viewBox="0 0 32 32"><rect x="10" y="3" width="12" height="26" rx="2.5" fill="none" stroke="#0a2463" stroke-width="3.6"/><path d="M10 10h12" stroke="#f97316" stroke-width="3.6"/></svg></span><b>DÖKÜMHANE</b><span id="eyebrow"></span></div>
+  <div class="live"><i></i>CANLI SİMÜLASYON</div>
+</div>
+<div class="head"><h1 id="title"></h1><div class="hb" id="hb"></div></div>
+<div class="stage" id="stage"></div>
+<div class="foot">created by <b>GOTONOM</b></div>
+<div class="url">billet-dokum-production.up.railway.app</div>
+<div class="stripe"></div>
+<script>
+const V = {
+  index:   { eyebrow:'ALÜMİNYUM BİLLET', title:'Kontrol <span>Merkezi</span>', badges:[['#f97316','10 döküm','GÜNDE'], ['#0b6fd9','~300 t','BİLLET / GÜN']] },
+  firin:   { eyebrow:'ERGİTME · DÖKÜM FIRINI', title:'Ergitme <span>Fırınları</span>', badges:[['#f97316','2 × 36 t','ERGİTME'], ['#15803d','730–750 °C','TRANSFER']] },
+  dokum:   { eyebrow:'HOT-TOP DC DÖKÜM', title:'Döküm <span>Masası</span>', badges:[['#f97316','64 × Ø178','KALIP'], ['#0ea5e9','123 mm/dk','6063 HIZI']] },
+  homojen: { eyebrow:'HOMOJENİZASYON · TESTERE', title:'Homojenizasyon', badges:[['#f97316','580 °C × 6 sa','BEKLETME'], ['#0ea5e9','> 250 °C/sa','SOĞUMA']] },
+};
+const key = (location.hash || '#index').slice(1), v = V[key] || V.index;
+document.getElementById('eyebrow').textContent = v.eyebrow;
+document.getElementById('title').innerHTML = v.title;
+document.getElementById('hb').innerHTML = v.badges.map(([c, val, l]) => `<div class="badge"><i style="background:${c}"></i><div><b>${val}</b><small>${l}</small></div></div>`).join('');
+
+// Inside the frame: put the plant at a telling moment, then show only the chosen block.
+const FRAME_W = 1500;
+function screen({src, x, y, w, rx = 16, ry = 0, z = 1, cap, pick, at, maxH = 318}){
+  const el = document.createElement('div');
+  el.className = 'screen'; el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.width = w + 'px'; el.style.zIndex = z;
+  el.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+  const f = document.createElement('iframe');
+  f.style.width = FRAME_W + 'px'; f.style.height = '700px';
+  f.src = src;
+  f.onload = () => {
+    const w2 = f.contentWindow, d = f.contentDocument;
+    w2.simSet(1, at(w2));
+    setTimeout(() => {
+      const target = pick(d), wrap = d.querySelector('.wrap');
+      wrap.prepend(target); target.classList.add('og-show');
+      const st = d.createElement('style');
+      st.textContent = `html,body{background:#eef3fa!important;overflow:hidden!important}
+        .wrap{padding:0!important;max-width:none!important;gap:0!important}
+        .wrap>*:not(.og-show){display:none!important}
+        .og-show{border:0!important;border-radius:0!important;box-shadow:none!important}
+        .mimic-hint{display:none!important}
+        *{animation-play-state:paused!important}`;
+      d.head.append(st);
+      setTimeout(() => { const h = Math.ceil(target.getBoundingClientRect().height), k = w / FRAME_W; f.style.height = h + 'px'; f.style.transform = `scale(${k})`; el.style.height = Math.min(maxH, Math.round(h * k)) + 'px'; }, 300);   // clip tall diagrams above the footer
+    }, 600);
+  };
+  el.append(f);
+  if (cap){ const c = document.createElement('span'); c.className = 'cap'; c.textContent = cap; el.append(c); }
+  const g = document.createElement('div'); g.className = 'glare'; el.append(g);
+  document.getElementById('stage').append(el);
+}
+function flow(x, y, t){ const f = document.createElement('div'); f.className = 'flow'; f.style.left = x + 'px'; f.style.top = y + 'px'; f.textContent = t; document.body.append(f); }
+
+// moments: mid-cast with metal flowing; a furnace late in melting with scrap still in the bath; cooling busy.
+// The page keeps SIM and PLANT in top-level consts (not window properties), so read them through eval.
+const midCast = w => w.eval('table(SIM.T()).phases[3].start + 24');
+const melting = w => w.eval('melter(0, SIM.T()).phases[1].start + 120');
+const cooling = w => w.eval('(Math.floor((SIM.T() - PLANT.COOL_AT) / PLANT.CYCLE) + 1) * PLANT.CYCLE + PLANT.COOL_AT + 18');
+const section = sel => d => d.querySelector(sel).closest('section, .grid2');
+
+if (key === 'dokum'){
+  screen({src:'/docs/dokum.html', x:60, y:6, w:1080, rx:18, pick: section('#mimic'), at: midCast});
+} else if (key === 'firin'){
+  screen({src:'/docs/firin.html#e1', x:60, y:6, w:1080, rx:18, pick: d => d.querySelector('#fx').closest('.grid2'), at: melting});
+} else if (key === 'homojen'){
+  screen({src:'/docs/homojen.html', x:60, y:6, w:1080, rx:18, pick: section('#line'), at: cooling});
+} else {
+  // three screens cascading front to back, like a control desk
+  screen({src:'/docs/firin.html#e1', x:40, y:0, w:620, rx:14, ry:10, z:1, maxH:250, cap:'ERGİTME', pick: d => d.querySelector('#fx').closest('section'), at: melting});
+  screen({src:'/docs/dokum.html', x:300, y:62, w:620, rx:14, ry:0, z:2, maxH:230, cap:'DÖKÜM MASASI', pick: section('#mimic'), at: midCast});
+  screen({src:'/docs/homojen.html', x:560, y:124, w:620, rx:14, ry:-10, z:3, cap:'HOMOJENİZASYON', pick: section('#line'), at: cooling});
+  flow(612, 250, 'FIRIN → MASA');
+  flow(880, 312, 'MASA → H1–H5');
+}
+</script>
+</body>
+</html>

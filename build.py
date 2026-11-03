@@ -9,7 +9,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 SRC = ROOT / "src"
-# source fragment -> (published file, share title, meta description)
+# Share links resolve against the Railway domain (GitHub Pages copies point there too).
+BASE = "https://billet-dokum-production.up.railway.app"
+OG_VERSION = 1          # bump when the cards change, so apps that cached the old image fetch the new one
+# source fragment -> (published file, share title, meta description); share card is docs/og/<file stem>.png
 PAGES = {
     "index.html":   ("index.html",   "Billet Dökümhanesi · Kontrol Merkezi",
                      "Ergitme, döküm, homojenizasyon ve testere tek ekranda: canlı saha planı, metal yolculuğu, günlük döküm takvimi, KPI ve alarmlar. Created by GOTONOM."),
@@ -28,8 +31,9 @@ COMMON_CSS = (SRC / "common.css").read_text(encoding="utf-8")
 COMMON_JS = (SRC / "common.js").read_text(encoding="utf-8")
 
 
-def wrap(src: str, title: str, description: str) -> str:
+def wrap(src: str, out: str, title: str, description: str) -> str:
     src = src.replace("/*@COMMON_CSS*/", COMMON_CSS).replace("//@COMMON_JS", COMMON_JS)
+    card = out.removesuffix(".html")
     split = src.index('<div class="wrap">')
     head, body = src[:split].strip(), src[split:].strip()
     return f"""<!doctype html>
@@ -39,9 +43,19 @@ def wrap(src: str, title: str, description: str) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="{description}">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Dökümhane">
 <meta property="og:locale" content="tr_TR">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{description}">
+<meta property="og:url" content="{BASE}/{'' if out == 'index.html' else out}">
+<meta property="og:image" content="{BASE}/og/{card}.png?v={OG_VERSION}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{title}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{title}">
+<meta name="twitter:description" content="{description}">
+<meta name="twitter:image" content="{BASE}/og/{card}.png?v={OG_VERSION}">
 <meta name="theme-color" content="#0a2463">
 <link rel="icon" href="{FAVICON}">
 <style>:root{{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}body{{margin:0;-webkit-text-size-adjust:100%}}img{{max-width:100%}}[hidden]{{display:none!important}}</style>
@@ -59,6 +73,6 @@ for name, (out, title, desc) in PAGES.items():
     if not src.exists():
         print(f"skip {name} (not found)")
         continue
-    page = wrap(src.read_text(encoding="utf-8"), title, desc)
+    page = wrap(src.read_text(encoding="utf-8"), out, title, desc)
     (ROOT / "docs" / out).write_text(page, encoding="utf-8")
     print(f"docs/{out} written ({len(page):,} bytes)")
