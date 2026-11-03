@@ -9,6 +9,9 @@ Alüminyum billet dökümhanesi için otomasyon panelleri ve süreç simülasyon
 | `/dokum.html` | `src/dokum.html` | D1 hot-top döküm masası: pit kesiti, 64 kalıbın üstten görünümü, hız ve su reçetesi, anlık ölçümler, manuel müdahale (operatör ve yönetici yetkisi), alarm senaryoları, PLC kilitleri, döküm kayıtları |
 | `/homojen.html` | `src/homojen.html` | H1–H5 homojenizasyon fırınları, soğutma odası, ultrasonik muayene, testere ve stok |
 
+- **Canlı (Railway):** https://billet-dokum-production.up.railway.app
+- **GitHub Pages:** https://gotonom.github.io/billet-dokum/
+
 PLC bağlantısı kurulana kadar paneller örnek veriyle çalışan bir simülasyon gösterir. Tesisin her ünitesi `src/common.js` içindeki aynı modelden, tesis saatinin saf bir fonksiyonu olarak hesaplanır. Bu yüzden kontrol merkezi ile detay sayfaları her zaman aynı durumu gösterir.
 
 - **×1:** gerçek saat.
@@ -30,8 +33,12 @@ PLC bağlantısı kurulana kadar paneller örnek veriyle çalışan bir simülas
 
 ```bash
 python3 build.py
-PORT=3060 node server.js
+PORT=3060 node server.js          # yerel önizleme
+git commit -am "..." && git push   # GitHub Pages docs/'u yayınlar
+railway up --service billet-dokum --detach
 ```
+
+Railway projesi `billet-dokum`, servis `billet-dokum` ("Ezagor's Projects"). Servis GitHub'a bağlı değil, CLI ile yüklenir.
 
 ## Varsayımlar (tesisle doğrulanacak)
 
