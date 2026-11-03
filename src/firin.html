@@ -238,6 +238,7 @@ function renderSteps(f, T) {
     $$('button', ol).forEach(b => b.addEventListener('click', () => simJump(+b.dataset.t + .05)));
   }
   $$('li', ol).forEach((li, i) => { const p = f.phases[i]; li.className = i < f.pi ? 'done' : i === f.pi ? 'now' : ''; li.querySelector('i').style.width = i === f.pi ? clamp((T - p.start) / (p.end - p.start), 0, 1) * 100 + '%' : ''; });
+  focusStep(ol);
 }
 
 // correction recipe box, shared by the live chemistry card and the manual calculator
@@ -263,7 +264,7 @@ function buildCalc() {
   sel.innerHTML = Object.keys(PLANT.ALLOYS).map(k => `<option>${k}</option>`).join('');
   const draw = () => {
     const spec = PLANT.ALLOYS[sel.value].spec;
-    $('#cEls').innerHTML = Object.entries(spec).map(([el, [lo, hi, tg]]) => `<label>${el}<input type="number" inputmode="decimal" step="0.001" min="0" data-el="${el}" value="${tg.toFixed(3)}"><small>${lo ? fmt(lo, 2) : '0'}–${fmt(hi, 2)} · hedef ${fmt(tg, 2)}</small></label>`).join('');
+    $('#cEls').innerHTML = Object.entries(spec).map(([el, [lo, hi, tg]]) => `<label><span class="nc">${el}</span><input type="number" inputmode="decimal" step="0.001" min="0" data-el="${el}" value="${tg.toFixed(3)}"><small>${lo ? fmt(lo, 2) : '0'}–${fmt(hi, 2)} · hedef ${fmt(tg, 2)}</small></label>`).join('');
     $$('#cEls input').forEach(i => i.addEventListener('input', calc));
     calc();
   };
@@ -382,10 +383,10 @@ window.onTick = (T, force) => {
   if (!isB) {
     const s1 = f.sample1, s2 = f.sample2, got1 = T >= s1 + 6, got2 = c.corr && T >= s2 + 6, two = c.corr && got1;
     $('#chemA').textContent = got1 ? `Numune 1 ${hhmm(s1)}${two ? ` · Numune 2 ${hhmm(s2)}` : ''}` : `Numune ${hhmm(s1)}'de`;
-    setHTML($('#chem'), `<thead><tr><th>Element</th><th class="r">Min</th><th class="r">Maks</th><th class="r">Hedef</th><th class="r" title="B1 dibi ve Mg kaybı hesaba katılmış hedef">Fırın hedefi</th><th class="r">Numune 1</th><th class="r">Ekle</th>${two ? '<th class="r">Numune 2</th>' : ''}</tr></thead><tbody>` +
+    setHTML($('#chem'), `<thead><tr><th>Element</th><th class="r hide-sm">Min</th><th class="r hide-sm">Maks</th><th class="r hide-sm">Hedef</th><th class="r" title="B1 dibi ve Mg kaybı hesaba katılmış hedef">Fırın hedefi</th><th class="r">Numune 1</th><th class="r">Ekle</th>${two ? '<th class="r">Numune 2</th>' : ''}</tr></thead><tbody>` +
       Object.entries(spec).map(([el, [lo, hi, tg]]) => {
         const ad = c.recipe.adds.find(x => x.el === el), aim = c.aim[el], tol = chemTol(lo, hi), dev = got1 && aim != null && Math.abs(c.chem1[el] - aim) > tol;
-        return `<tr class="${ad && got1 ? 'fix' : ''}"><td><b>${el}</b></td><td class="r mono">${lo ? fmt(lo, 2) : '—'}</td><td class="r mono">${fmt(hi, 2)}</td><td class="r mono">${fmt(tg, 2)}</td><td class="r mono">${aim != null ? fmt(aim, 3) : '—'}</td>` +
+        return `<tr class="${ad && got1 ? 'fix' : ''}"><td><b>${el}</b><small class="rng">${lo ? fmt(lo, 2) : '0'}–${fmt(hi, 2)}</small></td><td class="r mono hide-sm">${lo ? fmt(lo, 2) : '—'}</td><td class="r mono hide-sm">${fmt(hi, 2)}</td><td class="r mono hide-sm">${fmt(tg, 2)}</td><td class="r mono">${aim != null ? fmt(aim, 3) : '—'}</td>` +
           (got1 ? `<td class="r mono ${c.chem1[el] < lo || c.chem1[el] > hi ? 'bad' : dev ? 'dev' : 'ok'}">${fmt(c.chem1[el], 3)}</td>` : '<td class="r mono wait">—</td>') +
           `<td class="r mono add">${got1 && ad ? fmt(ad.kg, 1) + ' kg' : got1 ? '—' : ''}</td>${two ? cell(c.chem[el], lo, hi, got2) : ''}</tr>`;
       }).join('') + '</tbody>');
@@ -393,8 +394,8 @@ window.onTick = (T, force) => {
   } else {
     const got = f.chemOk || f.pi >= 2;
     $('#chemA').textContent = got ? `B1 onay numunesi ${hhmm(f.sampleAt)}` : `Onay numunesi ${hhmm(f.sampleAt)}'de`;
-    setHTML($('#chem'), `<thead><tr><th>Element</th><th class="r">Min</th><th class="r">Maks</th><th class="r">Hedef</th><th class="r">Ergitme (numune 2)</th><th class="r">B1 onay</th></tr></thead><tbody>` +
-      Object.entries(spec).map(([el, [lo, hi, tg]]) => `<tr><td><b>${el}</b></td><td class="r mono">${lo ? fmt(lo, 2) : '—'}</td><td class="r mono">${fmt(hi, 2)}</td><td class="r mono">${fmt(tg, 2)}</td><td class="r mono">${fmt(c.chem[el], 3)}</td>${cell(c.b1chem[el], lo, hi, got)}</tr>`).join('') + '</tbody>');
+    setHTML($('#chem'), `<thead><tr><th>Element</th><th class="r hide-sm">Min</th><th class="r hide-sm">Maks</th><th class="r">Hedef</th><th class="r">Ergitme</th><th class="r">B1 onay</th></tr></thead><tbody>` +
+      Object.entries(spec).map(([el, [lo, hi, tg]]) => `<tr><td><b>${el}</b><small class="rng">${lo ? fmt(lo, 2) : '0'}–${fmt(hi, 2)}</small></td><td class="r mono hide-sm">${lo ? fmt(lo, 2) : '—'}</td><td class="r mono hide-sm">${fmt(hi, 2)}</td><td class="r mono">${fmt(tg, 2)}</td><td class="r mono">${fmt(c.chem[el], 3)}</td>${cell(c.b1chem[el], lo, hi, got)}</tr>`).join('') + '</tbody>');
     const outWin = Object.entries(spec).filter(([el, [lo, hi, tg]]) => lo > 0 && addable(el) && Math.abs(c.b1chem[el] - tg) > chemTol(lo, hi) + .003).map(([el]) => el);
     setHTML($('#rcp'), `<div class="rcp"><div class="msg ${got ? 'ok' : 'wait'}">${got ? `<b>Döküm için onaylı.</b> ` : 'Onay numunesi arıtmadan sonra alınır. '}Döküm kimyası B1'de onaylanır: ergitme fırınından gelen metal ${c.drainB ? 'boşaltılmış dip ile' : `${fmt(c.heelBt, 1)} t ${c.heelAlloyB} dip ile`} karışır ve arıtmada yaklaşık ${fmt(PLANT.MG_FADE, 2)} Mg kaybeder.</div>${got && outWin.length ? `<div class="msg info">${outWin.join(', ')} hedef penceresinin dışında ama spesifikasyon içinde.</div>` : ''}</div>`);
   }

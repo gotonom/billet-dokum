@@ -6,7 +6,7 @@
 /*@COMMON_CSS*/
 /* Layout: the finishing line as one strip (log buffer → five furnaces → cooling → UT → saw → stock),
    the selected furnace's soak curve below it, then cooling rate, saw/UT and stock side by side. */
-#line{display:block;width:100%;min-width:1100px;height:auto}
+#line{display:block;width:100%;min-width:980px;height:auto}
 #line .fu{cursor:pointer}
 #line .fu:focus{outline:none}
 #line .fu:hover .shell,#line .fu:focus-visible .shell{stroke:var(--accent);stroke-width:3}
@@ -50,8 +50,8 @@
 
   <section class="card" aria-label="Son işlem hattı">
     <div class="ch"><h2>Son işlem hattı <small>TAMPON → H1–H5 → SOĞUTMA → SOĞUMA TAMPONU → UT → TESTERE → STOK</small></h2><span class="aside">Bir fırına dokunun</span></div>
-    <div class="mimic-hint">Şemayı yana kaydırın</div>
-    <div class="mimic-scroll"><svg id="line" viewBox="0 0 1560 270" role="group" aria-label="Homojenizasyon fırınları, soğutma odası, ultrasonik muayene ve testere"></svg></div>
+    <div class="ugrid only-md" id="ugrid" role="group" aria-label="Son işlem hattı"></div>
+    <div class="mimic-scroll hide-md"><svg id="line" viewBox="0 0 1560 270" role="group" aria-label="Homojenizasyon fırınları, soğutma odası, ultrasonik muayene ve testere"></svg></div>
   </section>
 
   <ol class="steps" id="steps" aria-label="Fırın etapları"></ol>
@@ -91,14 +91,12 @@ const SV = 'http://www.w3.org/2000/svg';
 let cur = /^#h[1-5]$/.test(location.hash) ? +location.hash[2] - 1 : null;
 const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(SV, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
 const FX = k => 220 + k * 150;
-// metal temperature → colour
-const heat = t => t == null ? 'var(--panel-2)' : `color-mix(in srgb, #f97316 ${Math.round(clamp((t - 40) / 540, 0, 1) * 100)}%, #cbd5e1)`;   // cold steel → glowing orange, never through green
 
 function buildLine() {
   const s = $('#line');
   s.innerHTML = '<defs><linearGradient id="gFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--refr-2)"/><stop offset="1" stop-color="var(--refr)"/></linearGradient></defs>';
-  el('rect', { x: 0, y: 214, width: 1400, height: 16, fill: 'url(#gFloor)' }, s);
-  el('path', { d: 'M40 222 H1370', stroke: 'var(--steel-3)', 'stroke-width': 3, 'stroke-dasharray': '2 10' }, s);
+  el('rect', { x: 0, y: 214, width: 1560, height: 16, fill: 'url(#gFloor)' }, s);
+  el('path', { d: 'M40 222 H1530', stroke: 'var(--steel-3)', 'stroke-width': 3, 'stroke-dasharray': '2 10' }, s);
   // buffer rack
   el('text', { x: 30, y: 46, 'font-size': 13, 'font-weight': 800, fill: 'var(--ink)', 'font-family': 'var(--f-display)', 'letter-spacing': '.06em' }, s).textContent = 'LOG TAMPONU';
   const buf = el('g', { id: 'buf' }, s);
@@ -181,6 +179,17 @@ window.onTick = (T, force) => {
   $('#blade').style.animationPlayState = sw.active ? 'running' : 'paused';
   $('#utw').style.opacity = sw.active ? 1 : .2;
   $('#sawT').textContent = sw.active ? `${sw.cast.id} · ${sw.done}/${sw.cast.logs}` : `sonraki ${hhmm(sw.next)}`;
+  // phone tiles: the same line as compact cards
+  const tiles = [...H.map(h => ({ k: h.k, b: h.name, v: h.metal != null ? fmt(h.metal) + ' °C' : 'boş', s: h.phase + (h.cast ? ' · ' + h.cast.id.slice(-5) : ''), fill: heat(h.metal), pg: h.L / PLANT.H_CYCLE })),
+    { b: 'Soğutma', v: co.active ? fmt(co.temp) + ' °C' : 'boş', s: co.active ? fmt(co.rate) + ' °C/sa' : 'sonraki ' + hhmm(co.next), fill: heat(co.active ? co.temp : null), pg: co.active ? co.t / PLANT.COOL_MIN : 0 },
+    { b: 'Tampon', v: bf.length ? bf.length + ' parti' : 'boş', s: bf.length ? bf.map(x => fmt(x.temp) + '°').join(' · ') : '≤ 60 °C', fill: bf.length ? heat(bf[0].temp) : 'var(--panel-2)', pg: 0 },
+    { b: 'UT+testere', v: sw.active ? `${sw.done}/${sw.cast.logs}` : 'bekliyor', s: sw.active ? sw.cast.id.slice(-5) : 'sonraki ' + hhmm(sw.next), fill: 'var(--panel-2)', pg: sw.active ? sw.t / PLANT.SAW_MIN : 0 }];
+  const ug = $('#ugrid');
+  if (!ug.children.length) {
+    ug.innerHTML = tiles.map((x, i) => `<button type="button" class="ut" data-i="${i}"><span class="fill"></span><b></b><span class="v num"></span><small></small><span class="pg"></span></button>`).join('');
+    $$('.ut', ug).forEach(b => b.addEventListener('click', () => { const x = +b.dataset.i; if (x < 5) select(x); }));
+  }
+  $$('.ut', ug).forEach((b, i) => { const x = tiles[i]; b.classList.toggle('hot', x.fill.startsWith('color-mix')); b.querySelector('.fill').style.background = x.fill; b.querySelector('b').textContent = x.b; b.querySelector('.v').textContent = x.v; b.querySelector('small').textContent = x.s; b.querySelector('.pg').style.width = x.pg * 100 + '%'; b.setAttribute('aria-pressed', i === cur); });
 
   // selected furnace
   const h = H[cur];
@@ -191,6 +200,7 @@ window.onTick = (T, force) => {
     $$('button', ol).forEach(b => b.addEventListener('click', () => simJump(+b.dataset.t + .05)));
   }
   $$('li', ol).forEach((li, i) => { const p = h.phases[i]; li.className = i < h.pi ? 'done' : i === h.pi ? 'now' : ''; li.querySelector('i').style.width = i === h.pi ? clamp((T - p.start) / (p.end - p.start), 0, 1) * 100 + '%' : ''; });
+  focusStep(ol);
   const [rLo, rHi, rT] = h.recipe;
   $('#hT').innerHTML = `${h.name} <small>${h.cast ? h.cast.id + ' · ' + h.cast.alloy + ' · ' + fmt(h.cast.gross, 1) + ' t · ' + rLo + '–' + rHi + ' °C' : 'BOŞ · SONRAKİ YÜKLEME ' + hhmm(h.phases[0].start + PLANT.H_CYCLE)}</small>`;
   $('#hBand').textContent = `${rLo}–${rHi} °C (${h.alloy})`;
@@ -216,7 +226,7 @@ window.onTick = (T, force) => {
     M('Brülör', fmt(h.burn), '%', `${fmt(h.gas)} Nm³/h doğalgaz`, h.burn ? '' : 'idle'),
     M('Sirkülasyon fanı', h.pi >= 1 && h.pi <= 2 ? '100' : h.pi === 4 ? '30' : '0', '%', 'yüksek hızlı konveksiyon'),
     M('Çıkış', hhmm(h.phases[3].start), '', 'soğutma odasına'),
-    M('β → α dönüşümü', h.cast && h.pi >= 3 ? fmt(h.cast.alpha) : '—', '%', 'parti numunesi · en az %90', !h.cast || h.pi < 3 ? 'idle' : h.cast.alpha < 90 ? 'warn' : ''),
+    M('<span class="nc">β → α</span> dönüşümü', h.cast && h.pi >= 3 ? fmt(h.cast.alpha) : '—', '%', 'parti numunesi · en az %90', !h.cast || h.pi < 3 ? 'idle' : h.cast.alpha < 90 ? 'warn' : ''),
   ].join('');
 
   // cooling chamber

@@ -57,6 +57,7 @@
 .feedwrap{max-height:340px;overflow:auto}
 @media (max-width:1100px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:640px){.mtable{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1023px){#mimic{min-width:0;max-height:min(520px,70vh);margin:0 auto}}   /* the tall pit view must not fill a tablet screen */
 </style>
 
 <div class="wrap">
@@ -93,7 +94,7 @@
 
   <section class="card" aria-label="Döküm hattı proses şeması">
     <div class="ch"><h2>Döküm hattı <small>FIRIN → DEGAZÖR → TANE İNCELTİCİ → FİLTRE → MASA → PİT</small></h2><span class="aside" id="mimicNote"></span></div>
-    <div class="mimic-hint">Şemayı yana kaydırın</div>
+    <div class="seg only-md" id="mview" role="group" aria-label="Şema görünümü" style="margin:10px 16px 0"><button type="button" data-v="pit" aria-pressed="true">Masa ve pit</button><button type="button" data-v="line" aria-pressed="false">Fırın ve hat</button></div>
     <div class="mimic-scroll"><svg id="mimic" viewBox="0 0 1400 600" role="img" aria-label="Döküm fırını, oluk, degazör, tane inceltici, filtre, döküm masası ve pit kesiti"></svg></div>
   </section>
 
@@ -393,6 +394,7 @@ function renderSteps(t) {
     li.className = i < t.pi ? 'done' : i === t.pi ? 'now' : '';
     li.querySelector('i').style.width = i === t.pi ? (clamp((T - p.start) / (p.end - p.start), 0, 1) * 100) + '%' : '';
   });
+  focusStep(ol);
 }
 function renderFeed() {
   $('#feed').innerHTML = alarms.length ? alarms.slice(0, 40).map(a => `<li class="${a.sev}"><time>${hhmm(a.T)}</time><span>${a.txt}</span></li>`).join('') : '<li class="info"><time>—</time><span>Aktif alarm yok. Döküm sırasında bir senaryo seçin.</span></li>';
@@ -412,7 +414,7 @@ function renderScn(t) {
 function renderLog(T, cur) {
   const list = doneCasts(T, 8);
   const rows = [cur, ...list].filter((c, i, a) => a.findIndex(x => x.n === c.n) === i);
-  $('#log').innerHTML = `<thead><tr><th>Döküm</th><th>Alaşım</th><th>Başlangıç</th><th class="r">Süre</th><th class="r">Log</th><th class="r">Ton</th><th class="r">H₂</th><th class="r">Tane</th><th class="r">LiMCA</th><th>Not</th></tr></thead><tbody>` +
+  $('#log').innerHTML = `<thead><tr><th>Döküm</th><th>Alaşım</th><th class="hide-sm">Başlangıç</th><th class="r hide-sm">Süre</th><th class="r hide-sm">Log</th><th class="r">Ton</th><th class="r">H₂</th><th class="r">Tane</th><th class="r hide-sm">LiMCA</th><th>Not</th></tr></thead><tbody>` +
     rows.map(c => {
       const live = c.end > T;
       const notes = [];
@@ -420,7 +422,7 @@ function renderLog(T, cur) {
       if (c.utRej) notes.push('UT: 1 log merkez çatlağı');
       if (c.h2Out > .135) notes.push('H₂ sınıra yakın');
       if (c.drainB) notes.push(`alaşım değişimi: B1 dibi boşaltıldı (${c.heelAlloyB} → ${c.alloy})`);
-      return `<tr class="${live ? 'now' : ''}"><td class="mono">${c.id}</td><td><span class="alloy" style="background:${alloyColor(c.alloy)}">${c.alloy}</span></td><td class="mono">${hhmm(c.start)}</td><td class="r mono">${live ? (c.start > T ? 'planlı' : 'döküyor') : dur(c.prof.tTaper)}</td><td class="r mono">${c.logs}</td><td class="r mono">${fmt(c.gross, 1)}</td><td class="r mono">${live ? '—' : fmt(c.h2Out, 3)}</td><td class="r mono">${live ? '—' : fmt(c.grain)}</td><td class="r mono">${live ? '—' : fmt(c.limca, 1)}</td><td>${notes.join(' · ') || '<span style="color:var(--muted)">—</span>'}</td></tr>`;
+      return `<tr class="${live ? 'now' : ''}"><td class="mono">${c.id}</td><td><span class="alloy" style="background:${alloyColor(c.alloy)}">${c.alloy}</span></td><td class="mono hide-sm">${hhmm(c.start)}</td><td class="r mono hide-sm">${live ? (c.start > T ? 'planlı' : 'döküyor') : dur(c.prof.tTaper)}</td><td class="r mono hide-sm">${c.logs}</td><td class="r mono">${fmt(c.gross, 1)}</td><td class="r mono">${live ? '—' : fmt(c.h2Out, 3)}</td><td class="r mono">${live ? '—' : fmt(c.grain)}</td><td class="r mono hide-sm">${live ? '—' : fmt(c.limca, 1)}</td><td class="wrap">${notes.join(' · ') || '<span style="color:var(--muted)">—</span>'}</td></tr>`;
     }).join('') + '</tbody>';
 }
 
@@ -590,10 +592,23 @@ window.onTick = (T, force) => {
 };
 
 function syncOv() { $$('[data-ov]').forEach(b => { b.setAttribute('aria-pressed', +b.dataset.ov === ov); b.disabled = +b.dataset.ov > 0 && role !== 'mgr'; b.title = b.disabled ? 'Yönetici yetkisi gerekli' : ''; }); $('#ovTxt').textContent = ov ? `%${ov > 0 ? '+' : ''}${ov}` : 'reçete'; }
+// phones get the drawing in two halves instead of a 1400 px strip to scroll
+let mview = 'pit';
+function applyView() {
+  const v = innerWidth <= 1023 ? (mview === 'pit' ? '836 0 564 600' : '20 0 800 300') : '0 0 1400 600', svg = $('#mimic');
+  svg.setAttribute('viewBox', v);
+  // keep the box at the view's aspect ratio so nothing outside the view shows beside it
+  const [, , w, h] = v.split(' ').map(Number);
+  svg.style.maxWidth = innerWidth <= 1023 ? Math.round(Math.min(520, innerHeight * .7) * w / h) + 'px' : '';
+  $$('#mview button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === mview));
+}
+window.addEventListener('resize', applyView);
 window.onInit = T => {
   // radial melt fill for mould cores (top view)
   $('#moulds').insertAdjacentHTML('afterbegin', '<defs><radialGradient id="gMeltR"><stop offset="0" stop-color="#fde68a"/><stop offset=".55" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></radialGradient></defs>');
   buildMimic(); buildMoulds();
+  $$('#mview button').forEach(b => b.addEventListener('click', () => { mview = b.dataset.v; applyView(); }));
+  applyView();
   const t = table(T); lastCastN = t.n;
   // what already happened in this cast
   t.phases.slice(0, t.pi + 1).forEach(p => addAlarm('info', `${t.cast.id} · <b>${p.key}</b> etabı başladı.`, 'phase', p.start));

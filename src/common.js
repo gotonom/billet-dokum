@@ -441,6 +441,15 @@ function simSet(speed, T) {
 }
 function simJump(T) { simSet(SIM.speed === 1 ? 10 : SIM.speed, T); }
 
+// keep the running step visible when the step row scrolls sideways (phones)
+function focusStep(ol) {
+  const now = ol.querySelector('li.now');
+  if (!now || ol._now === now || ol.scrollWidth <= ol.clientWidth) return;
+  ol._now = now; ol.scrollTo({ left: Math.max(0, now.offsetLeft - ol.offsetLeft - 16), behavior: 'smooth' });
+}
+// heat colour for metal temperatures: cold steel → glowing orange, never through green
+const heat = t => t == null ? 'var(--panel-2)' : `color-mix(in srgb, #f97316 ${Math.round(clamp((t - 40) / 540, 0, 1) * 100)}%, #cbd5e1)`;
+
 /* ---------- page chrome: theme, clock, speed buttons ---------- */
 function setTheme(t) {
   document.documentElement.dataset.theme = t;
@@ -472,16 +481,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ---------- tiny SVG line chart (string out, sized by viewBox) ---------- */
+// On a phone the chart is drawn on a narrower canvas, so its 11 px labels stay readable once scaled.
+const narrowScreen = () => typeof innerWidth === 'number' && innerWidth <= 720;
 function lineChart(o) {
-  const W = o.w || 640, H = o.h || 220, m = { l: 44, r: o.y2 ? 44 : 14, t: 14, b: 26, ...(o.m || {}) };
+  const narrow = narrowScreen(), W = narrow ? Math.min(o.w || 640, 380) : (o.w || 640), H = narrow ? Math.round((o.h || 220) * .85) : (o.h || 220);
+  const m = { l: 40, r: o.y2 ? 36 : 12, t: 14, b: 26, ...(o.m || {}) };
   const X = x => m.l + (x - o.x[0]) / (o.x[1] - o.x[0]) * (W - m.l - m.r);
   const Y = (y, ax) => { const r = ax === 2 ? o.y2 : o.y; return H - m.b - (y - r[0]) / (r[1] - r[0]) * (H - m.t - m.b); };
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.label || ''}" style="display:block;width:100%;height:auto">`;
-  for (const z of o.zones || []) s += `<rect x="${X(z.x0)}" y="${m.t}" width="${Math.max(0, X(z.x1) - X(z.x0))}" height="${H - m.t - m.b}" fill="${z.fill || 'var(--panel-2)'}"/>` + (z.label ? `<text x="${(X(z.x0) + X(z.x1)) / 2}" y="${m.t + 12}" text-anchor="middle" font-size="11" fill="var(--muted)" font-weight="600">${z.label}</text>` : '');
+  for (const z of o.zones || []) s += `<rect x="${X(z.x0)}" y="${m.t}" width="${Math.max(0, X(z.x1) - X(z.x0))}" height="${H - m.t - m.b}" fill="${z.fill || 'var(--panel-2)'}"/>` + (z.label && X(z.x1) - X(z.x0) >= z.label.length * 6.2 ? `<text x="${(X(z.x0) + X(z.x1)) / 2}" y="${m.t + 12}" text-anchor="middle" font-size="11" fill="var(--muted)" font-weight="600">${z.label}</text>` : '');
   for (const b of o.bands || []) s += `<rect x="${m.l}" y="${Y(b.y1, b.ax)}" width="${W - m.l - m.r}" height="${Y(b.y0, b.ax) - Y(b.y1, b.ax)}" fill="${b.fill}" opacity="${b.op ?? .14}"/>`;
   for (const t of o.yTicks || []) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line-2)"/><text x="${m.l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
   for (const t of o.y2Ticks || []) s += `<text x="${W - m.r + 6}" y="${Y(t, 2) + 4}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
-  for (const t of o.xTicks || []) s += `<text x="${X(t.x ?? t)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t.l ?? t}</text>`;
+  const xt = o.xTicks || [], step = narrow && xt.length > 5 ? 2 : 1;   // thin out x labels on a phone
+  xt.forEach((t, i) => { if (i % step === 0 || i === xt.length - 1) s += `<text x="${X(t.x ?? t)}" y="${H - 8}" text-anchor="${i === 0 ? 'start' : i === xt.length - 1 ? 'end' : 'middle'}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t.l ?? t}</text>`; });
   s += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="var(--line)"/>`;
   for (const se of o.series) {
     if (!se.pts.length) continue;

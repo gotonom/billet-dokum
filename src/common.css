@@ -166,11 +166,36 @@ svg text{font-family:var(--f-ui)}
 .blink{animation:blink 1s steps(2,start) infinite}
 @keyframes blink{to{visibility:hidden}}
 
+/* phone-only and wide-only blocks, and text that must keep its case (Si, µm, β → α) */
+.nc{text-transform:none}
+.tbl td.wrap{white-space:normal;min-width:180px}
+.tbl small.rng{display:none;font:500 11px var(--f-mono);color:var(--muted)}
+
+/* compact unit tiles: the phone stand-in for wide plant schematics */
+.ugrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 16px 16px}
+.ut{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:76px;padding:8px 9px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);position:relative;overflow:hidden;min-width:0}
+.ut:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ut[aria-pressed="true"]{border:2px solid var(--ink);padding:7px 8px}
+.ut b{font:800 17px var(--f-display);letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.ut .v{font:700 15px var(--f-display);position:relative;white-space:nowrap}
+.ut small{font:600 9.5px var(--f-mono);letter-spacing:.04em;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.ut .fill{position:absolute;inset:0;opacity:.85}
+.ut .pg{position:absolute;left:0;bottom:0;height:3px;background:var(--melt)}
+.ut.hot b,.ut.hot .v,.ut.hot small{color:#1a0d00}
+
 .foot{display:flex;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);padding:4px 2px}
 .foot a{color:var(--ink-2)}
 
 @media (max-width:1180px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:720px){
+  .hide-sm{display:none!important}
+  .tbl small.rng{display:block}
+  .sitenav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+  .sitenav::-webkit-scrollbar{display:none}
+  .sitenav a{white-space:nowrap;padding:6px 10px}
+  .eyebrow{letter-spacing:.08em;font-size:11.5px}
+  .sum{font-size:15px}
+  .steps li{min-width:104px}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .kpi .v{font-size:28px}
   .mimic-hint{display:block}
@@ -180,4 +205,9 @@ svg text{font-family:var(--f-ui)}
   .m .v{font-size:23px}
   .ch h2{font-size:20px}
 }
+@media (min-width:721px){.only-sm{display:none!important}}
+/* below laptop width the wide plant schematics give way to tiles or split views */
+@media (min-width:1024px){.only-md{display:none!important}}
+@media (max-width:1023px){.hide-md{display:none!important}}
+@media (min-width:600px){.ugrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}

@@ -79,8 +79,8 @@
   <div class="hero">
     <section class="card" aria-label="Saha planı">
       <div class="ch"><h2>Saha planı <small>CANLI</small></h2><span class="aside">Bir üniteye dokunun</span></div>
-      <div class="mimic-hint">Planı yana kaydırın</div>
-      <div class="mimic-scroll"><svg id="plan" viewBox="0 0 1400 420" role="group" aria-label="Dökümhane yerleşim planı"></svg></div>
+      <div class="mimic-scroll hide-md"><svg id="plan" viewBox="0 0 1400 420" role="group" aria-label="Dökümhane yerleşim planı"></svg></div>
+      <div class="ugrid only-md" id="ugrid" role="group" aria-label="Üniteler"></div>
     </section>
     <section class="card insp" aria-label="Seçili ünite"><div class="cb insp"><div class="insp" id="insp"></div><a class="ibtn primary" id="inspLink" href="dokum.html">Panele git →</a></div></section>
   </div>
@@ -119,7 +119,6 @@
 const SV = 'http://www.w3.org/2000/svg';
 const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(SV, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
 let sel = 'd1';
-const heat = t => t == null ? 'var(--panel-2)' : `color-mix(in srgb, #f97316 ${Math.round(clamp((t - 40) / 540, 0, 1) * 100)}%, #cbd5e1)`;   // cold steel → glowing orange, never through green
 // unit boxes on the plan: key → [x, y, w, h, label, href]
 const U = {
   hurda: [36, 52, 150, 300, 'HURDA SAHASI', 'firin.html'],
@@ -206,6 +205,12 @@ window.onTick = (T, force) => {
     stok: { fill: 'var(--panel-2)', sub: `${fmt(ready, 0)} t bugün`, ph: '' },
   };
   H.forEach(h => info['h' + (h.k + 1)] = { fill: heat(h.metal), sub: h.metal != null ? `${fmt(h.metal)} °C${h.cast ? ' · ' + h.cast.id.slice(-5) : ''}` : 'boş', ph: h.phase });
+  $$('#ugrid .ut').forEach(b => {   // phone tiles mirror the plan
+    const k = b.dataset.k, i = info[k], hot = i.fill.startsWith('color-mix(in srgb, #f97316');
+    b.classList.toggle('hot', hot); b.querySelector('.fill').style.background = i.fill;
+    b.querySelector('.v').textContent = i.sub; b.querySelector('small').textContent = i.ph || '\u00a0';
+    b.setAttribute('aria-pressed', k === sel);
+  });
   $$('#plan .u').forEach(g => {
     const k = g.dataset.k, i = info[k];
     g.querySelector('.fill').setAttribute('fill', i.fill);
@@ -322,16 +327,21 @@ window.onTick = (T, force) => {
     const st = x.end <= T ? '' : x.start <= T ? 'now' : 'plan';
     cal += `<a class="slot ${st}" href="dokum.html" title="${x.id} · ${x.alloy} · ${hhmm(x.start)}–${hhmm(x.end)}" style="left:${l}%;width:${w}%;background:${alloyColor(x.alloy)}">${x.id.slice(-2)}</a>`;
   }
-  for (let hr = 0; hr <= 24; hr += 3) cal += `<span class="hr" style="left:${hr / 24 * 100}%">${pad(hr)}</span>`;
+  for (let hr = 0; hr <= 24; hr += 3) cal += `<span class="hr" style="left:${hr / 24 * 100}%;${hr === 0 ? 'transform:none' : hr === 24 ? 'transform:translateX(-100%)' : ''}">${pad(hr)}</span>`;
   cal += `<span class="now-line" style="left:${(T - day0) / 1440 * 100}%"></span>`;
   $('#cal').innerHTML = cal;
 
   // quality (last 10, oldest left)
   const L10 = last10.slice().reverse();
   const bars = (vals, max, lim, col, lbl) => `<div class="qbars">${vals.map(v => `<i style="height:${v / max * 100}%;background:${v > lim ? 'var(--warn)' : col}"></i>`).join('')}<span class="lim" style="bottom:${lim / max * 100}%"><span>${lbl}</span></span></div><div class="qx">${L10.map(x => `<span>${x.id.slice(-2)}</span>`).join('')}</div>`;
-  $('#q').innerHTML = `<div><span class="qh">H₂ çıkış · ml/100 g</span><div class="qv num">${fmt(avg(L10, x => x.h2Out), 3)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.h2Out), .2, .15, 'var(--accent)', 'sınır 0,15')}</div>
-    <div><span class="qh">Tane boyutu · µm</span><div class="qv num">${fmt(avg(L10, x => x.grain))} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.grain), 200, 150, 'var(--a6060)', 'sınır 150')}</div>
-    <div><span class="qh">LiMCA N20 · k/kg</span><div class="qv num">${fmt(avg(L10, x => x.limca), 1)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.limca), 14, 10, 'var(--accent-2)', 'sınır 10')}</div>`;
+  $('#q').innerHTML = `<div><span class="qh">H₂ çıkış · <span class="nc">ml/100 g</span></span><div class="qv num">${fmt(avg(L10, x => x.h2Out), 3)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.h2Out), .2, .15, 'var(--accent)', 'sınır 0,15')}</div>
+    <div><span class="qh">Tane boyutu · <span class="nc">µm</span></span><div class="qv num">${fmt(avg(L10, x => x.grain))} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.grain), 200, 150, 'var(--a6060)', 'sınır 150')}</div>
+    <div><span class="qh nc">LiMCA N20 · k/kg</span><div class="qv num">${fmt(avg(L10, x => x.limca), 1)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.limca), 14, 10, 'var(--accent-2)', 'sınır 10')}</div>`;
 };
-window.onInit = () => buildPlan();
+window.onInit = () => {
+  buildPlan();
+  const g = $('#ugrid'), names = { hurda: 'Hurda', hat: 'Hat', d1: 'D1 masa', sog: 'Soğutma', saw: 'UT+testere', stok: 'Stok' };
+  g.innerHTML = Object.keys(U).map(k => `<button type="button" class="ut" data-k="${k}"><span class="fill"></span><b>${names[k] || k.toUpperCase()}</b><span class="v num"></span><small></small></button>`).join('');
+  $$('.ut', g).forEach(b => b.addEventListener('click', () => { sel = b.dataset.k; tick(true); $('#insp').closest('section').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }));
+};
 </script>

@@ -194,11 +194,36 @@ svg text{font-family:var(--f-ui)}
 .blink{animation:blink 1s steps(2,start) infinite}
 @keyframes blink{to{visibility:hidden}}
 
+/* phone-only and wide-only blocks, and text that must keep its case (Si, µm, β → α) */
+.nc{text-transform:none}
+.tbl td.wrap{white-space:normal;min-width:180px}
+.tbl small.rng{display:none;font:500 11px var(--f-mono);color:var(--muted)}
+
+/* compact unit tiles: the phone stand-in for wide plant schematics */
+.ugrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 16px 16px}
+.ut{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:76px;padding:8px 9px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);position:relative;overflow:hidden;min-width:0}
+.ut:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ut[aria-pressed="true"]{border:2px solid var(--ink);padding:7px 8px}
+.ut b{font:800 17px var(--f-display);letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.ut .v{font:700 15px var(--f-display);position:relative;white-space:nowrap}
+.ut small{font:600 9.5px var(--f-mono);letter-spacing:.04em;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.ut .fill{position:absolute;inset:0;opacity:.85}
+.ut .pg{position:absolute;left:0;bottom:0;height:3px;background:var(--melt)}
+.ut.hot b,.ut.hot .v,.ut.hot small{color:#1a0d00}
+
 .foot{display:flex;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);padding:4px 2px}
 .foot a{color:var(--ink-2)}
 
 @media (max-width:1180px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:720px){
+  .hide-sm{display:none!important}
+  .tbl small.rng{display:block}
+  .sitenav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+  .sitenav::-webkit-scrollbar{display:none}
+  .sitenav a{white-space:nowrap;padding:6px 10px}
+  .eyebrow{letter-spacing:.08em;font-size:11.5px}
+  .sum{font-size:15px}
+  .steps li{min-width:104px}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .kpi .v{font-size:28px}
   .mimic-hint{display:block}
@@ -208,6 +233,11 @@ svg text{font-family:var(--f-ui)}
   .m .v{font-size:23px}
   .ch h2{font-size:20px}
 }
+@media (min-width:721px){.only-sm{display:none!important}}
+/* below laptop width the wide plant schematics give way to tiles or split views */
+@media (min-width:1024px){.only-md{display:none!important}}
+@media (max-width:1023px){.hide-md{display:none!important}}
+@media (min-width:600px){.ugrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 
 /* Layout: control room. Live site plan is the hero with a unit inspector beside it, the metal's
@@ -286,8 +316,8 @@ svg text{font-family:var(--f-ui)}
   <div class="hero">
     <section class="card" aria-label="Saha planı">
       <div class="ch"><h2>Saha planı <small>CANLI</small></h2><span class="aside">Bir üniteye dokunun</span></div>
-      <div class="mimic-hint">Planı yana kaydırın</div>
-      <div class="mimic-scroll"><svg id="plan" viewBox="0 0 1400 420" role="group" aria-label="Dökümhane yerleşim planı"></svg></div>
+      <div class="mimic-scroll hide-md"><svg id="plan" viewBox="0 0 1400 420" role="group" aria-label="Dökümhane yerleşim planı"></svg></div>
+      <div class="ugrid only-md" id="ugrid" role="group" aria-label="Üniteler"></div>
     </section>
     <section class="card insp" aria-label="Seçili ünite"><div class="cb insp"><div class="insp" id="insp"></div><a class="ibtn primary" id="inspLink" href="dokum.html">Panele git →</a></div></section>
   </div>
@@ -765,6 +795,15 @@ function simSet(speed, T) {
 }
 function simJump(T) { simSet(SIM.speed === 1 ? 10 : SIM.speed, T); }
 
+// keep the running step visible when the step row scrolls sideways (phones)
+function focusStep(ol) {
+  const now = ol.querySelector('li.now');
+  if (!now || ol._now === now || ol.scrollWidth <= ol.clientWidth) return;
+  ol._now = now; ol.scrollTo({ left: Math.max(0, now.offsetLeft - ol.offsetLeft - 16), behavior: 'smooth' });
+}
+// heat colour for metal temperatures: cold steel → glowing orange, never through green
+const heat = t => t == null ? 'var(--panel-2)' : `color-mix(in srgb, #f97316 ${Math.round(clamp((t - 40) / 540, 0, 1) * 100)}%, #cbd5e1)`;
+
 /* ---------- page chrome: theme, clock, speed buttons ---------- */
 function setTheme(t) {
   document.documentElement.dataset.theme = t;
@@ -796,16 +835,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ---------- tiny SVG line chart (string out, sized by viewBox) ---------- */
+// On a phone the chart is drawn on a narrower canvas, so its 11 px labels stay readable once scaled.
+const narrowScreen = () => typeof innerWidth === 'number' && innerWidth <= 720;
 function lineChart(o) {
-  const W = o.w || 640, H = o.h || 220, m = { l: 44, r: o.y2 ? 44 : 14, t: 14, b: 26, ...(o.m || {}) };
+  const narrow = narrowScreen(), W = narrow ? Math.min(o.w || 640, 380) : (o.w || 640), H = narrow ? Math.round((o.h || 220) * .85) : (o.h || 220);
+  const m = { l: 40, r: o.y2 ? 36 : 12, t: 14, b: 26, ...(o.m || {}) };
   const X = x => m.l + (x - o.x[0]) / (o.x[1] - o.x[0]) * (W - m.l - m.r);
   const Y = (y, ax) => { const r = ax === 2 ? o.y2 : o.y; return H - m.b - (y - r[0]) / (r[1] - r[0]) * (H - m.t - m.b); };
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.label || ''}" style="display:block;width:100%;height:auto">`;
-  for (const z of o.zones || []) s += `<rect x="${X(z.x0)}" y="${m.t}" width="${Math.max(0, X(z.x1) - X(z.x0))}" height="${H - m.t - m.b}" fill="${z.fill || 'var(--panel-2)'}"/>` + (z.label ? `<text x="${(X(z.x0) + X(z.x1)) / 2}" y="${m.t + 12}" text-anchor="middle" font-size="11" fill="var(--muted)" font-weight="600">${z.label}</text>` : '');
+  for (const z of o.zones || []) s += `<rect x="${X(z.x0)}" y="${m.t}" width="${Math.max(0, X(z.x1) - X(z.x0))}" height="${H - m.t - m.b}" fill="${z.fill || 'var(--panel-2)'}"/>` + (z.label && X(z.x1) - X(z.x0) >= z.label.length * 6.2 ? `<text x="${(X(z.x0) + X(z.x1)) / 2}" y="${m.t + 12}" text-anchor="middle" font-size="11" fill="var(--muted)" font-weight="600">${z.label}</text>` : '');
   for (const b of o.bands || []) s += `<rect x="${m.l}" y="${Y(b.y1, b.ax)}" width="${W - m.l - m.r}" height="${Y(b.y0, b.ax) - Y(b.y1, b.ax)}" fill="${b.fill}" opacity="${b.op ?? .14}"/>`;
   for (const t of o.yTicks || []) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line-2)"/><text x="${m.l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
   for (const t of o.y2Ticks || []) s += `<text x="${W - m.r + 6}" y="${Y(t, 2) + 4}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
-  for (const t of o.xTicks || []) s += `<text x="${X(t.x ?? t)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t.l ?? t}</text>`;
+  const xt = o.xTicks || [], step = narrow && xt.length > 5 ? 2 : 1;   // thin out x labels on a phone
+  xt.forEach((t, i) => { if (i % step === 0 || i === xt.length - 1) s += `<text x="${X(t.x ?? t)}" y="${H - 8}" text-anchor="${i === 0 ? 'start' : i === xt.length - 1 ? 'end' : 'middle'}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t.l ?? t}</text>`; });
   s += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="var(--line)"/>`;
   for (const se of o.series) {
     if (!se.pts.length) continue;
@@ -821,7 +864,6 @@ function lineChart(o) {
 const SV = 'http://www.w3.org/2000/svg';
 const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(SV, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
 let sel = 'd1';
-const heat = t => t == null ? 'var(--panel-2)' : `color-mix(in srgb, #f97316 ${Math.round(clamp((t - 40) / 540, 0, 1) * 100)}%, #cbd5e1)`;   // cold steel → glowing orange, never through green
 // unit boxes on the plan: key → [x, y, w, h, label, href]
 const U = {
   hurda: [36, 52, 150, 300, 'HURDA SAHASI', 'firin.html'],
@@ -908,6 +950,12 @@ window.onTick = (T, force) => {
     stok: { fill: 'var(--panel-2)', sub: `${fmt(ready, 0)} t bugün`, ph: '' },
   };
   H.forEach(h => info['h' + (h.k + 1)] = { fill: heat(h.metal), sub: h.metal != null ? `${fmt(h.metal)} °C${h.cast ? ' · ' + h.cast.id.slice(-5) : ''}` : 'boş', ph: h.phase });
+  $$('#ugrid .ut').forEach(b => {   // phone tiles mirror the plan
+    const k = b.dataset.k, i = info[k], hot = i.fill.startsWith('color-mix(in srgb, #f97316');
+    b.classList.toggle('hot', hot); b.querySelector('.fill').style.background = i.fill;
+    b.querySelector('.v').textContent = i.sub; b.querySelector('small').textContent = i.ph || '\u00a0';
+    b.setAttribute('aria-pressed', k === sel);
+  });
   $$('#plan .u').forEach(g => {
     const k = g.dataset.k, i = info[k];
     g.querySelector('.fill').setAttribute('fill', i.fill);
@@ -1024,18 +1072,23 @@ window.onTick = (T, force) => {
     const st = x.end <= T ? '' : x.start <= T ? 'now' : 'plan';
     cal += `<a class="slot ${st}" href="dokum.html" title="${x.id} · ${x.alloy} · ${hhmm(x.start)}–${hhmm(x.end)}" style="left:${l}%;width:${w}%;background:${alloyColor(x.alloy)}">${x.id.slice(-2)}</a>`;
   }
-  for (let hr = 0; hr <= 24; hr += 3) cal += `<span class="hr" style="left:${hr / 24 * 100}%">${pad(hr)}</span>`;
+  for (let hr = 0; hr <= 24; hr += 3) cal += `<span class="hr" style="left:${hr / 24 * 100}%;${hr === 0 ? 'transform:none' : hr === 24 ? 'transform:translateX(-100%)' : ''}">${pad(hr)}</span>`;
   cal += `<span class="now-line" style="left:${(T - day0) / 1440 * 100}%"></span>`;
   $('#cal').innerHTML = cal;
 
   // quality (last 10, oldest left)
   const L10 = last10.slice().reverse();
   const bars = (vals, max, lim, col, lbl) => `<div class="qbars">${vals.map(v => `<i style="height:${v / max * 100}%;background:${v > lim ? 'var(--warn)' : col}"></i>`).join('')}<span class="lim" style="bottom:${lim / max * 100}%"><span>${lbl}</span></span></div><div class="qx">${L10.map(x => `<span>${x.id.slice(-2)}</span>`).join('')}</div>`;
-  $('#q').innerHTML = `<div><span class="qh">H₂ çıkış · ml/100 g</span><div class="qv num">${fmt(avg(L10, x => x.h2Out), 3)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.h2Out), .2, .15, 'var(--accent)', 'sınır 0,15')}</div>
-    <div><span class="qh">Tane boyutu · µm</span><div class="qv num">${fmt(avg(L10, x => x.grain))} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.grain), 200, 150, 'var(--a6060)', 'sınır 150')}</div>
-    <div><span class="qh">LiMCA N20 · k/kg</span><div class="qv num">${fmt(avg(L10, x => x.limca), 1)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.limca), 14, 10, 'var(--accent-2)', 'sınır 10')}</div>`;
+  $('#q').innerHTML = `<div><span class="qh">H₂ çıkış · <span class="nc">ml/100 g</span></span><div class="qv num">${fmt(avg(L10, x => x.h2Out), 3)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.h2Out), .2, .15, 'var(--accent)', 'sınır 0,15')}</div>
+    <div><span class="qh">Tane boyutu · <span class="nc">µm</span></span><div class="qv num">${fmt(avg(L10, x => x.grain))} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.grain), 200, 150, 'var(--a6060)', 'sınır 150')}</div>
+    <div><span class="qh nc">LiMCA N20 · k/kg</span><div class="qv num">${fmt(avg(L10, x => x.limca), 1)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.limca), 14, 10, 'var(--accent-2)', 'sınır 10')}</div>`;
 };
-window.onInit = () => buildPlan();
+window.onInit = () => {
+  buildPlan();
+  const g = $('#ugrid'), names = { hurda: 'Hurda', hat: 'Hat', d1: 'D1 masa', sog: 'Soğutma', saw: 'UT+testere', stok: 'Stok' };
+  g.innerHTML = Object.keys(U).map(k => `<button type="button" class="ut" data-k="${k}"><span class="fill"></span><b>${names[k] || k.toUpperCase()}</b><span class="v num"></span><small></small></button>`).join('');
+  $$('.ut', g).forEach(b => b.addEventListener('click', () => { sel = b.dataset.k; tick(true); $('#insp').closest('section').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }));
+};
 </script>
 </body>
 </html>

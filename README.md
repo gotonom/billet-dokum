@@ -17,6 +17,7 @@ PLC bağlantısı kurulana kadar paneller örnek veriyle çalışan bir simülas
 - **×1:** gerçek saat.
 - **×10 ve ×60:** hızlı demo. Hız ayarı sayfalar arasında geçerken de korunur.
 - **Etaplar:** her etap kutusuna tıklayınca demo o etaba atlar.
+- **Ekran genişliği:** 1024 px altında geniş şemalar yerini dokunulabilir ünite kartlarına (kontrol merkezi, homojenizasyon) ve iki parçalı görünüme (döküm masası: "Masa ve pit" / "Fırın ve hat") bırakır. 720 px altında tablolar sadeleşir, grafikler okunur boyda çizilir, etap şeridi çalışan etaba kayar. 360, 375, 414, 768, 1024 ve 1280 px'te kontrol edildi.
 
 ## Yapı
 

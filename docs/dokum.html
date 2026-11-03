@@ -194,11 +194,36 @@ svg text{font-family:var(--f-ui)}
 .blink{animation:blink 1s steps(2,start) infinite}
 @keyframes blink{to{visibility:hidden}}
 
+/* phone-only and wide-only blocks, and text that must keep its case (Si, µm, β → α) */
+.nc{text-transform:none}
+.tbl td.wrap{white-space:normal;min-width:180px}
+.tbl small.rng{display:none;font:500 11px var(--f-mono);color:var(--muted)}
+
+/* compact unit tiles: the phone stand-in for wide plant schematics */
+.ugrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 16px 16px}
+.ut{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:76px;padding:8px 9px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);position:relative;overflow:hidden;min-width:0}
+.ut:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ut[aria-pressed="true"]{border:2px solid var(--ink);padding:7px 8px}
+.ut b{font:800 17px var(--f-display);letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.ut .v{font:700 15px var(--f-display);position:relative;white-space:nowrap}
+.ut small{font:600 9.5px var(--f-mono);letter-spacing:.04em;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.ut .fill{position:absolute;inset:0;opacity:.85}
+.ut .pg{position:absolute;left:0;bottom:0;height:3px;background:var(--melt)}
+.ut.hot b,.ut.hot .v,.ut.hot small{color:#1a0d00}
+
 .foot{display:flex;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);padding:4px 2px}
 .foot a{color:var(--ink-2)}
 
 @media (max-width:1180px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:720px){
+  .hide-sm{display:none!important}
+  .tbl small.rng{display:block}
+  .sitenav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+  .sitenav::-webkit-scrollbar{display:none}
+  .sitenav a{white-space:nowrap;padding:6px 10px}
+  .eyebrow{letter-spacing:.08em;font-size:11.5px}
+  .sum{font-size:15px}
+  .steps li{min-width:104px}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .kpi .v{font-size:28px}
   .mimic-hint{display:block}
@@ -208,6 +233,11 @@ svg text{font-family:var(--f-ui)}
   .m .v{font-size:23px}
   .ch h2{font-size:20px}
 }
+@media (min-width:721px){.only-sm{display:none!important}}
+/* below laptop width the wide plant schematics give way to tiles or split views */
+@media (min-width:1024px){.only-md{display:none!important}}
+@media (max-width:1023px){.hide-md{display:none!important}}
+@media (min-width:600px){.ugrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 
 /* Layout: the pit cross-section is the hero, the cast's numbers sit right under it, then the mould
@@ -263,6 +293,7 @@ svg text{font-family:var(--f-ui)}
 .feedwrap{max-height:340px;overflow:auto}
 @media (max-width:1100px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:640px){.mtable{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1023px){#mimic{min-width:0;max-height:min(520px,70vh);margin:0 auto}}   /* the tall pit view must not fill a tablet screen */
 </style>
 </head>
 <body>
@@ -300,7 +331,7 @@ svg text{font-family:var(--f-ui)}
 
   <section class="card" aria-label="Döküm hattı proses şeması">
     <div class="ch"><h2>Döküm hattı <small>FIRIN → DEGAZÖR → TANE İNCELTİCİ → FİLTRE → MASA → PİT</small></h2><span class="aside" id="mimicNote"></span></div>
-    <div class="mimic-hint">Şemayı yana kaydırın</div>
+    <div class="seg only-md" id="mview" role="group" aria-label="Şema görünümü" style="margin:10px 16px 0"><button type="button" data-v="pit" aria-pressed="true">Masa ve pit</button><button type="button" data-v="line" aria-pressed="false">Fırın ve hat</button></div>
     <div class="mimic-scroll"><svg id="mimic" viewBox="0 0 1400 600" role="img" aria-label="Döküm fırını, oluk, degazör, tane inceltici, filtre, döküm masası ve pit kesiti"></svg></div>
   </section>
 
@@ -806,6 +837,15 @@ function simSet(speed, T) {
 }
 function simJump(T) { simSet(SIM.speed === 1 ? 10 : SIM.speed, T); }
 
+// keep the running step visible when the step row scrolls sideways (phones)
+function focusStep(ol) {
+  const now = ol.querySelector('li.now');
+  if (!now || ol._now === now || ol.scrollWidth <= ol.clientWidth) return;
+  ol._now = now; ol.scrollTo({ left: Math.max(0, now.offsetLeft - ol.offsetLeft - 16), behavior: 'smooth' });
+}
+// heat colour for metal temperatures: cold steel → glowing orange, never through green
+const heat = t => t == null ? 'var(--panel-2)' : `color-mix(in srgb, #f97316 ${Math.round(clamp((t - 40) / 540, 0, 1) * 100)}%, #cbd5e1)`;
+
 /* ---------- page chrome: theme, clock, speed buttons ---------- */
 function setTheme(t) {
   document.documentElement.dataset.theme = t;
@@ -837,16 +877,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ---------- tiny SVG line chart (string out, sized by viewBox) ---------- */
+// On a phone the chart is drawn on a narrower canvas, so its 11 px labels stay readable once scaled.
+const narrowScreen = () => typeof innerWidth === 'number' && innerWidth <= 720;
 function lineChart(o) {
-  const W = o.w || 640, H = o.h || 220, m = { l: 44, r: o.y2 ? 44 : 14, t: 14, b: 26, ...(o.m || {}) };
+  const narrow = narrowScreen(), W = narrow ? Math.min(o.w || 640, 380) : (o.w || 640), H = narrow ? Math.round((o.h || 220) * .85) : (o.h || 220);
+  const m = { l: 40, r: o.y2 ? 36 : 12, t: 14, b: 26, ...(o.m || {}) };
   const X = x => m.l + (x - o.x[0]) / (o.x[1] - o.x[0]) * (W - m.l - m.r);
   const Y = (y, ax) => { const r = ax === 2 ? o.y2 : o.y; return H - m.b - (y - r[0]) / (r[1] - r[0]) * (H - m.t - m.b); };
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.label || ''}" style="display:block;width:100%;height:auto">`;
-  for (const z of o.zones || []) s += `<rect x="${X(z.x0)}" y="${m.t}" width="${Math.max(0, X(z.x1) - X(z.x0))}" height="${H - m.t - m.b}" fill="${z.fill || 'var(--panel-2)'}"/>` + (z.label ? `<text x="${(X(z.x0) + X(z.x1)) / 2}" y="${m.t + 12}" text-anchor="middle" font-size="11" fill="var(--muted)" font-weight="600">${z.label}</text>` : '');
+  for (const z of o.zones || []) s += `<rect x="${X(z.x0)}" y="${m.t}" width="${Math.max(0, X(z.x1) - X(z.x0))}" height="${H - m.t - m.b}" fill="${z.fill || 'var(--panel-2)'}"/>` + (z.label && X(z.x1) - X(z.x0) >= z.label.length * 6.2 ? `<text x="${(X(z.x0) + X(z.x1)) / 2}" y="${m.t + 12}" text-anchor="middle" font-size="11" fill="var(--muted)" font-weight="600">${z.label}</text>` : '');
   for (const b of o.bands || []) s += `<rect x="${m.l}" y="${Y(b.y1, b.ax)}" width="${W - m.l - m.r}" height="${Y(b.y0, b.ax) - Y(b.y1, b.ax)}" fill="${b.fill}" opacity="${b.op ?? .14}"/>`;
   for (const t of o.yTicks || []) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line-2)"/><text x="${m.l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
   for (const t of o.y2Ticks || []) s += `<text x="${W - m.r + 6}" y="${Y(t, 2) + 4}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
-  for (const t of o.xTicks || []) s += `<text x="${X(t.x ?? t)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t.l ?? t}</text>`;
+  const xt = o.xTicks || [], step = narrow && xt.length > 5 ? 2 : 1;   // thin out x labels on a phone
+  xt.forEach((t, i) => { if (i % step === 0 || i === xt.length - 1) s += `<text x="${X(t.x ?? t)}" y="${H - 8}" text-anchor="${i === 0 ? 'start' : i === xt.length - 1 ? 'end' : 'middle'}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t.l ?? t}</text>`; });
   s += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="var(--line)"/>`;
   for (const se of o.series) {
     if (!se.pts.length) continue;
@@ -1095,6 +1139,7 @@ function renderSteps(t) {
     li.className = i < t.pi ? 'done' : i === t.pi ? 'now' : '';
     li.querySelector('i').style.width = i === t.pi ? (clamp((T - p.start) / (p.end - p.start), 0, 1) * 100) + '%' : '';
   });
+  focusStep(ol);
 }
 function renderFeed() {
   $('#feed').innerHTML = alarms.length ? alarms.slice(0, 40).map(a => `<li class="${a.sev}"><time>${hhmm(a.T)}</time><span>${a.txt}</span></li>`).join('') : '<li class="info"><time>—</time><span>Aktif alarm yok. Döküm sırasında bir senaryo seçin.</span></li>';
@@ -1114,7 +1159,7 @@ function renderScn(t) {
 function renderLog(T, cur) {
   const list = doneCasts(T, 8);
   const rows = [cur, ...list].filter((c, i, a) => a.findIndex(x => x.n === c.n) === i);
-  $('#log').innerHTML = `<thead><tr><th>Döküm</th><th>Alaşım</th><th>Başlangıç</th><th class="r">Süre</th><th class="r">Log</th><th class="r">Ton</th><th class="r">H₂</th><th class="r">Tane</th><th class="r">LiMCA</th><th>Not</th></tr></thead><tbody>` +
+  $('#log').innerHTML = `<thead><tr><th>Döküm</th><th>Alaşım</th><th class="hide-sm">Başlangıç</th><th class="r hide-sm">Süre</th><th class="r hide-sm">Log</th><th class="r">Ton</th><th class="r">H₂</th><th class="r">Tane</th><th class="r hide-sm">LiMCA</th><th>Not</th></tr></thead><tbody>` +
     rows.map(c => {
       const live = c.end > T;
       const notes = [];
@@ -1122,7 +1167,7 @@ function renderLog(T, cur) {
       if (c.utRej) notes.push('UT: 1 log merkez çatlağı');
       if (c.h2Out > .135) notes.push('H₂ sınıra yakın');
       if (c.drainB) notes.push(`alaşım değişimi: B1 dibi boşaltıldı (${c.heelAlloyB} → ${c.alloy})`);
-      return `<tr class="${live ? 'now' : ''}"><td class="mono">${c.id}</td><td><span class="alloy" style="background:${alloyColor(c.alloy)}">${c.alloy}</span></td><td class="mono">${hhmm(c.start)}</td><td class="r mono">${live ? (c.start > T ? 'planlı' : 'döküyor') : dur(c.prof.tTaper)}</td><td class="r mono">${c.logs}</td><td class="r mono">${fmt(c.gross, 1)}</td><td class="r mono">${live ? '—' : fmt(c.h2Out, 3)}</td><td class="r mono">${live ? '—' : fmt(c.grain)}</td><td class="r mono">${live ? '—' : fmt(c.limca, 1)}</td><td>${notes.join(' · ') || '<span style="color:var(--muted)">—</span>'}</td></tr>`;
+      return `<tr class="${live ? 'now' : ''}"><td class="mono">${c.id}</td><td><span class="alloy" style="background:${alloyColor(c.alloy)}">${c.alloy}</span></td><td class="mono hide-sm">${hhmm(c.start)}</td><td class="r mono hide-sm">${live ? (c.start > T ? 'planlı' : 'döküyor') : dur(c.prof.tTaper)}</td><td class="r mono hide-sm">${c.logs}</td><td class="r mono">${fmt(c.gross, 1)}</td><td class="r mono">${live ? '—' : fmt(c.h2Out, 3)}</td><td class="r mono">${live ? '—' : fmt(c.grain)}</td><td class="r mono hide-sm">${live ? '—' : fmt(c.limca, 1)}</td><td class="wrap">${notes.join(' · ') || '<span style="color:var(--muted)">—</span>'}</td></tr>`;
     }).join('') + '</tbody>';
 }
 
@@ -1292,10 +1337,23 @@ window.onTick = (T, force) => {
 };
 
 function syncOv() { $$('[data-ov]').forEach(b => { b.setAttribute('aria-pressed', +b.dataset.ov === ov); b.disabled = +b.dataset.ov > 0 && role !== 'mgr'; b.title = b.disabled ? 'Yönetici yetkisi gerekli' : ''; }); $('#ovTxt').textContent = ov ? `%${ov > 0 ? '+' : ''}${ov}` : 'reçete'; }
+// phones get the drawing in two halves instead of a 1400 px strip to scroll
+let mview = 'pit';
+function applyView() {
+  const v = innerWidth <= 1023 ? (mview === 'pit' ? '836 0 564 600' : '20 0 800 300') : '0 0 1400 600', svg = $('#mimic');
+  svg.setAttribute('viewBox', v);
+  // keep the box at the view's aspect ratio so nothing outside the view shows beside it
+  const [, , w, h] = v.split(' ').map(Number);
+  svg.style.maxWidth = innerWidth <= 1023 ? Math.round(Math.min(520, innerHeight * .7) * w / h) + 'px' : '';
+  $$('#mview button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === mview));
+}
+window.addEventListener('resize', applyView);
 window.onInit = T => {
   // radial melt fill for mould cores (top view)
   $('#moulds').insertAdjacentHTML('afterbegin', '<defs><radialGradient id="gMeltR"><stop offset="0" stop-color="#fde68a"/><stop offset=".55" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></radialGradient></defs>');
   buildMimic(); buildMoulds();
+  $$('#mview button').forEach(b => b.addEventListener('click', () => { mview = b.dataset.v; applyView(); }));
+  applyView();
   const t = table(T); lastCastN = t.n;
   // what already happened in this cast
   t.phases.slice(0, t.pi + 1).forEach(p => addAlarm('info', `${t.cast.id} · <b>${p.key}</b> etabı başladı.`, 'phase', p.start));
