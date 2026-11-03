@@ -421,6 +421,47 @@ function profile(alloy) {
 }
 function lengthAt(p, tc) { if (tc <= 0) return 0; const i = tc * 60; if (i >= p.Ls.length - 1) return PLANT.LEN; const a = Math.floor(i); return lerp(p.Ls[a], p.Ls[a + 1], i - a); }
 
+/* ---------- alloy correction: what to add to bring a sample back to target ---------- */
+// f = element fraction in the additive, y = recovery into the melt (rest oxidises into the dross)
+const ADDITIVES = {
+  Si: { name: 'Silisyum metal (topak, %98,5)', f: .985, y: .92, how: 'karıştırarak 15–20 dk çözündürülür' },
+  Mg: { name: 'Saf magnezyum külçe (%99,8)', f: .998, y: .90, how: 'en son, çan ile banyo altına daldırılır' },
+  Mn: { name: 'Mn tablet (%75 Mn)', f: .75, y: .95, how: 'karıştırarak 20 dk' },
+  Cu: { name: 'AlCu50 ön alaşım', f: .50, y: .98, how: 'karıştırarak 10 dk' },
+  Fe: { name: 'Fe tablet (%75 Fe)', f: .75, y: .95, how: 'karıştırarak 20 dk', minOnly: true },   // Fe follows the scrap mix; added only below spec min
+};
+const ADD_ORDER = ['Si', 'Fe', 'Mn', 'Cu', 'Mg'];        // Mg last: it burns off if added early
+const chemTol = (lo, hi) => Math.max(.015, (hi - lo) * .05);   // internal window around target
+function solveLinear(A, b) {                             // Gaussian elimination, small n
+  const n = b.length, M = A.map((r, i) => [...r, b[i]]);
+  for (let c = 0; c < n; c++) {
+    let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+    [M[c], M[p]] = [M[p], M[c]];
+    for (let r = 0; r < n; r++) if (r !== c) { const k = M[r][c] / M[c][c]; for (let j = c; j <= n; j++) M[r][j] -= k * M[c][j]; }
+  }
+  return M.map((r, i) => r[n] / r[i]);
+}
+// chem in wt %, M melt mass in kg. Elements below their window are raised to target; additions
+// dilute each other, so the amounts are solved together. Nothing can take an element out:
+// above the spec maximum the only fix is diluting with primary metal.
+function correction(alloy, chem, M) {
+  const spec = PLANT.ALLOYS[alloy].spec, S = [], high = [], over = [];
+  for (const [el, [lo, hi, tg]] of Object.entries(spec)) {
+    const c = chem[el], tol = chemTol(lo, hi);
+    if (c == null || isNaN(c)) continue;
+    if (lo > 0 && ADDITIVES[el] && (ADDITIVES[el].minOnly ? c < lo : c < tg - tol)) S.push(el);
+    else if (c > hi) high.push({ el, c, hi, primer: M * (c / (hi - tol) - 1) });
+    else if (lo > 0 && !ADDITIVES[el]?.minOnly && c > tg + tol) over.push(el);
+  }
+  S.sort((a, b) => ADD_ORDER.indexOf(a) - ADD_ORDER.indexOf(b));
+  const A = S.map((ei, i) => S.map((ej, j) => (i === j ? ADDITIVES[ei].y * ADDITIVES[ei].f * 100 : 0) - spec[ei][2]));
+  const x = S.length ? solveLinear(A, S.map(e => M * (spec[e][2] - chem[e]))) : [];
+  const adds = S.map((el, i) => ({ el, kg: x[i], from: chem[el], to: spec[el][2], ...ADDITIVES[el] }));
+  const total = adds.reduce((s, a) => s + a.kg, 0), M2 = M + total, final = {};
+  for (const el in spec) { const a = adds.find(q => q.el === el); final[el] = (M * chem[el] + (a ? a.kg * a.y * a.f * 100 : 0)) / M2; }
+  return { adds, total, final, high, over, M };
+}
+
 /* ---------- per-cast facts (memoised) ---------- */
 const DAY0 = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); })();
 const CASTS = new Map();
@@ -437,20 +478,22 @@ function castInfo(n) {
   const gross = logs * PLANT.LOG_T * (1 + (rnd(n, 7) - .5) * .004);
   const net = (logs - utRej) * PLANT.T_PER_M * PLANT.NET_M;
   const charged = gross * (1 + dross / 1000 + .004);
-  const corr = rnd(n, 8) < .3;                               // first sample Mg low → correction
-  const chem = {}, chem1 = {};
+  // first sample: alloying elements scatter around target (scrap mix varies, more often low),
+  // impurities sit near their typical level; the correction recipe then sets the second sample
+  const chem1 = {};
   for (const [el, [lo, hi, tg]] of Object.entries(a.spec)) {
-    const span = Math.max(.01, (hi - lo) * .06);
-    chem[el] = +(tg + (rnd(n, 20 + el.charCodeAt(0) + el.charCodeAt(1)) - .5) * span).toFixed(3);
-    chem1[el] = chem[el];
+    const r = rnd(n, 20 + el.charCodeAt(0) + el.charCodeAt(1));
+    chem1[el] = +(lo > 0 && ADDITIVES[el] && !ADDITIVES[el].minOnly ? tg + (r - .62) * (hi - lo) * .22 : tg + (r - .5) * Math.max(.01, (hi - lo) * .06)).toFixed(3);
   }
-  if (corr) chem1.Mg = +(a.spec.Mg[0] - .01 - rnd(n, 9) * .03).toFixed(3);
+  const recipe = correction(alloy, chem1, 36000), corr = recipe.adds.length > 0;
+  const chem = {};
+  for (const el in chem1) chem[el] = +(recipe.final[el] + (corr && recipe.adds.some(x => x.el === el) ? (rnd(n, 40 + el.charCodeAt(0)) - .5) * .008 : 0)).toFixed(3);
   const primer = 34 + rnd(n, 10) * 16, ic = 20 + rnd(n, 11) * 8;
   const info = {
     n, slot, id: `D-${pad(date.getDate())}${pad(date.getMonth() + 1)}-${pad(slot + 1)}`, date, alloy, prof: profile(alloy),
     closed, logs, utRej, dross, gross, net, charged, recovery: net / charged * 100,
     h2In: .24 + rnd(n, 12) * .08, h2Out: .10 + rnd(n, 13) * .04, grain: 105 + rnd(n, 14) * 35,
-    corr, chem, chem1, mgAdd: corr ? Math.round(10 + rnd(n, 15) * 14) : 0,
+    corr, chem, chem1, recipe,
     mix: { primer, ic, dis: 100 - primer - ic },
     gas: 72 + rnd(n, 16) * 14, kwh: 88 + rnd(n, 17) * 16,     // per net tonne
     start: n * PLANT.CYCLE + PLANT.CAST_START,
@@ -515,8 +558,9 @@ function melter(k, T) {
   else if (pi === 4) { temp = lerp(742, 738, (L - 250) / 20); mass = 36; liq = 1; burn = 20; }
   else { temp = lerp(738, 732, (L - 270) / 18); mass = 36 - charge * (L - 270) / 18; liq = 1; burn = 10; }
   temp += wob(T, 30 + k) * 1.4;
-  const sample1 = phases[3].start + 10, corrAt = sample1 + 3, sample2 = corrAt + 12;
-  const chemOk = cast.corr ? T >= sample2 : T >= sample1;
+  // OES result comes 6 min after each sample; additions go in right after the first result
+  const sample1 = phases[3].start + 2, corrAt = sample1 + 7, sample2 = corrAt + 14;
+  const chemOk = cast.corr ? T >= sample2 + 6 : T >= sample1 + 6;
   return {
     k, name: 'E' + (k + 1), L, n, cast, phase: MELT_DEFS[pi][0], pi, phases, temp, mass, liq, burn,
     gas: burn * 6 * (1 + wob(T, 32 + k) * .02),             // Nm³/h, 600 at full fire

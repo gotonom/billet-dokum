@@ -281,7 +281,11 @@ window.onTick = (T, force) => {
   const F = [];
   for (let n = base - 6; n <= base + 1; n++) {
     const x = castInfo(n), mk = melter(n % 2 ? 1 : 0, n * PLANT.CYCLE - 5);
-    if (x.corr) { F.push({ t: mk.sample1 + 8, sev: 'warn', txt: `<b>${mk.name} numune:</b> Mg ${fmt(x.chem1.Mg, 3)} alt sınırın altında (${x.alloy}). ${x.mgAdd} kg Mg eklendi.` }); F.push({ t: mk.sample2 + 8, sev: 'ok', txt: `${mk.name} numune 2 onaylandı · ${x.id}.` }); }
+    if (x.corr) {
+      const r = x.recipe, low = r.adds.map(a => `${a.el} ${fmt(a.from, 3)} (hedef ${fmt(a.to, 2)})`).join(', ');
+      F.push({ t: mk.corrAt, sev: 'warn', txt: `<b>${mk.name} numune 1:</b> ${low}. Eklendi: ${r.adds.map(a => `${fmt(a.kg, 1)} kg ${a.el === 'Mg' ? 'Mg' : a.el === 'Si' ? 'Si metal' : a.name}`).join(', ')}.` });
+      F.push({ t: mk.sample2 + 6, sev: 'ok', txt: `${mk.name} numune 2 onaylandı · ${x.id} · ${r.adds.map(a => `${a.el} ${fmt(x.chem[a.el], 3)}`).join(', ')}.` });
+    }
     if (x.closed.length) F.push({ t: x.start - 20, sev: 'info', txt: `${x.closed.map(mouldName).join(', ')} bakımda. <b>${x.id}</b> ${x.logs} kalıpla dökülecek.` });
     F.push({ t: x.start, sev: 'info', txt: `<b>${x.id}</b> döküm başladı · ${x.alloy} · ${x.logs} kalıp.` });
     if (x.h2Out > .135) F.push({ t: x.start + 12, sev: 'warn', txt: `<b>${x.id}</b> H₂ ${fmt(x.h2Out, 3)} sınıra yakın. Degazör rotor devri artırıldı.` });

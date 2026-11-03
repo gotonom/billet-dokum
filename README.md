@@ -5,7 +5,7 @@ Alüminyum billet dökümhanesi için otomasyon panelleri ve süreç simülasyon
 | Sayfa | Kaynak | İçerik |
 |---|---|---|
 | `/` | `src/index.html` | Kontrol merkezi: canlı saha planı ve ünite inceleme paneli, metal yolculuğu, sıradaki işlemler, olay akışı, günlük döküm takvimi, son 10 dökümün kalitesi |
-| `/firin.html` | `src/firin.html` | E1, E2 ergitme fırınları ve B1 döküm fırını: kesit görünümü, sıcaklık eğrisi, şarj karışımı, OES kimya analizi, "döküme hazır" kapısı, doğalgaz tüketimi |
+| `/firin.html` | `src/firin.html` | E1, E2 ergitme fırınları ve B1 döküm fırını: kesit görünümü, sıcaklık eğrisi, şarj karışımı, OES kimya analizi ve düzeltme reçetesi (hangi malzemeden kaç kg), elle alaşım düzeltme hesabı, "döküme hazır" kapısı, doğalgaz tüketimi |
 | `/dokum.html` | `src/dokum.html` | D1 hot-top döküm masası: pit kesiti, 64 kalıbın üstten görünümü, hız ve su reçetesi, anlık ölçümler, manuel müdahale (operatör ve yönetici yetkisi), alarm senaryoları, PLC kilitleri, döküm kayıtları |
 | `/homojen.html` | `src/homojen.html` | H1–H5 homojenizasyon fırınları, soğutma odası, ultrasonik muayene, testere ve stok |
 
@@ -59,6 +59,8 @@ Hiçbir değer henüz bir tesisten gelmedi. Aşağıdakiler sektör kaynakların
 | Hot-top seviyesi | 75 ± 5 mm | Varsayım |
 | Kalıp havası ve yağ | Kalıp başına 1,6 Nl/dk hava ve 0,5 ml/dk yağ | Varsayım |
 | PLC kilitleri | Pit suyu ≥ 0,9 m; su yüzeyi kalıbın ≥ 3 m altında; su < %70 hedefse acil bitiş; bleed-out'ta kalıp tıkanır, 3 kalıpta acil bitiş; oluk metali 675 °C altındaysa başlatma kilidi; H₂ > 0,20 ise başlatma kilidi; operatör hızı en fazla %10 düşürebilir, artırma yönetici yetkisi; filtre ΔP ≤ 35 mm | Pit kuralları sektör uygulama kodlarından (~3 ft su, kalıbın ~10 ft altı); diğerleri varsayım |
+| Alaşım düzeltmesi | Hedef penceresi: hedef ± maks(0,015; aralığın %5'i). Pencerenin altındaki alaşım elementi hedefe çıkarılır. Miktarlar, eklemelerin birbirini seyreltmesi hesaba katılarak birlikte çözülür. Fe yalnızca minimumun altına düşerse eklenir. Maksimumu aşan element çıkarılamaz: primer ile seyreltme miktarı ve kimyaya uyan başka alaşım önerilir | Varsayım |
+| Katkı malzemeleri (verim) | Si metal %98,5 (%92) · saf Mg %99,8 (%90, en son, banyo altına) · Mn tablet %75 (%95) · AlCu50 (%98) · Fe tablet %75 (%95) | Varsayım, tesisin kendi verimleriyle güncellenecek |
 | Homojenizasyon | 5 parti fırını, 580 °C'de ≥ 6 sa bekletme, 12 sa çevrim | 6063 için 575–585 °C × 4–6 sa |
 | Soğutma | Fan ve su sisi, 580 → 250 °C arası ~400 °C/sa (hedef > 250) | > 200–300 °C/sa önerilir |
 | Testere | Baş 300 mm, kuyruk 200 mm kesim; ürün 6.500 mm; UT red oranı ~%18 dökümde 1 log | Varsayım |

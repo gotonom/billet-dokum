@@ -39,6 +39,37 @@
 .chem td.ok{color:var(--ok)} .chem td.bad{color:var(--crit);font-weight:700}
 .chem td.wait{color:var(--muted)}
 .energy{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.chem tr.fix td{background:color-mix(in srgb,var(--melt) 7%,transparent)}
+.chem td.dev{color:var(--warn);font-weight:700}
+.chem td.add{color:var(--melt-dk);font-weight:700}
+.rcp{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.rcp .rh{display:flex;justify-content:space-between;align-items:baseline;gap:6px 12px;flex-wrap:wrap}
+.rcp .rh b{font:800 19px var(--f-display);letter-spacing:.02em}
+.rcp .rh span{font:600 11.5px var(--f-mono);color:var(--muted)}
+.rcp .ra{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--line-2)}
+.rcp .ra .el{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font:800 15px var(--f-display);color:#fff;background:var(--melt)}
+.rcp .ra .el.Mg{background:var(--accent-2)} .rcp .ra .el.Mn{background:var(--a6060)} .rcp .ra .el.Cu{background:#b45309} .rcp .ra .el.Fe{background:var(--steel-3)}
+.rcp .ra b{font-weight:700;font-size:14.5px}
+.rcp .ra small{display:block;color:var(--ink-2);font-size:12.5px;line-height:1.3}
+.rcp .ra .kg{font:800 24px var(--f-display);white-space:nowrap;text-align:right}
+.rcp .ra .kg small{font:600 11px var(--f-mono);color:var(--muted);text-align:right}
+.rcp .tot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13.5px;color:var(--ink-2)}
+.rcp .tot b{color:var(--ink);font-family:var(--f-mono)}
+.rcp .msg{font-size:13.5px;line-height:1.4;padding:8px 10px;border-radius:8px;border-left:4px solid var(--ok);background:var(--panel)}
+.rcp .msg.crit{border-left-color:var(--crit)} .rcp .msg.info{border-left-color:var(--accent)}
+.rcp .msg.wait{border-left-color:var(--line);color:var(--muted)}
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px}
+.calc .inp{display:flex;flex-direction:column;gap:12px}
+.calc .row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.calc label{display:flex;flex-direction:column;gap:4px;font:600 11px var(--f-mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.calc label small{font:500 11px var(--f-mono);letter-spacing:0;text-transform:none;color:var(--muted)}
+.calc input,.calc select{font:600 16px var(--f-mono);color:var(--ink);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:42px;width:100%}
+.calc input:focus,.calc select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.calc .els{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.calc .els label.bad input{border-color:var(--crit);color:var(--crit)}
+.calc .els label.low input{border-color:var(--warn)}
+@media (max-width:1000px){.calc{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.calc .els{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:1100px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}.fcards{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:520px){.fcard{grid-template-columns:84px minmax(0,1fr)}.fcard svg{width:84px}.energy{grid-template-columns:minmax(0,1fr)}}
 </style>
@@ -90,13 +121,29 @@
   <div class="grid3">
     <section class="card" aria-label="Kimyasal analiz">
       <div class="ch"><h2>Kimya <small id="chemS">OES</small></h2><span class="aside" id="chemA">ağırlık %</span></div>
-      <div class="cb tscroll"><table class="tbl chem" id="chem"></table></div>
+      <div class="cb"><div class="tscroll"><table class="tbl chem" id="chem"></table></div><div id="rcp"></div></div>
     </section>
     <section class="card" aria-label="Döküme hazır kapısı">
       <div class="ch"><h2 id="gateT">Döküme hazır kapısı</h2><span class="aside">Hepsi ✓ olmadan transfer yok</span></div>
       <div class="cb"><ul class="gate" id="gate"></ul><div class="verdict no" id="verdict"></div></div>
     </section>
   </div>
+
+  <section class="card" aria-label="Alaşım düzeltme hesabı">
+    <div class="ch"><h2>Alaşım düzeltme hesabı <small>ELLE</small></h2><span class="aside">Ölçülen kimyayı girin, ne kadar ekleneceğini görün</span></div>
+    <div class="cb calc">
+      <div class="inp">
+        <div class="row">
+          <label style="flex:1 1 120px">Alaşım<select id="cAlloy"></select></label>
+          <label style="flex:1 1 120px">Fırındaki metal (t)<input id="cMass" type="number" inputmode="decimal" min="1" max="60" step="0.1" value="36"></label>
+          <button type="button" class="ibtn" id="cFill" style="flex:1 1 200px">Fırının son numunesini al</button>
+        </div>
+        <div class="els" id="cEls"></div>
+        <p class="note" style="font-size:13px;color:var(--ink-2);margin:0">Hedefin altındaki alaşım elementleri (Si, Mg, Mn…) hedefe çıkarılır. Eklenen malzemeler birbirini seyrelttiği için miktarlar birlikte çözülür. Verimler varsayımdır, fırının kendi verileriyle güncellenir.</p>
+      </div>
+      <div><div id="cOut"></div></div>
+    </div>
+  </section>
 
   <section class="card" aria-label="Enerji">
     <div class="ch"><h2>Doğalgaz <small>BUGÜN 00:00'DAN BERİ</small></h2><span class="aside">Nm³ · ton başına döküm metali</span></div>
@@ -190,6 +237,53 @@ function renderSteps(f, T) {
   $$('li', ol).forEach((li, i) => { const p = f.phases[i]; li.className = i < f.pi ? 'done' : i === f.pi ? 'now' : ''; li.querySelector('i').style.width = i === f.pi ? clamp((T - p.start) / (p.end - p.start), 0, 1) * 100 + '%' : ''; });
 }
 
+// correction recipe box, shared by the live chemistry card and the manual calculator
+function recipeHTML(r, alloy, badge) {
+  const spec = PLANT.ALLOYS[alloy].spec;
+  let h = `<div class="rcp"><div class="rh"><b>Düzeltme reçetesi</b><span>${fmt(r.M / 1000, 1)} t metal · ${badge || ''}</span></div>`;
+  for (const x of r.adds) h += `<div class="ra"><span class="el ${x.el}">${x.el}</span><div><b>${x.name}</b><small>${x.el} ${fmt(x.from, 3)} → ${fmt(x.to, 2)} · verim %${Math.round(x.y * 100)} · ${x.how}</small></div><span class="kg num">${fmt(x.kg, 1)} kg<small>${fmt(x.kg * x.y * x.f, 1)} kg ${x.el} banyoya</small></span></div>`;
+  if (r.adds.length) h += `<div class="tot"><span>Toplam <b>${fmt(r.total, 1)} kg</b> · sonra ${fmt((r.M + r.total) / 1000, 2)} t</span><span>Sıra: ${r.adds.map(x => x.el).join(' → ')} · 10 dk karıştır · numune 2</span></div>`;
+  else if (!r.high.length) h += `<div class="msg">Düzeltme gerekmez: alaşım elementleri hedefin ±${fmt(chemTol(...spec.Si), 2)} penceresinde.</div>`;
+  for (const x of r.high) {
+    const fits = Object.keys(PLANT.ALLOYS).filter(k => k !== alloy && Object.entries(PLANT.ALLOYS[k].spec).every(([e, [, hi]]) => (r.final[e] ?? 0) <= hi));
+    h += `<div class="msg crit"><b>${x.el} ${fmt(x.c, 3)} · maksimum ${fmt(x.hi, 2)} aşıldı.</b> Element metalden çıkarılamaz, tek yol primer alüminyumla seyreltmek: <b>${fmt(x.primer / 1000, 1)} t primer</b> gerekir${r.M + x.primer > 36000 ? ', bu fırında yer yok' : ''}.${fits.length ? ` Bu kimya <b>${fits.join(', ')}</b> spesifikasyonuna uyuyor; parti o alaşıma yönlendirilebilir.` : ''}</div>`;
+  }
+  if (r.over.length) h += `<div class="msg info">${r.over.join(', ')} hedefin üstünde ama spesifikasyon içinde. Düzeltme yapılmaz, sonraki şarjda ${r.over.length > 1 ? 'bunlar' : 'bu'} için daha az ilave planlanır.</div>`;
+  return h + '</div>';
+}
+
+// manual calculator: built once, recalculated on every input
+function buildCalc() {
+  const sel = $('#cAlloy');
+  sel.innerHTML = Object.keys(PLANT.ALLOYS).map(k => `<option>${k}</option>`).join('');
+  const draw = () => {
+    const spec = PLANT.ALLOYS[sel.value].spec;
+    $('#cEls').innerHTML = Object.entries(spec).map(([el, [lo, hi, tg]]) => `<label>${el}<input type="number" inputmode="decimal" step="0.001" min="0" data-el="${el}" value="${tg.toFixed(3)}"><small>${lo ? fmt(lo, 2) : '0'}–${fmt(hi, 2)} · hedef ${fmt(tg, 2)}</small></label>`).join('');
+    $$('#cEls input').forEach(i => i.addEventListener('input', calc));
+    calc();
+  };
+  const calc = () => {
+    const alloy = sel.value, spec = PLANT.ALLOYS[alloy].spec, chem = {};
+    $$('#cEls input').forEach(i => { chem[i.dataset.el] = parseFloat(String(i.value).replace(',', '.')); });
+    const M = clamp(parseFloat(String($('#cMass').value).replace(',', '.')) || 36, 1, 60) * 1000;
+    $$('#cEls label').forEach(l => { const el = l.querySelector('input').dataset.el, [lo, hi, tg] = spec[el], v = chem[el]; l.className = v > hi || v < lo ? 'bad' : lo > 0 && v < tg - chemTol(lo, hi) ? 'low' : ''; });
+    const r = correction(alloy, chem, M);
+    $('#cOut').innerHTML = recipeHTML(r, alloy, alloy) + `<div class="tscroll" style="margin-top:10px"><table class="tbl chem"><thead><tr><th>Element</th><th class="r">Ölçülen</th><th class="r">Hedef</th><th class="r">Eklemeden sonra</th></tr></thead><tbody>` +
+      Object.entries(spec).map(([el, [lo, hi, tg]]) => { const v = chem[el], fv = r.final[el], ok = x => x >= lo && x <= hi; return `<tr><td><b>${el}</b></td><td class="r mono ${isNaN(v) ? '' : ok(v) ? '' : 'bad'}">${fmt(v, 3)}</td><td class="r mono">${fmt(tg, 2)}</td><td class="r mono ${isNaN(fv) ? '' : ok(fv) ? 'ok' : 'bad'}">${fmt(fv, 3)}</td></tr>`; }).join('') + '</tbody></table></div>';
+  };
+  sel.addEventListener('change', draw);
+  $('#cMass').addEventListener('input', calc);
+  $('#cFill').addEventListener('click', () => {
+    const T = SIM.T(), f = unit(cur === 'b1' ? (castInfo(holder(T).n).n % 2 ? 'e2' : 'e1') : cur, T), c = f.cast;
+    sel.value = c.alloy; draw();
+    $('#cMass').value = fmt(f.mass, 1).replace(',', '.');
+    $$('#cEls input').forEach(i => i.value = c.chem1[i.dataset.el].toFixed(3));
+    calc();
+  });
+  draw();
+}
+window.onInit = () => buildCalc();
+
 let lastSlow = -1;
 window.onTick = (T, force) => {
   renderCards(T);
@@ -246,7 +340,7 @@ window.onTick = (T, force) => {
     const parts = [['Primer külçe', m.primer, 'var(--accent)'], ['İç hurda (baş, kuyruk, testere)', m.ic, 'var(--a6060)'], ['Dış hurda (6xxx profil)', m.dis, 'var(--accent-2)']];
     $('#mix').innerHTML = `<div class="stack">${parts.map(p => `<i style="width:${p[1]}%;background:${p[2]}">%${fmt(p[1])}</i>`).join('')}</div>
       <div class="mix">${parts.map(p => `<i style="background:${p[2]}"></i><span>${p[0]}</span><b>%${fmt(p[1])}</b><b>${fmt(t * p[1] / 100, 1)} t</b>`).join('')}
-      <i style="background:var(--melt)"></i><span>Alaşım ilavesi (Mg, Si)</span><b></b><b>${fmt(c.corr ? 60 + c.mgAdd : 60)} kg</b>
+      <i style="background:var(--melt)"></i><span>Alaşım düzeltmesi (${c.recipe.adds.map(x => x.el).join(', ') || 'yok'})</span><b></b><b>${fmt(c.recipe.total, 1)} kg</b>
       <i style="background:var(--steel)"></i><span>Cüruf (dross)</span><b>${fmt(c.dross, 1)} kg/t</b><b>${f.skimmed ? fmt(c.dross * 32 / 1000, 2) + ' t' : 'alınmadı'}</b></div>
       <p class="note" style="font-size:13px;color:var(--ink-2);margin:12px 0 0">Kirli ve yağlı hurda cürufu artırır: talaş üzerindeki her %1 kesme yağı yaklaşık %2 ek cüruf demektir.</p>`;
   } else {
@@ -262,15 +356,22 @@ window.onTick = (T, force) => {
       <p class="note" style="font-size:13px;color:var(--ink-2);margin:12px 0 0">Fırın içi arıtma inklüzyonları yüzdürür. Asıl hidrojen giderme döküm hattındaki SNIF degazöründe yapılır.</p>`;
   }
 
-  // chemistry (one sample per furnace cycle; B1 shows the approved result)
+  // chemistry: sample 1, the correction it calls for, sample 2 after the additions
   const spec = a.spec, s1 = isB ? T0 : f.sample1, s2 = isB ? T0 : f.sample2;
-  const got1 = isB || T >= s1 + 8, got2 = isB || (c.corr && T >= s2 + 8);
+  const got1 = isB || T >= s1 + 6, got2 = isB || (c.corr && T >= s2 + 6), two = c.corr && !isB;
   $('#chemS').textContent = `OES · ${c.alloy}`;
   $('#chemA').textContent = isB ? 'Onaylı analiz' : got1 ? `Numune 1 ${hhmm(s1)}${c.corr ? ` · Numune 2 ${hhmm(s2)}` : ''}` : `Numune ${hhmm(s1)}'de`;
   const cell = (v, lo, hi, ok) => ok ? `<td class="r mono ${v < lo || v > hi ? 'bad' : 'ok'}">${fmt(v, 3)}</td>` : '<td class="r mono wait">—</td>';
-  $('#chem').innerHTML = `<thead><tr><th>Element</th><th class="r">Min</th><th class="r">Maks</th><th class="r">Hedef</th><th class="r">Numune 1</th>${c.corr && !isB ? '<th class="r">Numune 2</th>' : ''}</tr></thead><tbody>` +
-    Object.entries(spec).map(([el, [lo, hi, tg]]) => `<tr><td><b>${el}</b></td><td class="r mono">${lo ? fmt(lo, 2) : '—'}</td><td class="r mono">${fmt(hi, 2)}</td><td class="r mono">${fmt(tg, 2)}</td>${cell(isB ? c.chem[el] : c.chem1[el], lo, hi, got1)}${c.corr && !isB ? cell(c.chem[el], lo, hi, got2) : ''}</tr>`).join('') +
-    `</tbody>` + (c.corr && !isB && got1 ? `<caption style="caption-side:bottom;text-align:left;padding-top:10px;font-size:13px;color:var(--ink-2)">Numune 1'de Mg alt sınırın altında: <b>${c.mgAdd} kg Mg</b> eklendi (${hhmm(f.corrAt)}), karıştırıldı, numune 2 alındı.</caption>` : '');
+  const v1 = isB ? c.chem : c.chem1;
+  setHTML($('#chem'), `<thead><tr><th>Element</th><th class="r">Min</th><th class="r">Maks</th><th class="r">Hedef</th><th class="r">${isB ? 'Analiz' : 'Numune 1'}</th>${isB ? '' : '<th class="r">Fark</th><th class="r">Ekle</th>'}${two ? '<th class="r">Numune 2</th>' : ''}</tr></thead><tbody>` +
+    Object.entries(spec).map(([el, [lo, hi, tg]]) => {
+      const ad = c.recipe.adds.find(x => x.el === el), d = v1[el] - tg, tol = chemTol(lo, hi);
+      return `<tr class="${ad && got1 && !isB ? 'fix' : ''}"><td><b>${el}</b></td><td class="r mono">${lo ? fmt(lo, 2) : '—'}</td><td class="r mono">${fmt(hi, 2)}</td><td class="r mono">${fmt(tg, 2)}</td>${cell(v1[el], lo, hi, got1)}` +
+        (isB ? '' : `<td class="r mono ${got1 && lo > 0 && Math.abs(d) > tol ? 'dev' : ''}">${got1 ? (d > 0 ? '+' : '') + fmt(d, 3) : '—'}</td><td class="r mono add">${got1 && ad ? fmt(ad.kg, 1) + ' kg' : got1 ? '—' : ''}</td>`) +
+        `${two ? cell(c.chem[el], lo, hi, got2) : ''}</tr>`;
+    }).join('') + '</tbody>');
+  setHTML($('#rcp'), isB ? `<div class="rcp"><div class="msg info">Onaylı analiz. Kimya düzeltmesi ergitme fırınında yapılır, döküm fırınında ilave yapılmaz.</div></div>`
+    : got1 ? recipeHTML(c.recipe, c.alloy, T >= f.corrAt ? `Eklendi ${hhmm(f.corrAt)}` : 'Önerilen') : `<div class="rcp"><div class="msg wait">Numune ${hhmm(s1)}'de alınacak, sonuç 6 dk sonra. Düzeltme reçetesi sonuçla birlikte hesaplanır.</div></div>`);
 
   // ready gate
   const G = (ok, txt, val) => `<li class="${ok ? 'ok' : 'no'}">${ok ? CHECK : WAIT}<span>${txt}</span><b>${val}</b></li>`;
