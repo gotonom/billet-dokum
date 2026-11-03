@@ -11,7 +11,7 @@ ROOT = Path(__file__).parent
 SRC = ROOT / "src"
 # Share links resolve against the Railway domain (GitHub Pages copies point there too).
 BASE = "https://billet-dokum-production.up.railway.app"
-OG_VERSION = 1          # bump when the cards change, so apps that cached the old image fetch the new one
+OG_VERSION = 2          # bump when the cards change, so apps that cached the old image fetch the new one
 # source fragment -> (published file, share title, meta description); share card is docs/og/<file stem>.png
 PAGES = {
     "index.html":   ("index.html",   "Billet Dökümhanesi · Kontrol Merkezi",

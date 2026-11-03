@@ -128,7 +128,7 @@
         </div>
         <p class="note">Operatör hızı en fazla <b>%10 düşürebilir</b> (merkez çatlağı riskinde ilk müdahale). Hızı artırmak ve reçeteyi değiştirmek <b>yönetici yetkisi</b> ister.</p>
         <div class="row"><span class="lbl">Seçili kalıp</span><button type="button" class="ibtn warnb" id="plugBtn">Kalıbı tıka</button><span class="note" id="plugNote"></span></div>
-        <div class="row"><span class="lbl">Acil</span><button type="button" class="ibtn danger" id="estop"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 2h8l6 6v8l-6 6H8l-6-6V8z"/></svg>ACİL BİTİŞ</button><span class="note">İki kez basın: metal kesilir, platform durur, su devam eder.</span></div>
+        <div class="row"><span class="lbl">Acil</span><button type="button" class="ibtn danger" id="estop"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 2h8l6 6v8l-6 6H8l-6-6V8z"/></svg><span id="estopTxt">ACİL BİTİŞ</span></button><span class="note">İki kez basın: metal kesilir, platform durur, su devam eder.</span></div>
       </div>
     </section>
   </div>
@@ -160,10 +160,10 @@
 const SV = 'http://www.w3.org/2000/svg';
 const MX = i => 900 + i * 58;                   // side-view mould x (one row of 8)
 const PXMM = 0.047;                             // px per mm of billet in the pit
-let sel = 36, role = 'op', ov = 0, lastCastN = null, estopArm = 0;
+let sel = 36, role = 'op', ov = 0, lastCastN = null, estopArm = 0, bleeds = 0;
 const scn = {};                                 // active scenarios: key → {at: ms, ...}
 const plugged = new Set(), alarms = [];         // per cast; alarms = {sev, txt, T, key, active}
-let trip = null;                                // {reason, L, T}
+let trip = null;                                // {reason, n, L, tons, T, at}: survives cast changes until a manager clears it
 
 function el(tag, attrs = {}, parent) { const e = document.createElementNS(SV, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
 function tagBox(p, id, x, y, w, label) {
@@ -223,7 +223,7 @@ function buildMimic() {
   el('rect', { x: 410, y: 102, width: 6, height: 24, rx: 2, fill: 'var(--steel-3)' }, rot);
   const bubs = el('g', { id: 'bubs' }, s);
   [[396, 0], [430, .4], [452, .8], [468, .2], [440, 1.1]].forEach(([x, d]) => el('circle', { class: 'bub', cx: x, cy: 124, r: 2.6, style: `animation-delay:${d}s` }, bubs));
-  el('text', { x: 431, y: 64, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: 'var(--ink-2)' }, s).textContent = 'SNIF';
+  el('text', { x: 431, y: 64, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, fill: 'var(--ink-2)' }, s).textContent = 'SNIF · 2 ROTOR';
 
   // grain refiner rod feeder
   el('circle', { id: 'coil', class: 'spin', cx: 560, cy: 62, r: 24, fill: 'none', stroke: 'var(--steel-3)', 'stroke-width': 7, 'stroke-dasharray': '10 5' }, s);
@@ -313,7 +313,7 @@ function buildMoulds() {
 /* ---------- scenarios ---------- */
 const SCN = [
   { key: 'bleed', c: 1, name: 'Bleed-out', desc: 'Seçili kalıpta kabuk yırtılır, metal kaçar' },
-  { key: 'water', c: 1, name: 'Su pompası arızası', desc: 'Debi düşer, %70 altında döküm kesilir' },
+  { key: 'water', c: 1, name: 'Su pompası arızası', desc: 'Debi düşer, %80 altında döküm kesilir' },
   { key: 'level', name: 'Metal seviyesi yüksek', desc: 'Hot-top seviyesi 85 mm üstüne çıkar' },
   { key: 'temp', name: 'Oluk metali soğuk', desc: 'Metal 680 °C altına iner' },
   { key: 'h2', name: 'Yüksek hidrojen', desc: 'Degazör çıkışında H₂ 0,15 üstü' },
@@ -325,11 +325,18 @@ function startScn(k, t) {
   if (scn[k] || !t.metal || trip) return;
   const now = Date.now();
   if (k === 'bleed') {
-    const i = t.cast.closed.includes(sel) || plugged.has(sel) ? 36 : sel;
-    scn.bleed = { at: now, i }; plugged.add(i);
+    // the selected mould if it is casting, otherwise the nearest one that is
+    const live = [...Array(PLANT.MOULDS).keys()].filter(j => !t.cast.closed.includes(j) && !plugged.has(j));
+    if (!live.length) return;
+    const i = live.includes(sel) ? sel : live.reduce((b, j) => Math.abs(j - sel) < Math.abs(b - sel) ? j : b);
+    plugged.add(i); bleeds++;
     addAlarm('crit', `<b>${mouldName(i)} bleed-out algılandı.</b> Kalıp otomatik tıkandı, soğutma suyu açık tutuldu.`, 'bleed');
-    setTimeout(() => { addAlarm('info', `Döküm ${t.logs - plugged.size} kalıpla devam ediyor. ${mouldName(i)} döküm sonrası bakıma alınacak.`, 'bleed'); resolve('bleed'); }, 5000);
-    if (plugged.size >= 3) doTrip('3 kalıpta bleed-out, döküm sonlandırıldı', t);
+    if (plugged.size >= 3) { doTrip(`${plugged.size} kalıp tıkalı (${bleeds} bleed-out). Döküm sonlandırıldı.`, t); return; }
+    const cast = t.n;
+    setTimeout(() => {   // only if the same cast is still running
+      if (lastCastN !== cast || trip || !plugged.has(i)) return;
+      addAlarm('info', `Döküm ${t.cast.logs - plugged.size} kalıpla devam ediyor. ${mouldName(i)} döküm sonrası bakıma alınacak.`, 'bleed'); resolve('bleed');
+    }, 5000);
   } else scn[k] = { at: now };
   if (k === 'water') addAlarm('warn', '<b>P2 soğutma suyu pompası devreden çıktı.</b> Yedek pompa devreye alınıyor, debi düşüyor.', 'water');
   if (k === 'level') addAlarm('warn', '<b>Hot-top metal seviyesi yükseliyor.</b> Seviye lazeri 85 mm üstü.', 'level');
@@ -343,20 +350,29 @@ function applyScn(t) {
   const now = Date.now(), r = { ...t };
   const f = (k, a, b) => clamp((now - scn[k].at) / 1000 - a, 0, b) / b;
   if (scn.water) {
-    const drop = f('water', 0, 7); r.water *= 1 - .38 * drop; r.w *= 1 - .38 * drop; r.wDrop = 1 - .38 * drop;
-    if (r.wDrop < .70 && !trip) doTrip(`Soğutma suyu %${Math.round(r.wDrop * 100)} — %70 sınırının altında. Metal kesildi, platform durdu.`, t);
+    const drop = f('water', 0, 7); r.wDrop = 1 - .30 * drop; r.water *= r.wDrop; r.w *= r.wDrop;
+    if (!trip && t.metal && (r.wDrop < PLANT.W_TRIP || r.w < PLANT.W_MIN)) doTrip(`Soğutma suyu %${Math.round(r.wDrop * 100)}: %${PLANT.W_TRIP * 100} sınırının altında. Metal kesildi, platform durdu, acil su tankı devrede.`, t);
   }
   if (scn.level) { const up = f('level', 0, 4), down = f('level', 7, 9); r.level += 14 * up * (1 - down); if (down >= 1) endScn('level', 'Seviye otomatik dam pimi kontrolüyle 75 mm\'ye döndü.'); else if (down > 0 && !scn.level.act) { scn.level.act = 1; addAlarm('info', 'Dam pimi otomatik kısıldı, seviye düşüyor.', 'level'); } }
   if (scn.temp) { const dn = f('temp', 0, 5), up = f('temp', 8, 16); r.launder -= 19 * dn * (1 - up); if (up >= 1) endScn('temp', 'Oluk metali 695 °C\'ye döndü.'); else if (up > 0 && !scn.temp.act) { scn.temp.act = 1; addAlarm('info', 'B1 brülörü %30 → %60, oluk ısıtıcıları açıldı.', 'temp'); } }
   if (scn.h2) { const up = f('h2', 0, 4), dn = f('h2', 7, 14); r.h2Out += (.17 - t.cast.h2Out) * up * (1 - dn); if (dn > 0) { r.rotor = 450; r.argon = 55; } if (dn >= 1) endScn('h2', 'H₂ çıkışı normale döndü (rotor 450 d/dk, argon 55 l/dk).'); else if (dn > 0 && !scn.h2.act) { scn.h2.act = 1; addAlarm('info', 'Degazör rotoru 380 → 450 d/dk, argon 42 → 55 l/dk.', 'h2'); } }
   if (scn.filter) { r.filterDp += 20 * f('filter', 0, 6); if (!scn.filter.act && r.filterDp > 35) { scn.filter.act = 1; addAlarm('info', 'Filtre döküm sonunda değiştirilecek. Seviye farkı izleniyor.', 'filter'); } }
   if (ov) { r.v *= 1 + ov / 100; r.vT *= 1 + ov / 100; }
-  if (trip) { r.v = 0; r.vT = 0; r.metal = false; r.L = trip.L; r.tons = trip.tons; r.level = 0; r.launder = null; r.h2Out = null; r.h2In = null; r.rotor = 120; r.argon = 0; r.rod = 0; r.filterDp = 0; r.air = 0; r.oil = 0; }
+  if (trip) {
+    // safe state: metal off, platform stopped, water on. A lock carried into a later cast keeps that cast from starting.
+    const same = trip.n === t.n;
+    Object.assign(r, { v: 0, vT: 0, metal: false, tilt: 0, unload: 0, level: 0, launder: null, h2Out: null, rotor: 120, argon: 0, rod: 0, filterDp: 0, air: 0, oil: 0, L: same ? trip.L : 0, tons: same ? trip.tons : 0 });
+    if (same) {
+      const since = (Date.now() - trip.at) / 1000;
+      r.wT = trip.wT; r.w = trip.wT * (scn.water ? .85 : 1); r.water = r.w * t.logs * 60 / 1000; r.wDrop = scn.water ? .85 : null;
+      if (scn.water) { r.tankOn = true; r.tank = Math.max(0, t.tank - since * .6); }
+    } else { r.w = 0; r.wT = 0; r.water = 0; r.wDrop = null; }
+  }
   return r;
 }
 function endScn(k, txt) { delete scn[k]; resolve(k, txt); }
 function doTrip(reason, t) {
-  trip = { reason, L: t.L, tons: t.tons, T: SIM.T() };
+  trip = { reason, n: t.n, L: t.L, tons: t.L / 1000 * PLANT.T_PER_M * (t.cast.logs - plugged.size), wT: t.wT || wTarget(PLANT.ALLOYS[t.cast.alloy].v, PLANT.ALLOYS[t.cast.alloy].v), T: SIM.T(), at: Date.now() };
   addAlarm('crit', `<b>ACİL BİTİŞ.</b> ${reason}`, 'trip');
   tick(true);
 }
@@ -367,7 +383,10 @@ function renderSteps(t) {
   if (ol.dataset.n != t.n) {
     ol.dataset.n = t.n;
     ol.innerHTML = t.phases.map((p, i) => `<li data-i="${i}"><button type="button" title="Bu etaba atla (demo)" data-t="${p.start}"><b>${p.key}</b><span>${hhmm(p.start)}–${hhmm(p.end)}</span><i></i></button></li>`).join('');
-    $$('button', ol).forEach(b => b.addEventListener('click', () => simJump(+b.dataset.t + .05)));
+    $$('button', ol).forEach(b => b.addEventListener('click', () => {
+      if (trip) { addAlarm('warn', 'Kilit varken etap atlanamaz. Önce yönetici kilidi kaldırmalı.', 'jump'); return; }
+      simJump(+b.dataset.t + .05);
+    }));
   }
   $$('li', ol).forEach((li, i) => {
     const p = t.phases[i];
@@ -387,20 +406,21 @@ function renderScn(t) {
   $$('button', box).forEach(b => {
     b.disabled = !t.metal || !!trip;
     b.title = trip ? 'Önce kilidi kaldırın' : t.metal ? '' : 'Döküm sırasında denenebilir';
-    b.setAttribute('aria-pressed', !!scn[b.dataset.k] || (b.dataset.k === 'bleed' && plugged.size > 0));
+    b.setAttribute('aria-pressed', !!scn[b.dataset.k] || (b.dataset.k === 'bleed' && bleeds > 0));
   });
 }
 function renderLog(T, cur) {
   const list = doneCasts(T, 8);
   const rows = [cur, ...list].filter((c, i, a) => a.findIndex(x => x.n === c.n) === i);
-  $('#log').innerHTML = `<thead><tr><th>Döküm</th><th>Alaşım</th><th>Başlangıç</th><th class="r">Süre</th><th class="r">Log</th><th class="r">Ton</th><th class="r">H₂</th><th class="r">Tane</th><th>Not</th></tr></thead><tbody>` +
+  $('#log').innerHTML = `<thead><tr><th>Döküm</th><th>Alaşım</th><th>Başlangıç</th><th class="r">Süre</th><th class="r">Log</th><th class="r">Ton</th><th class="r">H₂</th><th class="r">Tane</th><th class="r">LiMCA</th><th>Not</th></tr></thead><tbody>` +
     rows.map(c => {
       const live = c.end > T;
       const notes = [];
       if (c.closed.length) notes.push(c.closed.map(mouldName).join(', ') + ' bakımda');
       if (c.utRej) notes.push('UT: 1 log merkez çatlağı');
       if (c.h2Out > .135) notes.push('H₂ sınıra yakın');
-      return `<tr class="${live ? 'now' : ''}"><td class="mono">${c.id}</td><td><span class="alloy" style="background:${alloyColor(c.alloy)}">${c.alloy}</span></td><td class="mono">${hhmm(c.start)}</td><td class="r mono">${live ? (c.start > T ? 'planlı' : 'döküyor') : dur(c.prof.tTaper)}</td><td class="r mono">${c.logs}</td><td class="r mono">${fmt(c.gross, 1)}</td><td class="r mono">${live ? '—' : fmt(c.h2Out, 3)}</td><td class="r mono">${live ? '—' : fmt(c.grain)}</td><td>${notes.join(' · ') || '<span style="color:var(--muted)">—</span>'}</td></tr>`;
+      if (c.drainB) notes.push(`alaşım değişimi: B1 dibi boşaltıldı (${c.heelAlloyB} → ${c.alloy})`);
+      return `<tr class="${live ? 'now' : ''}"><td class="mono">${c.id}</td><td><span class="alloy" style="background:${alloyColor(c.alloy)}">${c.alloy}</span></td><td class="mono">${hhmm(c.start)}</td><td class="r mono">${live ? (c.start > T ? 'planlı' : 'döküyor') : dur(c.prof.tTaper)}</td><td class="r mono">${c.logs}</td><td class="r mono">${fmt(c.gross, 1)}</td><td class="r mono">${live ? '—' : fmt(c.h2Out, 3)}</td><td class="r mono">${live ? '—' : fmt(c.grain)}</td><td class="r mono">${live ? '—' : fmt(c.limca, 1)}</td><td>${notes.join(' · ') || '<span style="color:var(--muted)">—</span>'}</td></tr>`;
     }).join('') + '</tbody>';
 }
 
@@ -409,30 +429,34 @@ let lastLog = -1;
 window.onTick = (T, force) => {
   const base = table(T);
   if (base.n !== lastCastN) {          // new cast: clear per-cast state
-    if (lastCastN != null) { plugged.clear(); for (const k in scn) delete scn[k]; trip = null; ov = 0; syncOv(); alarms.forEach(a => a.active = false); addAlarm('info', `<b>${base.cast.id}</b> hazırlığı başladı · ${base.cast.alloy} · ${base.cast.logs} kalıp.`, 'cast', T); }
+    if (lastCastN != null) {
+      plugged.clear(); bleeds = 0; for (const k in scn) if (!(trip && k === 'water')) delete scn[k]; ov = 0; syncOv();
+      if (!trip) alarms.forEach(a => a.active = false);
+      addAlarm(trip ? 'crit' : 'info', trip ? `<b>${base.cast.id}</b> başlatılamaz: önceki dökümün kilidi kaldırılmadı.` : `<b>${base.cast.id}</b> hazırlığı başladı · ${base.cast.alloy} · ${base.cast.logs} kalıp.`, 'cast', T);
+    }
     lastCastN = base.n;
   }
-  if (!base.metal && (scn.level || scn.temp || scn.h2 || scn.water)) { for (const k of ['level', 'temp', 'h2', 'water']) if (scn[k]) endScn(k); }
+  if (!base.metal && !trip) for (const k of ['level', 'temp', 'h2', 'water', 'filter']) if (scn[k]) endScn(k, k === 'filter' ? 'Döküm bitti, filtre masa servisinde değiştirilecek.' : null);
   const t = applyScn(base), c = t.cast, p = c.prof, a = PLANT.ALLOYS[c.alloy];
   const logsNow = c.logs - plugged.size;
   const tons = trip ? trip.tons : t.L / 1000 * PLANT.T_PER_M * logsNow;
 
   // trip banner
   $('#trip').classList.toggle('on', !!trip);
-  if (trip) { $('#tripTxt').textContent = 'ACİL BİTİŞ · ' + trip.reason; const rb = $('#tripReset'); rb.disabled = role !== 'mgr'; rb.title = role === 'mgr' ? '' : 'Yönetici yetkisi gerekli'; rb.textContent = role === 'mgr' ? 'Kilidi kaldır' : 'Kilit · yönetici gerekli'; }
+  if (trip) { $('#tripTxt').textContent = (trip.n === base.n ? 'ACİL BİTİŞ · ' : `KİLİTLİ · ${castInfo(trip.n).id}: `) + trip.reason; const rb = $('#tripReset'); rb.disabled = role !== 'mgr'; rb.title = role === 'mgr' ? '' : 'Yönetici yetkisi gerekli'; rb.textContent = role === 'mgr' ? 'Kilidi kaldır' : 'Kilit · yönetici gerekli'; }
 
   // KPIs
   $('#kId').textContent = c.id;
   $('#kAlloy').innerHTML = `<span class="alloy" style="background:${alloyColor(c.alloy)}">${c.alloy}</span> · ${logsNow} / 64 kalıp · Ø178 × 7.000`;
-  const ph = trip ? 'ACİL BİTİŞ' : t.phase, cur = t.phases[t.pi];
+  const ph = trip ? (trip.n === t.n ? 'ACİL BİTİŞ' : 'KİLİTLİ') : t.phase, cur = t.phases[t.pi];
   $('#kPhase').textContent = ph; $('#kPhase').style.color = trip ? 'var(--crit)' : t.metal ? 'var(--melt-dk)' : '';
   const castEnd = t.phases[4].end;
-  $('#kPhaseS').textContent = trip ? 'Kilit kaldırılana kadar' : t.pi <= 1 ? `Döküm başlangıcı ${hhmm(t.phases[2].start)} · ${dur(t.phases[2].start - T)} sonra` : t.pi <= 4 ? `Bitiş ${hhmm(castEnd)} · kalan ${dur(castEnd - T)}` : `Masa ${hhmm(cur.end)}'de hazırlığa döner`;
+  $('#kPhaseS').textContent = trip ? (trip.n === t.n ? 'Metal kesik, su açık · yönetici onayı bekleniyor' : 'Döküm başlatılamaz · yönetici onayı bekleniyor') : t.pi <= 1 ? `Döküm başlangıcı ${hhmm(t.phases[2].start)} · ${dur(t.phases[2].start - T)} sonra` : t.pi <= 4 ? `Bitiş ${hhmm(castEnd)} · kalan ${dur(castEnd - T)}` : `Masa ${hhmm(cur.end)}'de hazırlığa döner`;
   $('#kV').textContent = fmt(t.v, 1);
   $('#kVs').textContent = t.vT ? `hedef ${fmt(t.vT, 0)} · reçete ${p.vs} mm/dk${ov ? ` · düzeltme %${ov > 0 ? '+' : ''}${ov}` : ''}` : `kararlı etap hedefi ${p.vs} mm/dk`;
   $('#kL').textContent = fmt(t.L); $('#kLbar').style.width = (t.L / PLANT.LEN * 100) + '%';
   $('#kT').textContent = fmt(tons, 1); $('#kTs').textContent = `hedef ${fmt(c.logs * PLANT.LOG_T, 1)} t · ${logsNow} log × ${fmt(PLANT.LOG_T * 1000)} kg`;
-  $('#kW').textContent = fmt(t.water); $('#kWs').textContent = t.w ? `${fmt(t.w, 0)} l/dk·kalıp · giriş ${fmt(t.waterIn, 1)} °C` : 'Su kapalı';
+  $('#kW').textContent = fmt(t.water); $('#kWs').textContent = t.tankOn ? `acil tanktan · tank %${fmt(t.tank)}` : t.w ? `${fmt(t.w, 0)} l/dk·kalıp · giriş ${fmt(t.waterIn, 1)} °C` : 'Su kapalı';
   $('#kW').parentElement.parentElement.classList.toggle('warn', !!scn.water);
 
   // mimic
@@ -446,11 +470,13 @@ window.onTick = (T, force) => {
   $('#rotor').style.animationPlayState = t.rotor ? 'running' : 'paused';
   $('#bubs').style.display = metal ? '' : 'none';
   $('#coil').style.animationPlayState = metal ? 'running' : 'paused';
-  const tilt = t.pi === 5 ? 58 * smooth((t.c - t.phases[5].start + t.n * PLANT.CYCLE) / 6) : 0;
-  $('#tbl').setAttribute('transform', `rotate(${-tilt} 1340 182)`);
-  const hB = 14 + t.L * PXMM, lift = t.pi === 5 ? -40 * smooth((t.unload) * 3) : 0;
+  // the mould table swings up and away from the pit (hinge on the far side) before the crane lifts the logs
+  const tilt = 20 * t.tilt;
+  $('#tbl').setAttribute('transform', `rotate(${tilt} 1340 182)`);
+  ['tLa', 'tV', 'tL', 'tW'].forEach(id => $('#' + id).style.opacity = t.tilt > .05 ? 0 : '');   // the raised table takes their place
+  const hB = 14 + t.L * PXMM, lift = -40 * smooth(t.unload * 3);
   const bil = $('#bil'); bil.setAttribute('transform', `translate(0 ${lift})`);
-  bil.style.opacity = t.pi === 5 ? 1 - smooth(t.unload) : 1;
+  bil.style.opacity = 1 - smooth(t.unload);
   const plugSide = new Set([...plugged, ...c.closed].filter(i => i < 8));
   $$('.bil', bil).forEach((r, i) => { r.setAttribute('height', plugSide.has(i) && t.L > 0 ? Math.min(hB, 40) : hB); r.style.opacity = c.closed.includes(i) ? 0 : 1; });
   $$('.film', bil).forEach((r, i) => { r.setAttribute('height', Math.max(0, hB - 16)); r.style.opacity = t.w > 0 && !c.closed.includes(i) ? .5 : 0; });
@@ -468,13 +494,13 @@ window.onTick = (T, force) => {
   setTag('tV', `${fmt(t.v, 0)} mm/dk`);
   setTag('tL', `${fmt(t.L)} mm`);
   setTag('tW', `${fmt(t.water)} m³/h`, scn.water ? (trip ? 'crit' : 'warn') : '');
-  const msgs = { 'HAZIRLIK': 'Masa servisi: grafit halkalar yağlanıyor, filtre değişiyor, başlangıç kafaları kalıplarda.', 'HAZIR': `Masa hazır. ${c.id} için döküm fırını arıtmada, metal ${hhmm(t.phases[2].start)}'de geliyor.`, 'BAŞLANGIÇ': 'Kalıplar doluyor, platform yavaş iniyor, hız ve su rampada.', 'DÖKÜM': 'Kararlı döküm: hız ve su reçetede sabit.', 'BİTİŞ': 'Metal kesildi, hız ve su kademeli azalıyor.', 'BOŞALTMA': `Masa yatırıldı. Loglar vinçle alınıyor: ${Math.floor(t.unload * logsNow)} / ${logsNow}.` };
+  const msgs = { 'HAZIRLIK': 'Masa servisi: grafit halkalar yağlanıyor, filtre değişiyor, başlangıç kafaları kalıplarda.', 'HAZIR': `Masa hazır. ${c.id} için döküm fırını arıtmada, metal ${hhmm(t.phases[2].start)}'de geliyor.`, 'BAŞLANGIÇ': 'Kalıplar doluyor, platform yavaş iniyor, hız ve su rampada.', 'DÖKÜM': 'Kararlı döküm: hız ve su reçetede sabit.', 'BİTİŞ': 'Metal kesildi, platform durdu. Su 6 dk tam açık, billet başı donuyor; sonra su azalıyor.', 'BOŞALTMA': `Masa yatırıldı. Loglar vinçle alınıyor: ${Math.floor(t.unload * logsNow)} / ${logsNow}.` };
   $('#sbPh').textContent = ph; $('#sbPh').setAttribute('fill', trip ? 'var(--crit)' : metal ? 'var(--melt-dk)' : 'var(--ink)');
-  $('#sbMsg').textContent = trip ? trip.reason : msgs[t.phase];
+  $('#sbMsg').textContent = trip ? (trip.n === t.n ? trip.reason : 'Önceki dökümün acil bitiş kilidi kaldırılmadı. Masa başlatılamaz.') : msgs[t.phase];
   $('#sbBar').setAttribute('width', 720 * t.L / PLANT.LEN);
   $('#sbL').textContent = `${fmt(t.L)} / 7.000 mm`;
   $('#sbR').textContent = `${fmt(tons, 1)} t · ${logsNow} log`;
-  $('#sbX').textContent = `Döküm fırını eğimi ${fmt(b1.tilt, 1)}° · B1 ${b1.phase.toLowerCase()} · ${fmt(b1.mass, 1)} t`;
+  $('#sbX').textContent = b1.drain ? `B1 dibi sow kalıplarına boşaltılıyor: sonraki döküm ${b1.nextAlloy}, alaşım değişimi · ${fmt(b1.mass, 1)} t` : `Döküm fırını eğimi ${fmt(b1.tilt, 1)}° · B1 ${b1.phase.toLowerCase()} · ${fmt(b1.mass, 1)} t`;
   $('#sbX2').textContent = `Platform hidroliği ${fmt(t.hyd, 1)} bar · kalıp havası ${fmt(t.air, 2)} Nl/dk · yağ ${fmt(t.oil, 2)} ml/dk`;
   $('#mimicNote').textContent = metal ? 'Metal akıyor' : t.phase === 'BOŞALTMA' ? 'Masa yatık' : 'Metal yok';
 
@@ -513,12 +539,14 @@ window.onTick = (T, force) => {
   $('#meas').innerHTML = [
     M('Oluk metali', t.launder != null ? fmt(t.launder) : '—', '°C', `hedef ${a.temp} ±8`, t.launder == null ? 'idle' : t.launder < 680 ? 'warn' : ''),
     M('Hot-top seviyesi', t.level ? fmt(t.level, 1) : '—', 'mm', 'hedef 75 ±5', !t.level ? 'idle' : t.level > 85 ? 'warn' : ''),
-    M('H₂ çıkış', t.h2Out != null ? fmt(t.h2Out, 3) : '—', 'ml/100g', `giriş ${t.h2In != null ? fmt(t.h2In, 2) : '—'} · sınır 0,15`, t.h2Out == null ? 'idle' : t.h2Out > .15 ? 'warn' : ''),
+    M('H₂ çıkış', t.h2Out != null ? fmt(t.h2Out, 3) : '—', 'ml/100g', `B1 ${fmt(b1.h2, 2)} · alarm 0,15`, t.h2Out == null ? 'idle' : t.h2Out > .15 ? 'warn' : ''),
     M('Degazör rotoru', fmt(t.rotor), 'd/dk', `argon ${fmt(t.argon)} l/dk`, t.rotor ? '' : 'idle'),
     M('Tane inceltici', t.rod ? fmt(t.rod, 2) : '—', 'kg/t', 'AlTi5B1 çubuk', t.rod ? '' : 'idle'),
     M('Filtre ΔP', t.filterDp ? fmt(t.filterDp) : '—', 'mm', 'CFF 40 ppi · sınır 35', !t.filterDp ? 'idle' : t.filterDp > 35 ? 'warn' : ''),
-    M('Su giriş', fmt(t.waterIn, 1), '°C', `çıkış ${t.waterOut ? fmt(t.waterOut, 1) + ' °C' : '—'}`),
-    M('Su debisi', t.wT ? fmt(t.w / t.wT * 100 * (t.wDrop ? 1 : 1)) : '—', '%', 'hedefe oran · kilit %70', !t.wT ? 'idle' : t.wDrop && t.wDrop < .85 ? (t.wDrop < .7 ? 'crit' : 'warn') : ''),
+    M('Su giriş', fmt(t.waterIn, 1), '°C', `dönüş ${t.waterOut ? fmt(t.waterOut, 1) + ' °C' : '—'}`),
+    M('Su debisi', t.wT ? fmt(t.w / t.wT * 100) : '—', '%', `hedefe oran · alarm %${PLANT.W_ALARM * 100} · kesme %${PLANT.W_TRIP * 100}`, !t.wT ? 'idle' : t.w / t.wT < PLANT.W_TRIP ? 'crit' : t.w / t.wT < PLANT.W_ALARM ? 'warn' : ''),
+    M('Acil su tankı', fmt(t.tank), '%', t.tankOn ? 'devrede · yerçekimiyle' : 'yerçekimli yedek · en az %80', t.tank < 80 ? 'crit' : t.tankOn ? 'warn' : ''),
+    M('Su kalitesi', fmt(t.ph, 1), 'pH', `${fmt(t.cond)} µS/cm · pit ${fmt(t.pitTemp, 1)} °C`),
     M('Pit suyu', fmt(t.pit, 2), 'm', 'en az 0,90 m'),
     M('Platform hidroliği', fmt(t.hyd, 1), 'bar', 'sistem sınırı 41 bar'),
   ].join('');
@@ -530,7 +558,7 @@ window.onTick = (T, force) => {
   $('#recipeName').textContent = `${c.alloy} · Ø178 · kararlı ${p.vs} mm/dk`;
   $('#recipe').innerHTML = lineChart({
     w: 640, h: 240, x: [0, 7000], y: [0, 140], y2: [0, 130], label: 'Hız ve su reçetesi',
-    zones: [{ x0: 0, x1: 450, label: 'BAŞLANGIÇ' }, { x0: 6850, x1: 7000, label: '' }],
+    zones: [{ x0: 0, x1: 250, label: 'BAŞL.' }, { x0: 6850, x1: 7000, label: '' }],
     yTicks: [0, 40, 80, 120], y2Ticks: [0, 40, 80, 120], xTicks: [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000].map(x => ({ x, l: x / 1000 + ' m' })),
     series: [{ pts, color: 'var(--melt)', dash: '5 5' }, { pts: wts, color: 'var(--water)', dash: '5 5', ax: 2 }, { pts: act, color: 'var(--melt)', width: 3 }, { pts: wact, color: 'var(--water)', width: 3, ax: 2 }],
     marker: t.L > 0 ? t.L : null,
@@ -542,10 +570,12 @@ window.onTick = (T, force) => {
   $('#rules').innerHTML = [
     R(t.pit >= .9 ? '' : 'crit', 'Pit suyu ≥ 0,90 m', 'Altında döküm başlatılamaz (patlama riski)', fmt(t.pit, 2) + ' m'),
     R('', 'Su yüzeyi kalıbın ≥ 3 m altında', 'Kalıp ile pit suyu arasındaki mesafe', fmt(9 - t.pit, 1) + ' m'),
-    R(wr == null ? 'idle' : wr < .7 ? 'crit' : wr < .85 ? 'warn' : '', 'Su debisi ≥ %70 hedef', 'Altına düşerse metal kesilir, platform durur', wr == null ? '—' : '%' + fmt(wr * 100)),
+    R(wr == null ? 'idle' : wr < PLANT.W_TRIP ? 'crit' : wr < PLANT.W_ALARM ? 'warn' : '', `Su debisi ≥ %${PLANT.W_TRIP * 100} hedef ve ≥ ${PLANT.W_MIN} l/dk·kalıp`, `%${PLANT.W_ALARM * 100}'da alarm. Altında metal kesilir, platform durur, su sürer`, wr == null ? '—' : '%' + fmt(wr * 100)),
+    R(t.tank < 80 ? 'crit' : t.tankOn ? 'warn' : '', 'Acil su tankı ≥ %80', 'Pompa ve elektrik kesintisinde suyu yerçekimiyle sürdürür', '%' + fmt(t.tank)),
     R(plugged.size >= 3 ? 'crit' : plugged.size ? 'warn' : '', 'Bleed-out: kalıp otomatik tıkanır', 'Aynı dökümde 3 kalıpta acil bitiş', `${plugged.size} kalıp`),
     R(t.launder == null ? 'idle' : t.launder < 675 ? 'crit' : t.launder < 680 ? 'warn' : '', 'Oluk metali 680–710 °C', '675 °C altında döküm başlatılamaz', t.launder == null ? '—' : fmt(t.launder) + ' °C'),
-    R(t.h2Out == null ? 'idle' : t.h2Out > .2 ? 'crit' : t.h2Out > .15 ? 'warn' : '', 'H₂ ≤ 0,15 ml/100 g', '0,20 üstünde döküm başlatılamaz', t.h2Out == null ? '—' : fmt(t.h2Out, 3)),
+    R(b1.h2 > PLANT.H2_START ? 'crit' : '', `B1 fırın H₂ ≤ ${fmt(PLANT.H2_START, 2)} ml/100 g`, 'Alspek ölçümü. Üstünde döküm başlatılamaz', fmt(b1.h2, 2)),
+    R(t.h2Out == null ? 'idle' : t.h2Out > .15 ? 'warn' : '', 'Degazör çıkışı H₂ ≤ 0,15', 'Döküm sırasında alarm: rotor ve argon artırılır', t.h2Out == null ? '—' : fmt(t.h2Out, 3)),
     R(ov > 0 ? 'warn' : '', 'Hız reçeteden en fazla −%10', 'Artırma ve reçete değişikliği yönetici yetkisi', ov ? `%${ov > 0 ? '+' : ''}${ov}` : 'reçete'),
     R(t.filterDp > 35 ? 'warn' : !t.filterDp ? 'idle' : '', 'Filtre ΔP ≤ 35 mm', 'Üstünde döküm sonunda değişim', t.filterDp ? fmt(t.filterDp) + ' mm' : '—'),
   ].join('');
@@ -570,15 +600,17 @@ window.onInit = T => {
   $$('[data-role]').forEach(b => b.addEventListener('click', () => { role = b.dataset.role; $$('[data-role]').forEach(x => x.setAttribute('aria-pressed', x === b)); if (role === 'op' && ov > 0) { ov = 0; } syncOv(); tick(true); }));
   $$('[data-ov]').forEach(b => b.addEventListener('click', () => { const v = +b.dataset.ov; if (v > 0 && role !== 'mgr') return; ov = v; syncOv(); addAlarm(v > 0 ? 'warn' : 'info', v ? `Hız düzeltmesi <b>%${v > 0 ? '+' : ''}${v}</b> (${role === 'mgr' ? 'yönetici' : 'operatör'}).` : 'Hız reçeteye döndü.', 'ov'); tick(true); }));
   syncOv();
-  $('#plugBtn').addEventListener('click', () => { const tt = table(SIM.T()); if (!tt.metal || plugged.has(sel)) return; plugged.add(sel); addAlarm('warn', `<b>${mouldName(sel)}</b> operatör tarafından tıkandı.`, 'plug'); if (plugged.size >= 3) doTrip('3 kalıp tıkalı, döküm sonlandırıldı', tt); tick(true); });
+  $('#plugBtn').addEventListener('click', () => { const tt = applyScn(table(SIM.T())); if (!tt.metal || trip || plugged.has(sel) || tt.cast.closed.includes(sel)) return; plugged.add(sel); addAlarm('warn', `<b>${mouldName(sel)}</b> operatör tarafından tıkandı.`, 'plug'); if (plugged.size >= 3) doTrip('3 kalıp tıkalı, döküm sonlandırıldı', tt); tick(true); });
   $('#estop').addEventListener('click', () => {
-    const b = $('#estop'), tt = table(SIM.T());
+    const b = $('#estopTxt'), tt = applyScn(table(SIM.T()));
     if (trip || !tt.metal) return;
-    if (Date.now() - estopArm < 3000) { estopArm = 0; b.textContent = 'ACİL BİTİŞ'; doTrip('Operatör acil bitiş butonuna bastı.', tt); }
+    if (Date.now() - estopArm < 3000) { estopArm = 0; b.textContent = 'ACİL BİTİŞ'; doTrip('Operatör acil bitiş butonuna bastı. Metal kesildi, platform durdu, su açık.', tt); }
     else { estopArm = Date.now(); b.textContent = 'Onay için tekrar basın'; setTimeout(() => { if (estopArm) { estopArm = 0; b.textContent = 'ACİL BİTİŞ'; } }, 3000); }
   });
-  $('#tripReset').addEventListener('click', () => { if (role !== 'mgr') return; trip = null; for (const k in scn) delete scn[k]; plugged.clear(); alarms.forEach(a => a.active = false); addAlarm('ok', 'Kilit yönetici tarafından kaldırıldı. Demo döküm modeline döndü.', 'trip'); tick(true); });
-  $('#jumpCast').addEventListener('click', () => { const tt = table(SIM.T()); const target = tt.pi <= 3 && tt.pi >= 2 ? null : (tt.pi < 2 ? tt.phases[3].start : tt.phases[3].start + PLANT.CYCLE); if (target != null) simJump(target + 3); });
+  $('#tripReset').addEventListener('click', () => { if (role !== 'mgr') return; trip = null; for (const k in scn) delete scn[k]; plugged.clear(); bleeds = 0; alarms.forEach(a => a.active = false); addAlarm('ok', 'Kilit yönetici tarafından kaldırıldı. Demo döküm modeline döndü.', 'trip'); tick(true); });
+  $('#jumpCast').addEventListener('click', () => {
+    if (trip) { addAlarm('warn', 'Kilit varken döküme atlanamaz. Önce yönetici kilidi kaldırmalı.', 'jump'); return; }
+    const tt = table(SIM.T()); const target = tt.pi <= 3 && tt.pi >= 2 ? null : (tt.pi < 2 ? tt.phases[3].start : tt.phases[3].start + PLANT.CYCLE); if (target != null) simJump(target + 3); });
   renderFeed();
 };
 </script>

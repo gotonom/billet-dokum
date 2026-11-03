@@ -6,7 +6,7 @@
 /*@COMMON_CSS*/
 /* Layout: the finishing line as one strip (log buffer → five furnaces → cooling → UT → saw → stock),
    the selected furnace's soak curve below it, then cooling rate, saw/UT and stock side by side. */
-#line{display:block;width:100%;min-width:1000px;height:auto}
+#line{display:block;width:100%;min-width:1100px;height:auto}
 #line .fu{cursor:pointer}
 #line .fu:focus{outline:none}
 #line .fu:hover .shell,#line .fu:focus-visible .shell{stroke:var(--accent);stroke-width:3}
@@ -35,9 +35,9 @@
 
   <header class="head">
     <div class="title">
-      <div class="eyebrow"><span class="live"></span>H1–H5 PARTİ FIRINI · 580 °C × 6 sa · SOĞUTMA ODASI · UT · TESTERE</div>
+      <div class="eyebrow"><span class="live"></span>H1–H5 PARTİ FIRINI · ALAŞIMA ÖZEL REÇETE · SOĞUTMA · TAMPON · UT · TESTERE</div>
       <h1>HOMOJENİZASYON <span>VE TESTERE</span></h1>
-      <p class="sum">Her döküm tek parti olarak bir fırına girer: ısıtma, en az <b>6 saat 575–585 °C</b> bekletme, ardından soğutma odasında <b>saatte 250 °C'den hızlı</b> soğuma. Sonra ultrasonik muayene, baş ve kuyruk kesimi, paketleme.</p>
+      <p class="sum">Her döküm tek parti olarak bir fırına girer: ısıtma, en az <b>6 saat</b> alaşıma özel bekletme (6063/6060: 575–585 °C, 6082: 550–565 °C), ardından soğutma odasında <b>saatte 250 °C'den hızlı</b> soğuma. Loglar tamponda 60 °C'nin altına inince ultrasonik muayene, dip ve baş kesimi, paketleme.</p>
       <span class="credit">created by <b>GOTONOM</b></span>
     </div>
     <div class="hctl">
@@ -49,16 +49,16 @@
   </header>
 
   <section class="card" aria-label="Son işlem hattı">
-    <div class="ch"><h2>Son işlem hattı <small>TAMPON → H1–H5 → SOĞUTMA → UT → TESTERE → STOK</small></h2><span class="aside">Bir fırına dokunun</span></div>
+    <div class="ch"><h2>Son işlem hattı <small>TAMPON → H1–H5 → SOĞUTMA → SOĞUMA TAMPONU → UT → TESTERE → STOK</small></h2><span class="aside">Bir fırına dokunun</span></div>
     <div class="mimic-hint">Şemayı yana kaydırın</div>
-    <div class="mimic-scroll"><svg id="line" viewBox="0 0 1400 270" role="group" aria-label="Homojenizasyon fırınları, soğutma odası, ultrasonik muayene ve testere"></svg></div>
+    <div class="mimic-scroll"><svg id="line" viewBox="0 0 1560 270" role="group" aria-label="Homojenizasyon fırınları, soğutma odası, ultrasonik muayene ve testere"></svg></div>
   </section>
 
   <ol class="steps" id="steps" aria-label="Fırın etapları"></ol>
 
   <div class="grid2">
     <section class="card" aria-label="Fırın sıcaklık eğrisi">
-      <div class="ch"><h2 id="hT">—</h2><span class="aside"><span style="color:var(--accent-2)">━</span> fırın havası &nbsp; <span style="color:var(--melt)">━</span> metal (en soğuk termokupl) &nbsp; <span style="color:var(--ok)">▮</span> 575–585 °C</span></div>
+      <div class="ch"><h2 id="hT">—</h2><span class="aside"><span style="color:var(--accent-2)">━</span> fırın havası &nbsp; <span style="color:var(--melt)">━</span> metal (en soğuk termokupl) &nbsp; <span style="color:var(--ok)">▮</span> <span id="hBand">575–585 °C</span></span></div>
       <div class="cb" id="hChart"></div>
     </section>
     <section class="card" aria-label="Fırın ölçümleri">
@@ -128,20 +128,26 @@ function buildLine() {
   el('text', { x: cx + 65, y: 44, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 800, 'font-family': 'var(--f-display)', fill: 'var(--ink)' }, s).textContent = 'SOĞUTMA';
   el('text', { id: 'coolT', x: cx + 65, y: 147, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 800, 'font-family': 'var(--f-display)', fill: 'var(--ink)' }, s);
   el('text', { id: 'coolS', x: cx + 65, y: 200, 'text-anchor': 'middle', 'font-size': 11.5, 'font-family': 'var(--f-mono)', fill: 'var(--ink-2)' }, s);
+  // ambient buffer: logs wait until they are cool enough for water-coupled UT
+  const bx = 1140;
+  el('text', { x: bx + 48, y: 44, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 800, 'font-family': 'var(--f-display)', fill: 'var(--ink)' }, s).textContent = 'TAMPON';
+  const bg = el('g', { id: 'cbuf' }, s);
+  for (let i = 0; i < 8; i++) el('rect', { class: 'cb', x: bx, y: 86 + i * 14, width: 96, height: 11, rx: 5, fill: 'var(--billet-2)', stroke: 'var(--steel-3)', 'stroke-width': .8 }, bg);
+  el('text', { id: 'cbufT', x: bx + 48, y: 206, 'text-anchor': 'middle', 'font-size': 11.5, 'font-family': 'var(--f-mono)', fill: 'var(--ink-2)' }, s);
   // UT + saw
-  const ux = 1140;
+  const ux = 1272;
   el('rect', { x: ux, y: 128, width: 60, height: 70, rx: 6, fill: 'var(--steel-2)', stroke: 'var(--steel-3)', 'stroke-width': 2 }, s);
   el('path', { id: 'utw', d: `M${ux + 10} 160 q8 -12 16 0 t16 0 t16 0`, fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2.5, class: 'flow' }, s);
   el('text', { x: ux + 30, y: 116, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 800, 'font-family': 'var(--f-display)', fill: 'var(--ink)' }, s).textContent = 'UT';
-  const sx = 1240;
+  const sx = 1364;
   el('circle', { cx: sx + 30, cy: 150, r: 30, fill: 'var(--steel-2)', stroke: 'var(--steel-3)', 'stroke-width': 2 }, s);
   el('circle', { id: 'blade', class: 'spin', cx: sx + 30, cy: 150, r: 24, fill: 'none', stroke: 'var(--steel-3)', 'stroke-width': 4, 'stroke-dasharray': '4 3' }, s);
   el('text', { x: sx + 30, y: 108, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 800, 'font-family': 'var(--f-display)', fill: 'var(--ink)' }, s).textContent = 'TESTERE';
-  el('text', { id: 'sawT', x: sx - 30, y: 206, 'text-anchor': 'middle', 'font-size': 12, 'font-family': 'var(--f-mono)', fill: 'var(--ink-2)' }, s);
-  el('text', { x: 1348, y: 44, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 800, 'font-family': 'var(--f-display)', fill: 'var(--ink)' }, s).textContent = 'STOK';
+  el('text', { id: 'sawT', x: sx - 2, y: 206, 'text-anchor': 'middle', 'font-size': 12, 'font-family': 'var(--f-mono)', fill: 'var(--ink-2)' }, s);
+  el('text', { x: 1504, y: 44, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 800, 'font-family': 'var(--f-display)', fill: 'var(--ink)' }, s).textContent = 'STOK';
   const st = el('g', { id: 'stk' }, s);
-  for (let i = 0; i < 8; i++) el('rect', { x: 1322, y: 196 - i * 13, width: 52, height: 11, rx: 5, fill: 'var(--billet-2)', stroke: 'var(--steel-3)', 'stroke-width': .8 }, st);
-  [[176, 200], [940, 980], [1112, 1140], [1202, 1238], [1302, 1320]].forEach(([a, b]) => el('path', { d: `M${a} 150 H${b - 6} m-6 -5 l6 5 l-6 5`, stroke: 'var(--muted)', 'stroke-width': 2, fill: 'none' }, s));
+  for (let i = 0; i < 8; i++) el('rect', { x: 1478, y: 196 - i * 13, width: 52, height: 11, rx: 5, fill: 'var(--billet-2)', stroke: 'var(--steel-3)', 'stroke-width': .8 }, st);
+  [[176, 200], [940, 980], [1112, 1140], [1238, 1272], [1334, 1364], [1426, 1476]].forEach(([a, b]) => el('path', { d: `M${a} 150 H${b - 6} m-6 -5 l6 5 l-6 5`, stroke: 'var(--muted)', 'stroke-width': 2, fill: 'none' }, s));
 }
 function select(k) { cur = k; history.replaceState(null, '', '#h' + (k + 1)); tick(true); }
 
@@ -165,7 +171,9 @@ window.onTick = (T, force) => {
   const tb = table(T), waiting = tb.pi === 5 ? Math.floor(tb.unload * tb.logs) : 0;
   $('#buf').style.opacity = waiting ? 1 : .25;
   $('#bufT').textContent = waiting ? `${tb.cast.id} · ${waiting} log` : 'boş';
-  const co = cooler(T), sw = saw(T);
+  const co = cooler(T), sw = saw(T), bf = buffer(T);
+  $$('#cbuf .cb').forEach((r, i) => { r.style.opacity = i < bf.length * 4 ? 1 : .18; r.setAttribute('fill', i < bf.length * 4 ? heat(bf[Math.floor(i / 4)].temp) : 'var(--billet-2)'); });
+  $('#cbufT').textContent = bf.length ? bf.map(b => `${b.cast.id.slice(-5)} ${fmt(b.temp)}°`).join(' · ') : 'boş';
   $('#coolIn').setAttribute('fill', heat(co.active ? co.temp : null));
   $('#coolT').textContent = co.active ? fmt(co.temp) + ' °C' : 'boş';
   $('#coolS').textContent = co.active ? `${fmt(co.rate)} °C/sa` : `sonraki ${hhmm(co.next)}`;
@@ -183,16 +191,18 @@ window.onTick = (T, force) => {
     $$('button', ol).forEach(b => b.addEventListener('click', () => simJump(+b.dataset.t + .05)));
   }
   $$('li', ol).forEach((li, i) => { const p = h.phases[i]; li.className = i < h.pi ? 'done' : i === h.pi ? 'now' : ''; li.querySelector('i').style.width = i === h.pi ? clamp((T - p.start) / (p.end - p.start), 0, 1) * 100 + '%' : ''; });
-  $('#hT').innerHTML = `${h.name} <small>${h.cast ? h.cast.id + ' · ' + h.cast.alloy + ' · ' + fmt(h.cast.gross, 1) + ' t' : 'BOŞ · SONRAKİ YÜKLEME ' + hhmm(h.phases[0].start + PLANT.H_CYCLE)}</small>`;
+  const [rLo, rHi, rT] = h.recipe;
+  $('#hT').innerHTML = `${h.name} <small>${h.cast ? h.cast.id + ' · ' + h.cast.alloy + ' · ' + fmt(h.cast.gross, 1) + ' t · ' + rLo + '–' + rHi + ' °C' : 'BOŞ · SONRAKİ YÜKLEME ' + hhmm(h.phases[0].start + PLANT.H_CYCLE)}</small>`;
+  $('#hBand').textContent = `${rLo}–${rHi} °C (${h.alloy})`;
   const air = [], met = [];
-  for (let t = 0; t <= Math.min(h.L, 640); t += 4) { const [a, m] = homoCurve(t); air.push([t / 60, a + Math.sin(t / 7 + cur) * 1.2]); if (m != null) met.push([t / 60, m + Math.sin(t / 9 + cur) * .8]); }
+  for (let t = 0; t <= Math.min(h.L, 640); t += 4) { const [a, m] = homoCurve(t, h.alloy); air.push([t / 60, a + Math.sin(t / 7 + cur) * 1.2]); if (m != null) met.push([t / 60, m + Math.sin(t / 9 + cur) * .8]); }
   if (h.L <= 640) { air.push([h.L / 60, h.air]); if (h.metal != null) met.push([h.L / 60, h.metal]); }
-  const plan = []; for (let t = 0; t <= 640; t += 8) plan.push([t / 60, homoCurve(t)[1] ?? 579]);
+  const plan = []; for (let t = 0; t <= 640; t += 8) plan.push([t / 60, homoCurve(t, h.alloy)[1] ?? rT - 1]);
   $('#hChart').innerHTML = lineChart({
     w: 760, h: 250, x: [0, 12], y: [0, 650], label: 'Homojenizasyon sıcaklık eğrisi',
     zones: [{ x0: 20 / 60, x1: 260 / 60, label: 'ISITMA' }, { x0: 260 / 60, x1: 620 / 60, label: 'BEKLETME', fill: 'transparent' }, { x0: 620 / 60, x1: 12, label: '' }],
-    bands: [{ y0: 575, y1: 585, fill: 'var(--ok)', op: .3 }],
-    yTicks: [0, 200, 400, 580], xTicks: [0, 2, 4, 6, 8, 10, 12].map(x => ({ x, l: x + ' sa' })),
+    bands: [{ y0: rLo, y1: rHi, fill: 'var(--ok)', op: .3 }],
+    yTicks: [0, 200, 400, rT], xTicks: [0, 2, 4, 6, 8, 10, 12].map(x => ({ x, l: x + ' sa' })),
     series: [{ pts: plan, color: 'var(--muted)', dash: '3 5', width: 1.5 }, { pts: air, color: 'var(--accent-2)', width: 2.5 }, { pts: met, color: 'var(--melt)', width: 3 }],
     marker: h.L <= 640 ? h.L / 60 : null,
   });
@@ -200,24 +210,26 @@ window.onTick = (T, force) => {
   const soakOk = h.soak >= h.soakNeed;
   $('#hA').textContent = h.phase === 'BOŞ' ? 'Fırın sıcak bekletmede' : `${dur(h.L)} önce yüklendi`;
   $('#hMeas').innerHTML = [
-    M('Fırın havası', fmt(h.air), '°C', 'ayar 585 · ısıtmada 615'),
-    M('Metal', h.metal != null ? fmt(h.metal) : '—', '°C', 'en soğuk termokupl', h.metal == null ? 'idle' : h.pi === 2 && (h.metal < 575 || h.metal > 585) ? 'warn' : ''),
+    M('Fırın havası', fmt(h.air), '°C', `ayar ${rT + 5} · üst sınır ${h.airMax}`, h.air > h.airMax + 3 ? 'crit' : ''),
+    M('Metal', h.metal != null ? fmt(h.metal) : '—', '°C', `en soğuk termokupl · ${rLo}–${rHi}`, h.metal == null ? 'idle' : h.pi === 2 && (h.metal < rLo || h.metal > rHi) ? 'warn' : ''),
     M('Bekletme', fmt(h.soak / 60, 1), 'sa', soakOk ? 'en az 6 sa ✓' : `kalan ${dur(h.soakNeed - h.soak)}`, h.pi < 2 ? 'idle' : soakOk ? '' : ''),
     M('Brülör', fmt(h.burn), '%', `${fmt(h.gas)} Nm³/h doğalgaz`, h.burn ? '' : 'idle'),
     M('Sirkülasyon fanı', h.pi >= 1 && h.pi <= 2 ? '100' : h.pi === 4 ? '30' : '0', '%', 'yüksek hızlı konveksiyon'),
     M('Çıkış', hhmm(h.phases[3].start), '', 'soğutma odasına'),
+    M('β → α dönüşümü', h.cast && h.pi >= 3 ? fmt(h.cast.alpha) : '—', '%', 'parti numunesi · en az %90', !h.cast || h.pi < 3 ? 'idle' : h.cast.alpha < 90 ? 'warn' : ''),
   ].join('');
 
   // cooling chamber
   $('#cA').textContent = co.active ? co.cast.id : 'Boş';
   if (co.active) {
-    const pts = []; for (let t = 0; t <= co.t; t += 1) pts.push([t, 25 + 555 * Math.exp(-t / 55)]);
-    $('#cool').innerHTML = `<div class="rate"><b class="num" style="color:${co.rate > 250 ? 'var(--ok)' : 'var(--warn)'}">${fmt(co.rate)}</b><small>°C/sa anlık</small></div>
-      <div class="kv"><span>Metal</span><b>${fmt(co.temp)} °C</b><span>580 → 250 °C ortalaması</span><b style="color:var(--ok)">${fmt(co.avgRate)} °C/sa</b><span>Hedef</span><b>&gt; 250 °C/sa</b><span>Fanlar · su sisi</span><b>%${co.fans} · açık</b><span>Çıkış</span><b>${hhmm(T - co.t + PLANT.COOL_MIN)}</b></div>
-      ${lineChart({ w: 420, h: 150, x: [0, 60], y: [0, 600], yTicks: [0, 250, 580], xTicks: [0, 20, 40, 60].map(x => ({ x, l: x + ' dk' })), bands: [{ y0: 0, y1: 250, fill: 'var(--water)', op: .12 }], series: [{ pts, color: 'var(--melt)', width: 3 }], dots: [[co.t, co.temp]], m: { l: 36, b: 22 } })}
+    const pts = []; for (let t = 0; t <= co.t; t += 1) pts.push([t, co.curve(t)]);
+    const st = PLANT.ALLOYS[co.cast.alloy].soak[2];
+    $('#cool').innerHTML = `<div class="rate"><b class="num" style="color:${co.rate > 250 || co.temp <= 250 ? 'var(--ok)' : 'var(--warn)'}">${fmt(co.rate)}</b><small>°C/sa anlık${co.temp <= 250 ? ' · 250 °C altına indi' : ''}</small></div>
+      <div class="kv"><span>Metal</span><b>${fmt(co.temp)} °C</b><span>${st} → 250 °C ortalaması</span><b style="color:var(--ok)">${fmt(co.avgRate)} °C/sa</b><span>Hedef</span><b>&gt; 250 °C/sa</b><span>Fanlar · su sisi</span><b>%${co.fans} · açık</b><span>Tampona çıkış</span><b>${hhmm(T - co.t + PLANT.COOL_MIN)}</b></div>
+      ${lineChart({ w: 420, h: 150, x: [0, 60], y: [0, 600], yTicks: [0, 250, st], xTicks: [0, 20, 40, 60].map(x => ({ x, l: x + ' dk' })), bands: [{ y0: 0, y1: 250, fill: 'var(--water)', op: .12 }], series: [{ pts, color: 'var(--melt)', width: 3 }], dots: [[co.t, co.temp]], m: { l: 36, b: 22 } })}
       <p class="note">Hızlı soğuma Mg₂Si'yi ince tutar: yavaş soğuyan billet presde iri parçacık ve yüzey hatası verir.</p>`;
   } else {
-    $('#cool').innerHTML = `<div class="rate"><b class="num" style="color:var(--muted)">—</b><small>oda boş</small></div><div class="kv"><span>Son parti</span><b>${co.cast.id}</b><span>580 → 250 °C ortalaması</span><b>${fmt(330 / (55 * Math.log(555 / 225)) * 60)} °C/sa</b><span>Sonraki parti</span><b>${hhmm(co.next)}</b></div><p class="note">Hızlı soğuma Mg₂Si'yi ince tutar: yavaş soğuyan billet presde iri parçacık ve yüzey hatası verir.</p>`;
+    $('#cool').innerHTML = `<div class="rate"><b class="num" style="color:var(--muted)">—</b><small>oda boş</small></div><div class="kv"><span>Son parti</span><b>${co.cast.id}</b><span>${PLANT.ALLOYS[co.cast.alloy].soak[2]} → 250 °C ortalaması</span><b>${fmt(co.avgRate)} °C/sa</b><span>Sonraki parti</span><b>${hhmm(co.next)}</b></div><p class="note">Hızlı soğuma Mg₂Si'yi ince tutar: yavaş soğuyan billet presde iri parçacık ve yüzey hatası verir.</p>`;
   }
 
   // saw + UT
@@ -226,19 +238,18 @@ window.onTick = (T, force) => {
   const L = PLANT.LEN, W = 420, k = (W - 20) / L;
   const viz = `<svg id="logviz" viewBox="0 0 ${W} 74" aria-hidden="true">
     <rect x="10" y="20" width="${W - 20}" height="26" rx="13" fill="var(--billet-2)" stroke="var(--steel-3)"/>
-    <rect x="10" y="20" width="${PLANT.CROP_HEAD * k}" height="26" fill="var(--crit)" opacity=".35"/><rect x="${W - 10 - PLANT.CROP_TAIL * k}" y="20" width="${PLANT.CROP_TAIL * k}" height="26" fill="var(--crit)" opacity=".35"/>
-    <line x1="${10 + PLANT.CROP_HEAD * k}" x2="${10 + PLANT.CROP_HEAD * k}" y1="12" y2="54" stroke="var(--crit)" stroke-width="2" stroke-dasharray="3 3"/><line x1="${W - 10 - PLANT.CROP_TAIL * k}" x2="${W - 10 - PLANT.CROP_TAIL * k}" y1="12" y2="54" stroke="var(--crit)" stroke-width="2" stroke-dasharray="3 3"/>
-    <text x="10" y="68" font-size="11" font-family="var(--f-mono)" fill="var(--muted)">baş ${PLANT.CROP_HEAD}</text><text x="${W / 2}" y="68" text-anchor="middle" font-size="11" font-family="var(--f-mono)" fill="var(--ink-2)">ürün ${fmt(PLANT.NET_M * 1000)} mm</text><text x="${W - 10}" y="68" text-anchor="end" font-size="11" font-family="var(--f-mono)" fill="var(--muted)">kuyruk ${PLANT.CROP_TAIL}</text>
-    <text x="10" y="12" font-size="11" font-family="var(--f-mono)" fill="var(--muted)">döküm başı (başlangıç kafası tarafı)</text></svg>`;
+    <rect x="10" y="20" width="${PLANT.CROP_BUTT * k}" height="26" fill="var(--crit)" opacity=".35"/><rect x="${W - 10 - PLANT.CROP_HEAD * k}" y="20" width="${PLANT.CROP_HEAD * k}" height="26" fill="var(--crit)" opacity=".35"/>
+    <line x1="${10 + PLANT.CROP_BUTT * k}" x2="${10 + PLANT.CROP_BUTT * k}" y1="12" y2="54" stroke="var(--crit)" stroke-width="2" stroke-dasharray="3 3"/><line x1="${W - 10 - PLANT.CROP_HEAD * k}" x2="${W - 10 - PLANT.CROP_HEAD * k}" y1="12" y2="54" stroke="var(--crit)" stroke-width="2" stroke-dasharray="3 3"/>
+    <text x="10" y="68" font-size="11" font-family="var(--f-mono)" fill="var(--muted)">dip ${PLANT.CROP_BUTT}</text><text x="${W / 2}" y="68" text-anchor="middle" font-size="11" font-family="var(--f-mono)" fill="var(--ink-2)">ürün ${fmt(PLANT.NET_M * 1000)} mm</text><text x="${W - 10}" y="68" text-anchor="end" font-size="11" font-family="var(--f-mono)" fill="var(--muted)">baş ${PLANT.CROP_HEAD}</text>
+    <text x="10" y="12" font-size="11" font-family="var(--f-mono)" fill="var(--muted)">başlangıç ucu (dip)</text><text x="${W - 10}" y="12" text-anchor="end" font-size="11" font-family="var(--f-mono)" fill="var(--muted)">son dökülen uç (baş)</text></svg>`;
   const rejSeen = sw.active ? (sw.rejIdx >= 0 && sw.done > sw.rejIdx) : c.utRej;
+  const tr = logTrace(c, sw.active ? sw.cur - 1 : c.logs - 1);
   $('#saw').innerHTML = `<div class="rate"><b class="num">${sw.active ? sw.done : c.logs}</b><small>/ ${c.logs} log ${sw.active ? 'işlendi' : '· son parti tamam'}</small></div>${viz}
-    <div class="kv"><span>UT muayenesi</span><b style="color:${rejSeen ? 'var(--crit)' : 'var(--ok)'}">${rejSeen ? '1 red · merkez çatlağı' : 'temiz'}</b><span>Sevke hazır</span><b>${fmt((sw.active ? Math.max(0, sw.done - (rejSeen ? 1 : 0)) : c.logs - c.utRej) * PLANT.T_PER_M * PLANT.NET_M, 1)} t</b><span>İç hurda (kesim + red)</span><b>${fmt(((sw.active ? sw.done : c.logs)) * PLANT.T_PER_M * (PLANT.CROP_HEAD + PLANT.CROP_TAIL) / 1000 + (rejSeen ? PLANT.T_PER_M * PLANT.NET_M : 0), 2)} t</b><span>${sw.active ? 'Bitiş' : 'Sonraki parti'}</span><b>${hhmm(sw.active ? T - sw.t + PLANT.SAW_MIN : sw.next)}</b></div>
-    <p class="note">Baş ve kuyruk kesimi ile reddedilen loglar <b>iç hurda</b> olarak ergitme fırınına geri döner.</p>`;
+    <div class="kv"><span>${sw.active ? 'Kesimdeki log' : 'Son log'}</span><b>${tr.id}</b><span>Kalıp · homojenizasyon</span><b>${tr.mould} · ${tr.batch}</b><span>UT girişi sıcaklık</span><b style="color:${sw.logTemp <= 60 ? 'var(--ok)' : 'var(--warn)'}">${fmt(sw.logTemp)} °C (≤ 60)</b><span>UT muayenesi</span><b style="color:${rejSeen ? 'var(--crit)' : 'var(--ok)'}">${rejSeen ? '1 red · merkez çatlağı' : 'temiz'}</b><span>Sevke hazır</span><b>${fmt((sw.active ? Math.max(0, sw.done - (rejSeen ? 1 : 0)) : c.logs - c.utRej) * PLANT.T_PER_M * PLANT.NET_M, 1)} t</b><span>İç hurda (kesim + red)</span><b>${fmt(((sw.active ? sw.done : c.logs)) * PLANT.T_PER_M * (PLANT.CROP_BUTT + PLANT.CROP_HEAD) / 1000 + (rejSeen ? PLANT.T_PER_M * PLANT.NET_M : 0), 2)} t</b><span>${sw.active ? 'Bitiş' : 'Sonraki parti'}</span><b>${hhmm(sw.active ? T - sw.t + PLANT.SAW_MIN : sw.next)}</b></div>
+    <p class="note">Her log döküm numarası, kalıp ve homojenizasyon partisiyle etiketlenir. Dip ve baş kesimi ile reddedilen loglar <b>iç hurda</b> olarak ergitme fırınına döner.</p>`;
 
   // stock today
-  const day0 = Math.floor(T / 1440) * 1440, by = {}; let tot = 0, n = 0;
-  doneCasts(T, 14).forEach(x => { const fin = x.n * PLANT.CYCLE + PLANT.SAW_AT + PLANT.SAW_MIN; if (fin <= T && fin >= day0) { by[x.alloy] = (by[x.alloy] || 0) + x.net; tot += x.net; n++; } });
-  if (sw.active && sw.done) { const part = Math.max(0, sw.done - (rejSeen ? 1 : 0)) * PLANT.T_PER_M * PLANT.NET_M; by[c.alloy] = (by[c.alloy] || 0) + part; tot += part; }
+  const { total: tot, by, batches: n } = shippedToday(T);
   const max = Math.max(1, ...Object.values(by));
   $('#stA').textContent = `${n} parti tamam`;
   $('#stock').innerHTML = `<div class="rate"><b class="num">${fmt(tot, 1)}</b><small>t · Ø178 × ${fmt(PLANT.NET_M * 1000)} mm</small></div>

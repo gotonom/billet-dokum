@@ -43,7 +43,7 @@
 .cal .slot.now{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--melt)}
 .cal .now-line{position:absolute;top:0;bottom:0;width:2px;background:var(--crit)}
 .cal .hr{position:absolute;bottom:4px;font:500 10.5px var(--f-mono);color:var(--muted);transform:translateX(-50%)}
-.q{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.q{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .qbars{display:flex;align-items:flex-end;gap:5px;height:110px;border-bottom:1px solid var(--line);position:relative;margin-top:8px}
 .qbars i{flex:1;border-radius:4px 4px 0 0;min-width:0}
 .qbars .lim{position:absolute;left:0;right:0;border-top:2px dashed var(--crit)}
@@ -51,7 +51,7 @@
 .qx{display:flex;gap:5px;margin-top:4px}.qx span{flex:1;font:500 10px var(--f-mono);color:var(--muted);text-align:center;overflow:hidden}
 .qh{font:600 11.5px var(--f-mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
 .qv{font:700 26px var(--f-display)}
-@media (max-width:1180px){.hero{grid-template-columns:minmax(0,1fr)}.mid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1180px){.hero{grid-template-columns:minmax(0,1fr)}.mid{grid-template-columns:minmax(0,1fr)}.q{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 @media (max-width:720px){.lane{grid-template-columns:minmax(0,1fr)}.q{grid-template-columns:minmax(0,1fr)}.cal .slot{font-size:10px}}
 </style>
 
@@ -82,11 +82,11 @@
       <div class="mimic-hint">Planı yana kaydırın</div>
       <div class="mimic-scroll"><svg id="plan" viewBox="0 0 1400 420" role="group" aria-label="Dökümhane yerleşim planı"></svg></div>
     </section>
-    <section class="card insp" aria-label="Seçili ünite"><div class="cb insp" id="insp"></div></section>
+    <section class="card insp" aria-label="Seçili ünite"><div class="cb insp"><div class="insp" id="insp"></div><a class="ibtn primary" id="inspLink" href="dokum.html">Panele git →</a></div></section>
   </div>
 
   <section class="card" aria-label="Metal yolculuğu">
-    <div class="ch"><h2>Metal yolculuğu <small>HER ÇİP BİR DÖKÜM</small></h2><span class="aside">Hurda fırına girdiği andan pakete kadar ~17 saat</span></div>
+    <div class="ch"><h2>Metal yolculuğu <small>HER ÇİP BİR DÖKÜM</small></h2><span class="aside" id="journey">Hurda fırına girdiği andan pakete kadar</span></div>
     <div class="lanes" id="lanes"></div>
   </section>
 
@@ -107,7 +107,7 @@
   </section>
 
   <section class="card" aria-label="Kalite">
-    <div class="ch"><h2>Kalite <small>SON 10 DÖKÜM</small></h2><span class="aside">Degazör çıkışı H₂ ve tane boyutu</span></div>
+    <div class="ch"><h2>Kalite <small>SON 10 DÖKÜM</small></h2><span class="aside">Degazör çıkışı H₂, tane boyutu, filtre sonrası inklüzyon</span></div>
     <div class="cb q" id="q"></div>
   </section>
 
@@ -174,34 +174,34 @@ function states(T) {
   return { tb, e1, e2, b1, H, co, sw };
 }
 
+const LANE_HREF = { firin: 'firin.html', dokum: 'dokum.html', homo: 'homojen.html', sogut: 'homojen.html', tampon: 'homojen.html', testere: 'homojen.html' };
+const LANE_SUB = { firin: 'E1 / E2 → B1', dokum: 'B1 · hat · D1', homo: 'H1–H5 · alaşıma özel', sogut: '> 250 °C/sa', tampon: '≤ 60 °C olana kadar', testere: 'UT · kesim · paket' };
 let lastMin = -1;
 window.onTick = (T, force) => {
-  const S = states(T), { tb, e1, e2, b1, H, co, sw } = S;
-  const day0 = Math.floor(T / 1440) * 1440;
+  const S = states(T), { tb, e1, e2, b1, H, co, sw } = S, bf = buffer(T);
+  const day0 = dayStart(T);
   const today = doneCasts(T, 12).filter(c => c.end >= day0), last10 = doneCasts(T, 10);
-  const castToday = today.reduce((s, c) => s + c.gross, 0) + (tb.metal ? tb.tons : 0);
-  let ready = 0; doneCasts(T, 14).forEach(x => { const fin = x.n * PLANT.CYCLE + PLANT.SAW_AT + PLANT.SAW_MIN; if (fin <= T && fin >= day0) ready += x.net; });
-  if (sw.active) ready += Math.max(0, sw.done - (sw.rejIdx >= 0 && sw.done > sw.rejIdx ? 1 : 0)) * PLANT.T_PER_M * PLANT.NET_M;
-  const rec = avg(last10, c => c.recovery), dross = avg(last10, c => c.dross), gas = avg(last10, c => c.gas);
-  const done = today.length, planned = Math.min(PLANT.PER_DAY, Math.round((T - day0) / 144 + 1));
+  const castToday = pouredToday(T), ready = shippedToday(T).total;
+  const yieldC = avg(last10, c => c.castYield), loss = avg(last10, c => c.meltLoss), dross = avg(last10, c => c.dross), gas = avg(last10, c => c.gas);
+  const done = today.length, nextCast = castInfo(tb.n + (tb.pi <= 1 ? 0 : 1));
   setHTML($('#kpis'), [
-    `<div class="card kpi"><span class="l">Bugün döküm</span><span class="v num">${done}<small>/ ${PLANT.PER_DAY}</small></span><span class="s">${tb.metal ? `${tb.cast.id} döküyor` : `sonraki ${hhmm(tb.phases[2].start)}`}</span><span class="bar"><i style="width:${done * 10}%;background:var(--ok)"></i>${tb.metal ? `<i style="width:${tb.progress * 10}%;background:var(--melt)"></i>` : ''}</span></div>`,
-    `<div class="card kpi"><span class="l">Dökülen metal</span><span class="v num">${fmt(castToday, 1)}<small>t</small></span><span class="s">gün hedefi ${fmt(PLANT.PER_DAY * PLANT.MOULDS * PLANT.LOG_T, 0)} t</span></div>`,
+    `<div class="card kpi"><span class="l">Bugün döküm</span><span class="v num">${done}<small>/ ${PLANT.PER_DAY}</small></span><span class="s">${tb.metal ? `${tb.cast.id} döküyor` : `sonraki ${hhmm(nextCast.start)}`}</span><span class="bar"><i style="width:${done * 10}%;background:var(--ok)"></i>${tb.metal ? `<i style="width:${tb.progress * 10}%;background:var(--melt)"></i>` : ''}</span></div>`,
+    `<div class="card kpi"><span class="l">Dökülen metal</span><span class="v num">${fmt(castToday, 1)}<small>t</small></span><span class="s">gün planı ${fmt(PLANT.PER_DAY * PLANT.MOULDS * PLANT.LOG_T, 0)} t</span></div>`,
     `<div class="card kpi"><span class="l">Sevke hazır</span><span class="v num">${fmt(ready, 1)}<small>t</small></span><span class="s">kesilmiş, UT'den geçmiş</span></div>`,
-    `<div class="card kpi ${rec < 90 ? 'warn' : 'ok'}"><span class="l">Metal verimi</span><span class="v num">%${fmt(rec, 1)}</span><span class="s">sevke hazır / şarj · son 10</span></div>`,
-    `<div class="card kpi ${dross > 22 ? 'warn' : ''}"><span class="l">Cüruf</span><span class="v num">${fmt(dross, 1)}<small>kg/t</small></span><span class="s">tipik 15–25 kg/t</span></div>`,
-    `<div class="card kpi"><span class="l">Doğalgaz</span><span class="v num">${fmt(gas)}<small>Nm³/t</small></span><span class="s">ergitme + homojenizasyon</span></div>`,
+    `<div class="card kpi ${yieldC < 90 ? 'warn' : 'ok'}"><span class="l">Döküm verimi</span><span class="v num">%${fmt(yieldC, 1)}</span><span class="s">iyi billet / brüt döküm · son 10</span></div>`,
+    `<div class="card kpi ${loss > 2.5 ? 'warn' : ''}"><span class="l">Ergitme kaybı</span><span class="v num">%${fmt(loss, 1)}</span><span class="s">cüruf ${fmt(dross, 1)} kg/t · hedef ≤ %2,5</span></div>`,
+    `<div class="card kpi"><span class="l">Doğalgaz</span><span class="v num">${fmt(gas)}<small>Nm³/t</small></span><span class="s">ergitme + B1 + homojenizasyon</span></div>`,
   ].join(''));
 
   // plan
   const info = {
     hurda: { fill: 'var(--panel-2)', sub: `şarj ${e1.phase === 'ŞARJ' ? 'E1' : e2.phase === 'ŞARJ' ? 'E2' : 'bekliyor'}`, ph: '' },
-    e1: { fill: e1.liq > .5 ? heat(e1.temp - 160) : 'var(--steel-2)', sub: `${fmt(e1.temp)} °C · ${fmt(e1.mass, 1)} t`, ph: e1.phase },
-    e2: { fill: e2.liq > .5 ? heat(e2.temp - 160) : 'var(--steel-2)', sub: `${fmt(e2.temp)} °C · ${fmt(e2.mass, 1)} t`, ph: e2.phase },
-    b1: { fill: b1.mass > 6 ? heat(b1.temp - 160) : 'var(--panel-2)', sub: `${fmt(b1.temp)} °C`, ph: b1.phase },
+    e1: { fill: e1.liq > .5 ? heat(e1.temp - 160) : 'var(--steel-2)', sub: `${fmt(e1.temp)} °C · ${fmt(e1.mass, 1)} t`, ph: e1.drain ? 'DİP → SOW' : e1.phase },
+    e2: { fill: e2.liq > .5 ? heat(e2.temp - 160) : 'var(--steel-2)', sub: `${fmt(e2.temp)} °C · ${fmt(e2.mass, 1)} t`, ph: e2.drain ? 'DİP → SOW' : e2.phase },
+    b1: { fill: b1.mass > 6 ? heat(b1.temp - 160) : 'var(--panel-2)', sub: `${fmt(b1.temp)} °C`, ph: b1.drain ? 'DİP → SOW' : b1.phase },
     hat: { fill: tb.metal ? 'color-mix(in srgb,var(--melt) 22%,var(--panel-2))' : 'var(--panel-2)', sub: tb.metal ? `H₂ ${fmt(tb.h2Out, 3)}` : 'metal yok', ph: 'SNIF · CFF' },
     d1: { fill: 'var(--panel-2)', sub: tb.metal ? `${fmt(tb.L)} mm · ${fmt(tb.v, 0)} mm/dk` : tb.cast.id, ph: tb.phase },
-    sog: { fill: heat(co.active ? co.temp : null), sub: co.active ? `${fmt(co.temp)} °C` : 'boş', ph: co.active ? 'SOĞUTMA' : '' },
+    sog: { fill: heat(co.active ? co.temp : null), sub: co.active ? `${fmt(co.temp)} °C` : 'boş', ph: bf.length ? `TAMPON ${bf.length}` : '' },
     saw: { fill: sw.active ? 'color-mix(in srgb,var(--accent) 14%,var(--panel-2))' : 'var(--panel-2)', sub: sw.active ? `${sw.done}/${sw.cast.logs} log` : 'bekliyor', ph: sw.active ? 'KESİM' : '' },
     stok: { fill: 'var(--panel-2)', sub: `${fmt(ready, 0)} t bugün`, ph: '' },
   };
@@ -225,37 +225,49 @@ window.onTick = (T, force) => {
   const P = (st, t) => `<span class="pill ${st}"><i></i>${t}</span>`;
   let h = '';
   const K = rows => `<div class="kv">${rows.map(([a, b]) => `<span>${a}</span><b>${b}</b>`).join('')}</div>`;
-  const link = `<a class="ibtn primary" href="${U[sel][5]}">Panele git →</a>`;
+  $('#inspLink').href = U[sel][5];
   if (sel === 'e1' || sel === 'e2') {
     const f = sel === 'e1' ? e1 : e2;
-    h = `<h3>${f.name} ${P(f.phase === 'HAZIR' ? 'ok' : 'run', f.phase)}</h3>${K([['Döküm', f.cast.id + ' · ' + f.cast.alloy], ['Metal', fmt(f.temp) + ' °C'], ['Kütle', fmt(f.mass, 1) + ' t · sıvı %' + fmt(f.liq * 100)], ['Brülör', '%' + fmt(f.burn) + ' · ' + fmt(f.gas) + ' Nm³/h'], ['Kimya', f.chemOk ? 'onaylı' : 'bekleniyor'], ['Transfer', hhmm(f.phases[5].start)]])}<p>Ergitme fırını 288 dakikalık çevrimde çalışır. İki fırın sırayla B1'i besler.</p>`;
+    h = `<h3>${f.name} ${P(f.phase === 'HAZIR' ? 'ok' : 'run', f.phase)}</h3>${K([['Döküm', f.cast.id + ' · ' + f.cast.alloy], ['Metal', fmt(f.temp) + ' °C'], ['Kütle', fmt(f.mass, 1) + ' t · sıvı %' + fmt(f.liq * 100)], ['Brülör', '%' + fmt(f.burn) + ' · ' + fmt(f.gas) + ' Nm³/h'], ['Kimya', f.chemOk ? 'fırın hedefinde' : 'bekleniyor'], ['Dip', `${fmt(f.cast.heelEt, 1)} t ${f.cast.heelAlloyE}${f.cast.drainE ? ' (boşaltıldı)' : ''}`], ['Transfer', hhmm(f.phases[5].start) + ' · ' + fmt(f.cast.transfer, 1) + ' t']])}<p>Ergitme fırını 288 dakikalık çevrimde çalışır. İki fırın sırayla B1'i besler.</p>`;
   } else if (sel === 'b1') {
-    h = `<h3>B1 ${P(b1.phase === 'DÖKÜM' ? 'run' : 'idle', b1.phase)}</h3>${K([['Döküm', b1.cast.id], ['Metal', fmt(b1.temp) + ' °C'], ['Kütle', fmt(b1.mass, 1) + ' t'], ['Eğim', fmt(b1.tilt, 1) + '°'], ['Döküm başlangıcı', hhmm(b1.phases[2].start + (b1.pi >= 2 ? PLANT.CYCLE : 0))]])}<p>Devirmeli döküm fırını. Dolumdan sonra argon ve flaks ile arıtılır, dinlendirilir.</p>`;
+    h = `<h3>B1 ${P(b1.phase === 'DÖKÜM' ? 'run' : 'idle', b1.phase)}</h3>${K([['Döküm', b1.cast.id], ['Metal', fmt(b1.temp) + ' °C'], ['Kütle', fmt(b1.mass, 1) + ' t'], ['Eğim', fmt(b1.tilt, 1) + '°'], ['H₂ (Alspek)', fmt(b1.h2, 2) + ' ml/100g'], ['Kimya', b1.chemOk || b1.pi >= 2 ? 'B1 onaylı' : 'onay numunesi ' + hhmm(b1.sampleAt)], ['Döküm başlangıcı', hhmm(b1.phases[2].start + (b1.pi >= 2 ? PLANT.CYCLE : 0))]])}<p>Devirmeli döküm fırını. Dolumdan sonra argon ve flaks ile arıtılır, onay numunesi alınır, dinlendirilir.${b1.drain ? ` Şu an dibi sow kalıplarına boşaltılıyor: sonraki döküm ${b1.nextAlloy}.` : ''}</p>`;
   } else if (sel === 'hat') {
     h = `<h3>Döküm hattı ${P(tb.metal ? 'run' : 'idle', tb.metal ? 'METAL AKIYOR' : 'BOŞ')}</h3>${K([['Oluk metali', tb.metal ? fmt(tb.launder) + ' °C' : '—'], ['H₂ çıkış', tb.metal ? fmt(tb.h2Out, 3) + ' ml/100g' : '—'], ['Degazör', fmt(tb.rotor) + ' d/dk'], ['Tane inceltici', tb.metal ? fmt(tb.rod, 2) + ' kg/t' : '—'], ['Filtre ΔP', tb.metal ? fmt(tb.filterDp) + ' mm' : '—']])}<p>SNIF degazör, AlTi5B1 çubuk besleyici ve 40 ppi seramik köpük filtre.</p>`;
   } else if (sel === 'd1') {
     h = `<h3>D1 ${P(tb.metal ? 'run' : tb.phase === 'HAZIR' ? 'ok' : 'idle', tb.phase)}</h3>${K([['Döküm', c.id + ' · ' + c.alloy], ['Kalıp', `${c.logs} / 64`], ['Boy', fmt(tb.L) + ' / 7.000 mm'], ['Hız', fmt(tb.v, 1) + ' mm/dk'], ['Su', fmt(tb.water) + ' m³/h'], [tb.pi <= 1 ? 'Başlangıç' : 'Bitiş', hhmm(tb.pi <= 1 ? tb.phases[2].start : tb.phases[4].end)]])}<p>Hot-top DC döküm masası, 8 × 8 kalıp, Ø178 mm × 7 m log.</p>`;
   } else if (sel[0] === 'h' && sel !== 'hurda') {
     const x = H[+sel[1] - 1];
-    h = `<h3>${x.name} ${P(x.phase === 'BEKLETME' ? 'run' : x.phase === 'BOŞ' ? 'idle' : 'warn', x.phase)}</h3>${K([['Parti', x.cast ? x.cast.id : '—'], ['Metal', x.metal != null ? fmt(x.metal) + ' °C' : '—'], ['Hava', fmt(x.air) + ' °C'], ['Bekletme', fmt(x.soak / 60, 1) + ' / 6 sa'], ['Çıkış', hhmm(x.phases[3].start)]])}<p>575–585 °C'de en az 6 saat. Yükleme döküm masasından 20 dakika içinde yapılır.</p>`;
+    h = `<h3>${x.name} ${P(x.phase === 'BEKLETME' ? 'run' : x.phase === 'BOŞ' ? 'idle' : 'warn', x.phase)}</h3>${K([['Parti', x.cast ? x.cast.id : '—'], ['Metal', x.metal != null ? fmt(x.metal) + ' °C' : '—'], ['Hava', fmt(x.air) + ' °C'], ['Bekletme', fmt(x.soak / 60, 1) + ' / 6 sa'], ['Reçete', `${x.alloy} · ${x.recipe[0]}–${x.recipe[1]} °C`], ['Çıkış', hhmm(x.phases[3].start)]])}<p>Alaşıma özel sıcaklıkta en az 6 saat: 6063/6060 için 575–585 °C, 6082 için 550–565 °C.</p>`;
   } else if (sel === 'sog') {
-    h = `<h3>Soğutma ${P(co.active ? 'run' : 'idle', co.active ? 'AKTİF' : 'BOŞ')}</h3>${K(co.active ? [['Parti', co.cast.id], ['Metal', fmt(co.temp) + ' °C'], ['Soğuma hızı', fmt(co.rate) + ' °C/sa'], ['Hedef', '> 250 °C/sa']] : [['Son parti', co.cast.id], ['Sonraki', hhmm(co.next)]])}<p>Fan ve su sisiyle zorlanmış soğutma. Mg₂Si'yi ince tutar.</p>`;
+    h = `<h3>Soğutma ${P(co.active ? 'run' : 'idle', co.active ? 'AKTİF' : 'BOŞ')}</h3>${K(co.active ? [['Parti', co.cast.id], ['Metal', fmt(co.temp) + ' °C'], ['Soğuma hızı', fmt(co.rate) + ' °C/sa'], ['Hedef', '> 250 °C/sa']] : [['Son parti', co.cast.id], ['Sonraki', hhmm(co.next)]]) + K([['Tamponda', bf.length ? bf.map(b => `${b.cast.id} ${fmt(b.temp)} °C`).join(', ') : 'boş']])}<p>Fan ve su sisiyle zorlanmış soğutma Mg₂Si'yi ince tutar. Sonra loglar tamponda 60 °C'nin altına iner.</p>`;
   } else if (sel === 'saw') {
-    h = `<h3>UT + testere ${P(sw.active ? 'run' : 'idle', sw.active ? 'KESİM' : 'BEKLİYOR')}</h3>${K(sw.active ? [['Parti', sw.cast.id], ['İlerleme', `${sw.done} / ${sw.cast.logs} log`], ['Kesim', 'baş 300 · kuyruk 200 mm'], ['UT', sw.rejIdx >= 0 && sw.done > sw.rejIdx ? '1 red' : 'temiz']] : [['Son parti', sw.cast.id], ['Sonraki', hhmm(sw.next)]])}<p>Ultrasonik muayene merkez çatlağını yakalar. Kesim artığı iç hurda olarak döner.</p>`;
+    h = `<h3>UT + testere ${P(sw.active ? 'run' : 'idle', sw.active ? 'KESİM' : 'BEKLİYOR')}</h3>${K(sw.active ? [['Parti', sw.cast.id], ['İlerleme', `${sw.done} / ${sw.cast.logs} log`], ['Kesim', `dip ${PLANT.CROP_BUTT} · baş ${PLANT.CROP_HEAD} mm`], ['Log sıcaklığı', fmt(sw.logTemp) + ' °C'], ['UT', sw.rejIdx >= 0 && sw.done > sw.rejIdx ? '1 red' : 'temiz']] : [['Son parti', sw.cast.id], ['Sonraki', hhmm(sw.next)]])}<p>Ultrasonik muayene merkez çatlağını yakalar. Kesim artığı iç hurda olarak döner.</p>`;
   } else if (sel === 'stok') {
-    h = `<h3>Stok</h3>${K([['Bugün sevke hazır', fmt(ready, 1) + ' t'], ['Paket', '7 log · ' + fmt(7 * PLANT.T_PER_M * PLANT.NET_M, 2) + ' t'], ['Ürün', 'Ø178 × 6.500 mm']])}<p>Paketler döküm numarası, alaşım ve homojenizasyon partisiyle etiketlenir.</p>`;
+    h = `<h3>Stok</h3>${K([['Bugün sevke hazır', fmt(ready, 1) + ' t'], ['Paket', '7 log · ' + fmt(7 * PLANT.T_PER_M * PLANT.NET_M, 2) + ' t'], ['Ürün', `Ø178 × ${fmt(PLANT.NET_M * 1000)} mm`]])}<p>Paketler döküm numarası, alaşım ve homojenizasyon partisiyle etiketlenir.</p>`;
   } else {
-    h = `<h3>Hurda sahası</h3>${K([['Sıradaki şarj', (e1.phases[0].start + PLANT.E_CYCLE < e2.phases[0].start + PLANT.E_CYCLE ? 'E1 ' + hhmm(e1.phases[0].start + PLANT.E_CYCLE) : 'E2 ' + hhmm(e2.phases[0].start + PLANT.E_CYCLE))], ['Karışım', 'primer · iç hurda · dış hurda'], ['Şarj başına', '32 t']])}<p>Yağlı ve boyalı hurda cürufu artırır. Şarj öncesi kontrol edilir.</p>`;
+    h = `<h3>Hurda sahası</h3>${K([['Sıradaki şarj', (e1.phases[0].start + PLANT.E_CYCLE < e2.phases[0].start + PLANT.E_CYCLE ? 'E1 ' + hhmm(e1.phases[0].start + PLANT.E_CYCLE) : 'E2 ' + hhmm(e2.phases[0].start + PLANT.E_CYCLE))], ['Karışım', 'primer · iç hurda · dış hurda'], ['Şarj başına', `~${fmt(castInfo(e1.n).charge, 0)} t`]])}<p>Yağlı ve boyalı hurda cürufu artırır. Şarj öncesi kontrol edilir.</p>`;
   }
-  setHTML($('#insp'), h + link);
+  setHTML($('#insp'), h);
 
-  // lanes: every cast currently somewhere between the furnace and the saw
-  const base = Math.floor(T / PLANT.CYCLE);
-  const lanes = STAGES.map(s => ({ ...s, chips: [] }));
-  for (let n = base - 7; n <= base + 3; n++) { const st = castStage(n, T); if (st && st.i < 5) lanes[st.i].chips.push({ c: castInfo(n), p: st.p }); }
-  const hrefs = { firin: 'firin.html', dokum: 'dokum.html', homo: 'homojen.html', sogut: 'homojen.html', testere: 'homojen.html' };
-  const sub = { firin: 'E1 / E2 → B1', dokum: 'B1 · hat · D1', homo: 'H1–H5 · 580 °C', sogut: '> 250 °C/sa', testere: 'UT · kesim · paket' };
-  setHTML($('#lanes'), lanes.map(l => `<div class="lane"><div class="lh"><b>${l.label}</b><span>${sub[l.key]} · ${dur(l.to - l.from)}</span></div><div class="track">${l.chips.map(x => `<a class="chipu" href="${hrefs[l.key]}" title="${x.c.id} · ${x.c.alloy}" style="left:${4 + x.p * 92}%;background:${alloyColor(x.c.alloy)}">${x.c.id.slice(-2)}</a>`).join('')}</div></div>`).join(''));
+  // lanes: every cast currently somewhere between the furnace and the saw. Chips are kept and moved,
+  // not redrawn, so links stay clickable and focusable while they travel.
+  const lanesBox = $('#lanes'), base = Math.floor(T / PLANT.CYCLE);
+  if (!lanesBox.children.length) {
+    lanesBox.innerHTML = STAGES.map(st => `<div class="lane"><div class="lh"><b>${st.label}</b><span>${LANE_SUB[st.key]} · ${dur(st.to - st.from)}</span></div><div class="track"></div></div>`).join('');
+    $('#journey').textContent = `Hurda fırına girdiği andan pakete kadar ~${Math.round(PLANT.JOURNEY / 60)} saat`;
+  }
+  const want = new Map();
+  for (let n = base - 11; n <= base + 3; n++) { const st = castStage(n, T); if (st && st.i < STAGES.length) want.set(n, st); }
+  $$('.lane', lanesBox).forEach((lane, li) => {
+    const track = lane.querySelector('.track');
+    $$('.chipu', track).forEach(a => { const st = want.get(+a.dataset.n); if (!st || st.i !== li) a.remove(); });
+    for (const [n, st] of want) {
+      if (st.i !== li) continue;
+      let a = track.querySelector(`[data-n="${n}"]`);
+      if (!a) { const x = castInfo(n); a = document.createElement('a'); a.className = 'chipu'; a.dataset.n = n; a.href = LANE_HREF[st.key]; a.title = `${x.id} · ${x.alloy}`; a.style.background = alloyColor(x.alloy); a.textContent = x.id.slice(-2); track.append(a); }
+      a.style.left = (4 + st.p * 92).toFixed(2) + '%';
+    }
+  });
 
   // slower parts once per plant-minute
   const lk = Math.floor(T);
@@ -286,11 +298,14 @@ window.onTick = (T, force) => {
       F.push({ t: mk.corrAt, sev: 'warn', txt: `<b>${mk.name} numune 1:</b> ${low}. Eklendi: ${r.adds.map(a => `${fmt(a.kg, 1)} kg ${a.el === 'Mg' ? 'Mg' : a.el === 'Si' ? 'Si metal' : a.name}`).join(', ')}.` });
       F.push({ t: mk.sample2 + 6, sev: 'ok', txt: `${mk.name} numune 2 onaylandı · ${x.id} · ${r.adds.map(a => `${a.el} ${fmt(x.chem[a.el], 3)}`).join(', ')}.` });
     }
+    if (x.drainE) F.push({ t: mk.phases[0].start + 5, sev: 'info', txt: `<b>${mk.name}</b> alaşım değişimi (${x.heelAlloyE} → ${x.alloy}): dip sow kalıplarına boşaltıldı.` });
+    if (x.drainB) F.push({ t: n * PLANT.CYCLE - 6, sev: 'info', txt: `<b>B1</b> alaşım değişimi (${x.heelAlloyB} → ${x.alloy}): dip sow kalıplarına boşaltıldı.` });
+    F.push({ t: n * PLANT.CYCLE + B1_RESULT, sev: 'ok', txt: `<b>B1 onay numunesi</b> · ${x.id} · Si ${fmt(x.b1chem.Si, 3)}, Mg ${fmt(x.b1chem.Mg, 3)}${x.alloy === '6082' ? `, Mn ${fmt(x.b1chem.Mn, 3)}` : ''}: döküme onaylı.` });
     if (x.closed.length) F.push({ t: x.start - 20, sev: 'info', txt: `${x.closed.map(mouldName).join(', ')} bakımda. <b>${x.id}</b> ${x.logs} kalıpla dökülecek.` });
     F.push({ t: x.start, sev: 'info', txt: `<b>${x.id}</b> döküm başladı · ${x.alloy} · ${x.logs} kalıp.` });
     if (x.h2Out > .135) F.push({ t: x.start + 12, sev: 'warn', txt: `<b>${x.id}</b> H₂ ${fmt(x.h2Out, 3)} sınıra yakın. Degazör rotor devri artırıldı.` });
     F.push({ t: x.end, sev: 'ok', txt: `<b>${x.id}</b> tamamlandı · ${fmt(x.gross, 1)} t · ${x.logs} log · ${dur(x.prof.tTaper)}.` });
-    const hk = mod(n, 5); F.push({ t: n * PLANT.CYCLE + PLANT.UNLOAD_END + 20 + 48 * Math.log(520 / 5) + 360, sev: 'ok', txt: `H${hk + 1} · ${x.id} 6 saat bekletmeyi tamamladı.` });
+    const hk = mod(n, 5); F.push({ t: n * PLANT.CYCLE + PLANT.UNLOAD_END + soakFrom(x.alloy) + 360, sev: 'ok', txt: `H${hk + 1} · ${x.id} ${PLANT.ALLOYS[x.alloy].soak[0]}–${PLANT.ALLOYS[x.alloy].soak[1]} °C'de 6 saat bekletmeyi tamamladı.` });
     if (x.utRej) F.push({ t: n * PLANT.CYCLE + PLANT.SAW_AT + PLANT.SAW_MIN * .5, sev: 'warn', txt: `<b>UT:</b> ${x.id} 1 logda merkez çatlağı. Log iç hurdaya ayrıldı.` });
   }
   const shown = F.filter(e => e.t <= T && e.t > T - 720).sort((a, b) => b.t - a.t).slice(0, 16);
@@ -299,7 +314,7 @@ window.onTick = (T, force) => {
   $('#bellN').textContent = recent; $('#bell').classList.toggle('warn', recent > 0);
 
   // calendar
-  const d = new Date(DAY0 + day0 * 60000);
+  const d = plantDate(day0);
   $('#calD').textContent = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' }).toUpperCase();
   let cal = '';
   for (let k = 0; k < PLANT.PER_DAY; k++) {
@@ -315,7 +330,8 @@ window.onTick = (T, force) => {
   const L10 = last10.slice().reverse();
   const bars = (vals, max, lim, col, lbl) => `<div class="qbars">${vals.map(v => `<i style="height:${v / max * 100}%;background:${v > lim ? 'var(--warn)' : col}"></i>`).join('')}<span class="lim" style="bottom:${lim / max * 100}%"><span>${lbl}</span></span></div><div class="qx">${L10.map(x => `<span>${x.id.slice(-2)}</span>`).join('')}</div>`;
   $('#q').innerHTML = `<div><span class="qh">H₂ çıkış · ml/100 g</span><div class="qv num">${fmt(avg(L10, x => x.h2Out), 3)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.h2Out), .2, .15, 'var(--accent)', 'sınır 0,15')}</div>
-    <div><span class="qh">Tane boyutu · µm</span><div class="qv num">${fmt(avg(L10, x => x.grain))} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.grain), 200, 150, 'var(--a6060)', 'sınır 150')}</div>`;
+    <div><span class="qh">Tane boyutu · µm</span><div class="qv num">${fmt(avg(L10, x => x.grain))} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.grain), 200, 150, 'var(--a6060)', 'sınır 150')}</div>
+    <div><span class="qh">LiMCA N20 · k/kg</span><div class="qv num">${fmt(avg(L10, x => x.limca), 1)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.limca), 14, 10, 'var(--accent-2)', 'sınır 10')}</div>`;
 };
 window.onInit = () => buildPlan();
 </script>

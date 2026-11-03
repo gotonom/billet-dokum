@@ -136,9 +136,11 @@
         <div class="row">
           <label style="flex:1 1 120px">Alaşım<select id="cAlloy"></select></label>
           <label style="flex:1 1 120px">Fırındaki metal (t)<input id="cMass" type="number" inputmode="decimal" min="1" max="60" step="0.1" value="36"></label>
+          <label style="flex:1 1 120px">B1 dibi (3 t)<select id="cHeel"><option value="">hesaba katma</option><option>6063</option><option>6060</option><option>6082</option></select></label>
           <button type="button" class="ibtn" id="cFill" style="flex:1 1 200px">Fırının son numunesini al</button>
         </div>
         <div class="els" id="cEls"></div>
+        <p class="note" id="cNote" style="font-size:13px;color:var(--ink-2);margin:0"></p>
         <p class="note" style="font-size:13px;color:var(--ink-2);margin:0">Hedefin altındaki alaşım elementleri (Si, Mg, Mn…) hedefe çıkarılır. Eklenen malzemeler birbirini seyrelttiği için miktarlar birlikte çözülür. Verimler varsayımdır, fırının kendi verileriyle güncellenir.</p>
       </div>
       <div><div id="cOut"></div></div>
@@ -178,7 +180,7 @@ function furnaceSVG(f, big) {
     s += `<g opacity="${.35 + f.burn / 140}"><path class="flick" d="M${x0 + 60} ${y0 + 44} q${90 * sc} -6 ${170 * sc} 14 q-${80 * sc} 16 -${170 * sc} 8z" fill="#fbbf24"/><path class="flick" style="animation-delay:.15s" d="M${x0 + w - 60} ${y0 + 44} q-${90 * sc} -6 -${170 * sc} 14 q${80 * sc} 16 ${170 * sc} 8z" fill="#fb923c"/></g>`;
   }
   // bath + unmelted scrap
-  s += `<rect x="${x0 + 32}" y="${bathTop}" width="${w - 64}" height="${y0 + h - 24 - bathTop}" rx="6" fill="url(#gM${big ? 'b' : 's'})"/>`;
+  s += `<rect x="${x0 + 32}" y="${bathTop}" width="${w - 64}" height="${Math.max(0, y0 + h - 24 - bathTop)}" rx="6" fill="url(#gM${big ? 'b' : 's'})"/>`;
   if (liq < .98) {
     const n = Math.round((1 - liq) * 14);
     for (let i = 0; i < n; i++) { const bx = x0 + 50 + (i * 37) % (w - 120), by = bathTop - 10 - (i % 3) * 18; s += `<rect x="${bx}" y="${by}" width="${34 - (i % 4) * 4}" height="${16 + (i % 2) * 8}" rx="2" fill="var(--steel)" stroke="var(--steel-3)" transform="rotate(${(i * 23) % 30 - 15} ${bx} ${by})"/>`; }
@@ -191,13 +193,14 @@ function furnaceSVG(f, big) {
   if (!isB) s += `<rect x="${x0 + 180}" y="${f.door ? y0 - 54 : y0 - 6}" width="160" height="${f.door ? 40 : 14}" rx="3" fill="var(--steel-2)" stroke="var(--steel-3)"/>`;
   s += `<path d="M${x0 + w} ${y0 + h - 60} h40 l14 8 v8 h-54z" fill="var(--refr)"/>`;
   s += `</g>`;
-  const pour = isB ? f.phase === 'DÖKÜM' : f.phase === 'TRANSFER';
+  const pour = f.drain || (isB ? f.phase === 'DÖKÜM' : f.phase === 'TRANSFER');
   if (pour) s += `<path d="M${x0 + w + 52} ${y0 + h - 44} q12 30 18 ${H - y0 - h + 30}" fill="none" stroke="#fb923c" stroke-width="7" class="flow" stroke-dasharray="10 6"/>`;
   s += `<rect x="0" y="${y0 + h + 10}" width="${W}" height="${H - y0 - h - 10}" fill="url(#gC${big ? 'b' : 's'})"/>`;
   const defs = `<defs><linearGradient id="gM${big ? 'b' : 's'}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset=".3" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient><linearGradient id="gC${big ? 'b' : 's'}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--refr-2)"/><stop offset="1" stop-color="var(--refr)"/></linearGradient></defs>`;
   if (big) {
     s += `<g font-family="var(--f-mono)" font-size="13" font-weight="600"><text x="${x0 + 40}" y="${y0 + h + 40}" fill="var(--ink)">${f.name} · ${fmt(f.mass, 1)} t</text><text x="${x0 + w}" y="${y0 + h + 40}" text-anchor="end" fill="var(--ink-2)">${isB ? (f.tilt ? 'eğim ' + fmt(f.tilt, 1) + '°' : 'yatay') : 'sıvı %' + fmt(f.liq * 100)}</text></g>`;
     s += `<text x="${x0 + w / 2}" y="${y0 + 22}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" opacity=".8">${f.burn ? 'BRÜLÖR %' + Math.round(f.burn) : 'BRÜLÖR KAPALI'}</text>`;
+    if (f.drain) s += `<text x="${x0 + w + 60}" y="${H - 8}" text-anchor="end" font-size="12" font-weight="700" fill="var(--warn)">DİP → SOW</text>`;
   }
   return defs + s;
 }
@@ -220,7 +223,7 @@ function renderCards(T) {
     pill.className = 'pill ' + (f.phase === 'HAZIR' ? 'ok' : busy ? 'run' : 'idle'); pill.innerHTML = '<i></i>' + f.phase;
     b.querySelector('.big').innerHTML = `${fmt(f.temp)}<small>°C</small> · ${fmt(f.mass, 1)}<small>t</small>`;
     const nextT = b.dataset.u === 'b1' ? f.phases[2].start + (f.pi >= 2 ? PLANT.CYCLE : 0) : f.phases[5].start;
-    b.querySelector('.sub').textContent = b.dataset.u === 'b1' ? `${f.cast.id} · sonraki döküm ${hhmm(nextT)}` : `${f.cast.id} için · transfer ${hhmm(nextT)}`;
+    b.querySelector('.sub').textContent = f.drain ? `Dip sow'a boşaltılıyor · alaşım değişimi` : b.dataset.u === 'b1' ? `${f.cast.id} · sonraki döküm ${hhmm(nextT)}` : `${f.cast.id} için · transfer ${hhmm(nextT)}`;
     const total = b.dataset.u === 'b1' ? PLANT.CYCLE : PLANT.E_CYCLE;
     b.querySelector('.pb i').style.width = ((b.dataset.u === 'b1' ? f.c : f.L) / total * 100) + '%';
   });
@@ -238,17 +241,19 @@ function renderSteps(f, T) {
 }
 
 // correction recipe box, shared by the live chemistry card and the manual calculator
-function recipeHTML(r, alloy, badge) {
+function recipeHTML(r, alloy, badge, chem) {
   const spec = PLANT.ALLOYS[alloy].spec;
   let h = `<div class="rcp"><div class="rh"><b>Düzeltme reçetesi</b><span>${fmt(r.M / 1000, 1)} t metal · ${badge || ''}</span></div>`;
-  for (const x of r.adds) h += `<div class="ra"><span class="el ${x.el}">${x.el}</span><div><b>${x.name}</b><small>${x.el} ${fmt(x.from, 3)} → ${fmt(x.to, 2)} · verim %${Math.round(x.y * 100)} · ${x.how}</small></div><span class="kg num">${fmt(x.kg, 1)} kg<small>${fmt(x.kg * x.y * x.f, 1)} kg ${x.el} banyoya</small></span></div>`;
+  const row = x => `<div class="ra"><span class="el ${x.el}">${x.el}</span><div><b>${x.name}</b><small>${x.el} ${fmt(x.from, 3)} → ${fmt(x.to, 3)} (fırın hedefi) · verim %${Math.round(x.y * 100)} · ${x.how}</small></div><span class="kg num">${fmt(x.kg, 1)} kg<small>${fmt(x.kg * x.y * x.f, 1)} kg ${x.el} banyoya</small></span></div>`;
+  for (const x of r.adds) h += row(x);
   if (r.adds.length) h += `<div class="tot"><span>Toplam <b>${fmt(r.total, 1)} kg</b> · sonra ${fmt((r.M + r.total) / 1000, 2)} t</span><span>Sıra: ${r.adds.map(x => x.el).join(' → ')} · 10 dk karıştır · numune 2</span></div>`;
-  else if (!r.high.length) h += `<div class="msg">Düzeltme gerekmez: alaşım elementleri hedefin ±${fmt(chemTol(...spec.Si), 2)} penceresinde.</div>`;
-  for (const x of r.high) {
-    const fits = Object.keys(PLANT.ALLOYS).filter(k => k !== alloy && Object.entries(PLANT.ALLOYS[k].spec).every(([e, [, hi]]) => (r.final[e] ?? 0) <= hi));
-    h += `<div class="msg crit"><b>${x.el} ${fmt(x.c, 3)} · maksimum ${fmt(x.hi, 2)} aşıldı.</b> Element metalden çıkarılamaz, tek yol primer alüminyumla seyreltmek: <b>${fmt(x.primer / 1000, 1)} t primer</b> gerekir${r.M + x.primer > 36000 ? ', bu fırında yer yok' : ''}.${fits.length ? ` Bu kimya <b>${fits.join(', ')}</b> spesifikasyonuna uyuyor; parti o alaşıma yönlendirilebilir.` : ''}</div>`;
+  else if (!r.high.length) h += `<div class="msg">Düzeltme gerekmez: alaşım elementleri fırın hedefinin ±${fmt(chemTol(...spec.Si), 3)} penceresinde.</div>`;
+  if (r.high.length && r.dilute) {
+    const d = r.dilute, alts = Object.keys(PLANT.ALLOYS).filter(k => k !== alloy && chem && fitsAlloy(k, chem));
+    h += `<div class="msg crit"><b>${r.high.map(x => `${x.el} ${fmt(x.c, 3)} > ${fmt(x.hi, 2)}`).join(', ')}: maksimum aşıldı.</b> Element metalden çıkarılamaz; tek yol primer alüminyumla seyreltmek: <b>${fmt(d.primer / 1000, 1)} t primer</b>${r.M + d.primer > 37000 ? ' gerekir, bu fırında yer yok' : ' gerekir'}.${d.after.adds.length ? ` Seyreltmeden sonra eklenecek: ${d.after.adds.map(x => `${fmt(x.kg, 0)} kg ${x.el}`).join(', ')}.` : ''}` +
+      (alts.length ? ` Alternatif: parti <b>${alts.map(k => `${k} (${fmt(correction(k, chem, r.M).total, 0)} kg ilaveyle)`).join(', ')}</b> olarak dökülebilir.` : '') + `</div>`;
   }
-  if (r.over.length) h += `<div class="msg info">${r.over.join(', ')} hedefin üstünde ama spesifikasyon içinde. Düzeltme yapılmaz, sonraki şarjda ${r.over.length > 1 ? 'bunlar' : 'bu'} için daha az ilave planlanır.</div>`;
+  if (r.over.length) h += `<div class="msg info">${r.over.join(', ')} fırın hedefinin üstünde ama spesifikasyon içinde. Çıkarılamaz; sonraki şarjda ${r.over.length > 1 ? 'bunlar' : 'bu'} için daha az ilave planlanır.</div>`;
   return h + '</div>';
 }
 
@@ -267,17 +272,27 @@ function buildCalc() {
     $$('#cEls input').forEach(i => { chem[i.dataset.el] = parseFloat(String(i.value).replace(',', '.')); });
     const M = clamp(parseFloat(String($('#cMass').value).replace(',', '.')) || 36, 1, 60) * 1000;
     $$('#cEls label').forEach(l => { const el = l.querySelector('input').dataset.el, [lo, hi, tg] = spec[el], v = chem[el]; l.className = v > hi || v < lo ? 'bad' : lo > 0 && v < tg - chemTol(lo, hi) ? 'low' : ''; });
-    const r = correction(alloy, chem, M);
-    $('#cOut').innerHTML = recipeHTML(r, alloy, alloy) + `<div class="tscroll" style="margin-top:10px"><table class="tbl chem"><thead><tr><th>Element</th><th class="r">Ölçülen</th><th class="r">Hedef</th><th class="r">Eklemeden sonra</th></tr></thead><tbody>` +
-      Object.entries(spec).map(([el, [lo, hi, tg]]) => { const v = chem[el], fv = r.final[el], ok = x => x >= lo && x <= hi; return `<tr><td><b>${el}</b></td><td class="r mono ${isNaN(v) ? '' : ok(v) ? '' : 'bad'}">${fmt(v, 3)}</td><td class="r mono">${fmt(tg, 2)}</td><td class="r mono ${isNaN(fv) ? '' : ok(fv) ? 'ok' : 'bad'}">${fmt(fv, 3)}</td></tr>`; }).join('') + '</tbody></table></div>';
+    // with a B1 heel the melter aims off target so that B1 lands on it (Mg also covers its fade in B1)
+    const heel = $('#cHeel').value, aim = {}, Mt = M / 1000 - PLANT.HEEL_E;
+    for (const [el, [lo, , tg]] of Object.entries(spec)) if (lo > 0 && addable(el)) aim[el] = heel ? ((PLANT.HEEL_B + Mt) * (tg + (el === 'Mg' ? PLANT.MG_FADE : 0)) - PLANT.HEEL_B * PLANT.ALLOYS[heel].spec[el][2]) / Mt : tg;
+    const r = correction(alloy, chem, M, aim);
+    $('#cOut').innerHTML = recipeHTML(r, alloy, alloy + (heel ? ` · B1 dibi ${heel}` : ''), chem) + `<div class="tscroll" style="margin-top:10px"><table class="tbl chem"><thead><tr><th>Element</th><th class="r">Ölçülen</th><th class="r">Fırın hedefi</th><th class="r">Eklemeden sonra</th></tr></thead><tbody>` +
+      Object.entries(spec).map(([el, [lo, hi, tg]]) => { const v = chem[el], fv = r.final[el], ok = x => x >= lo && x <= hi; return `<tr><td><b>${el}</b></td><td class="r mono ${isNaN(v) ? '' : ok(v) ? '' : 'bad'}">${fmt(v, 3)}</td><td class="r mono">${fmt(r.aim[el], 3)}</td><td class="r mono ${isNaN(fv) ? '' : ok(fv) ? 'ok' : 'bad'}">${fmt(fv, 3)}</td></tr>`; }).join('') + '</tbody></table></div>';
   };
   sel.addEventListener('change', draw);
   $('#cMass').addEventListener('input', calc);
+  $('#cHeel').addEventListener('change', calc);
   $('#cFill').addEventListener('click', () => {
-    const T = SIM.T(), f = unit(cur === 'b1' ? (castInfo(holder(T).n).n % 2 ? 'e2' : 'e1') : cur, T), c = f.cast;
+    // the newest first sample that actually exists: this cycle's if its result is in, else the furnace's previous cycle
+    const T = SIM.T();
+    let k = cur === 'b1' ? mod(holder(T).n, 2) : (cur === 'e1' ? 0 : 1), f = melter(k, T), c = f.cast, note;
+    if (T >= f.sample1 + 6) note = `${f.name} · ${c.id} · numune 1 (${hhmm(f.sample1)})`;
+    else { c = castInfo(c.n - 2); const p = melter(k, T - PLANT.E_CYCLE); note = `${f.name} bu çevrimin numunesini henüz almadı; önceki çevrimin numunesi: ${c.id} (${hhmm(p.sample1)})`; }
     sel.value = c.alloy; draw();
-    $('#cMass').value = fmt(f.mass, 1).replace(',', '.');
+    $('#cMass').value = String(Math.round((PLANT.HEEL_E + c.transfer + c.drossW) * 10) / 10);
+    $('#cHeel').value = c.drainB ? '' : c.heelAlloyB;
     $$('#cEls input').forEach(i => i.value = c.chem1[i.dataset.el].toFixed(3));
+    $('#cNote').textContent = note + (c.drainB ? ' · B1 dibi alaşım değişimi için boşaltıldı' : '');
     calc();
   });
   draw();
@@ -299,23 +314,25 @@ window.onTick = (T, force) => {
       M('Metal sıcaklığı', fmt(f.temp), '°C', 'transfer 730–750', f.pi >= 4 && (f.temp < 730 || f.temp > 750) ? 'warn' : ''),
       M('Çatı sıcaklığı', fmt(f.roof), '°C', 'sınır 1.200'),
       M('Brülör', fmt(f.burn), '%', 'rejeneratif çift brülör', f.burn ? '' : 'idle'),
-      M('Doğalgaz', fmt(f.gas), 'Nm³/h', 'tam güç 600'),
+      M('Doğalgaz', fmt(f.gas), 'Nm³/h', `tam güç ${PLANT.GAS_E}`),
       M('Metal', fmt(f.mass, 1), 't', 'kapasite 36 t'),
       M('Sıvı oranı', fmt(f.liq * 100), '%', f.liq < .99 ? 'katı şarj eriyor' : 'tamamen sıvı'),
       M('Fırın basıncı', fmt(f.pressure, 1), 'Pa', f.door ? 'kapı açık' : 'hedef 5–12'),
       M('Karıştırıcı', f.stir ? 'AÇIK' : 'KAPALI', '', 'elektromanyetik (EMS)', f.stir ? '' : 'idle'),
+      M('Dip', fmt(c.heelEt, 1), 't', f.drain ? 'sow kalıplarına boşaltılıyor' : c.drainE ? `${c.heelAlloyE} dibi boşaltıldı` : `${c.heelAlloyE} dibi · ${fmt(PLANT.HEEL_E)} t`, f.drain ? 'warn' : ''),
     ].join('');
   } else {
     $('#measA').textContent = f.phase === 'DÖKÜM' ? 'Masaya döküyor' : '';
     $('#meas').innerHTML = [
-      M('Metal sıcaklığı', fmt(f.temp), '°C', 'döküm 728–740', f.pi === 2 && f.temp < 726 ? 'warn' : ''),
-      M('Metal', fmt(f.mass, 1), 't', 'kapasite 35 t'),
+      M('Metal sıcaklığı', fmt(f.temp), '°C', 'döküm 728–740', f.pi === 2 && (f.temp < 728 || f.temp > 740) ? 'warn' : ''),
+      M('Metal', fmt(f.mass, 1), 't', f.drain ? `dip sow'a boşaltılıyor · sonraki ${f.nextAlloy}` : `dip ${fmt(c.heelBt, 1)} t ${c.heelAlloyB}`, f.drain ? 'warn' : ''),
       M('Eğim', fmt(f.tilt, 1), '°', 'hidrolik devirme', f.tilt ? '' : 'idle'),
       M('Dökülen', fmt(f.poured, 1), 't', `hedef ${fmt(c.gross, 1)} t`, f.poured ? '' : 'idle'),
       M('Brülör', fmt(f.burn), '%', 'sıcaklık tutma'),
       M('Argon lansı', f.lance ? 'AÇIK' : 'KAPALI', '', 'fırın içi arıtma', f.lance ? '' : 'idle'),
       M('Sonraki döküm', hhmm(f.phases[2].start + (f.pi >= 2 ? PLANT.CYCLE : 0)), '', c.alloy + ' · 64 kalıp'),
-      M('Kaynak fırın', c.n % 2 ? 'E2' : 'E1', '', 'bu dökümün metali'),
+      M('H₂ (Alspek)', fmt(f.h2, 2), 'ml/100g', `başlatma sınırı ${fmt(PLANT.H2_START, 2)}`, f.h2 > PLANT.H2_START ? 'crit' : ''),
+      M('Kaynak fırın', c.n % 2 ? 'E2' : 'E1', '', `${fmt(c.transfer, 1)} t transfer`),
     ].join('');
   }
 
@@ -334,44 +351,53 @@ window.onTick = (T, force) => {
 
   // charge mix
   if (!isB) {
-    const m = c.mix, t = 32;
+    const m = c.mix, t = c.charge, got = T >= f.sample1 + 6;
     $('#mixT').textContent = 'Şarj';
-    $('#mixA').textContent = `${fmt(t)} t katı + 4 t sıvı dip`;
-    const parts = [['Primer külçe', m.primer, 'var(--accent)'], ['İç hurda (baş, kuyruk, testere)', m.ic, 'var(--a6060)'], ['Dış hurda (6xxx profil)', m.dis, 'var(--accent-2)']];
+    $('#mixA').textContent = `${fmt(t, 1)} t katı + ${fmt(c.heelEt, 1)} t ${c.heelAlloyE} dip`;
+    const parts = [['Primer külçe', m.primer, 'var(--accent)'], ['İç hurda (dip, baş, testere, sow)', m.ic, 'var(--a6060)'], ['Dış hurda (6xxx profil)', m.dis, 'var(--accent-2)']];
     $('#mix').innerHTML = `<div class="stack">${parts.map(p => `<i style="width:${p[1]}%;background:${p[2]}">%${fmt(p[1])}</i>`).join('')}</div>
       <div class="mix">${parts.map(p => `<i style="background:${p[2]}"></i><span>${p[0]}</span><b>%${fmt(p[1])}</b><b>${fmt(t * p[1] / 100, 1)} t</b>`).join('')}
-      <i style="background:var(--melt)"></i><span>Alaşım düzeltmesi (${c.recipe.adds.map(x => x.el).join(', ') || 'yok'})</span><b></b><b>${fmt(c.recipe.total, 1)} kg</b>
-      <i style="background:var(--steel)"></i><span>Cüruf (dross)</span><b>${fmt(c.dross, 1)} kg/t</b><b>${f.skimmed ? fmt(c.dross * 32 / 1000, 2) + ' t' : 'alınmadı'}</b></div>
-      <p class="note" style="font-size:13px;color:var(--ink-2);margin:12px 0 0">Kirli ve yağlı hurda cürufu artırır: talaş üzerindeki her %1 kesme yağı yaklaşık %2 ek cüruf demektir.</p>`;
+      <i style="background:var(--melt)"></i><span>Alaşım düzeltmesi${got ? ` (${c.recipe.adds.map(x => x.el).join(', ') || 'yok'})` : ''}</span><b></b><b>${got ? fmt(c.recipe.total, 1) + ' kg' : 'numune bekleniyor'}</b>
+      <i style="background:var(--steel)"></i><span>Cüruf (dross)</span><b>${fmt(c.dross, 1)} kg/t</b><b>${f.skimmed ? fmt(c.drossW, 2) + ' t' : 'alınmadı'}</b>
+      <i style="background:var(--ok)"></i><span>Transfer → B1</span><b></b><b>${fmt(c.transfer, 1)} t</b></div>
+      <p class="note" style="font-size:13px;color:var(--ink-2);margin:12px 0 0">${c.drainE ? `Alaşım değişimi: ${c.heelAlloyE} dibi şarjdan önce sow kalıplarına boşaltıldı. ` : ''}Kirli ve yağlı hurda cürufu artırır: talaş üzerindeki her %1 kesme yağı yaklaşık %2 ek cüruf demektir.</p>`;
   } else {
+    const P = f.phases[0].start;
     $('#mixT').textContent = 'Arıtma';
     $('#mixA').textContent = 'Fırın içi';
     $('#mix').innerHTML = `<div class="kv" style="display:grid;grid-template-columns:1fr auto;gap:8px 12px;font-size:14px">
-      <span>Dolum</span><b class="mono">${hhmm(f.phases[0].start)}–${hhmm(f.phases[0].end)} · ${c.n % 2 ? 'E2' : 'E1'}'den 32 t</b>
-      <span>Argon lansı + flaks</span><b class="mono">${hhmm(f.phases[1].start)}–${hhmm(f.phases[1].start + 12)}</b>
-      <span>Cüruf alma</span><b class="mono">${hhmm(f.phases[1].start + 13)}</b>
-      <span>Dinlendirme</span><b class="mono">${hhmm(f.phases[1].start + 14)}–${hhmm(f.phases[1].end)}</b>
-      <span>H₂ (fırın)</span><b class="mono">${fmt(c.h2In, 2)} ml/100 g</b>
+      <span>Dolum</span><b class="mono">${hhmm(P)}–${hhmm(P + 18)} · ${c.n % 2 ? 'E2' : 'E1'}'den ${fmt(c.transfer, 1)} t</b>
+      <span>Argon lansı + flaks</span><b class="mono">${hhmm(P + 18)}–${hhmm(P + 26)}</b>
+      <span>Cüruf alma</span><b class="mono">${hhmm(P + 26)} · ${fmt(PLANT.B1_SKIM * 1000)} kg</b>
+      <span>Onay numunesi (OES)</span><b class="mono">${hhmm(P + B1_SAMPLE)} · sonuç ${hhmm(P + B1_RESULT)}</b>
+      <span>Dinlendirme</span><b class="mono">${hhmm(P + 26)}–${hhmm(P + PLANT.CAST_START)}</b>
+      <span>H₂ (Alspek, fırın)</span><b class="mono">${fmt(c.h2In, 2)} ml/100 g</b>
       <span>H₂ (degazör sonrası)</span><b class="mono">${fmt(c.h2Out, 3)} ml/100 g</b></div>
-      <p class="note" style="font-size:13px;color:var(--ink-2);margin:12px 0 0">Fırın içi arıtma inklüzyonları yüzdürür. Asıl hidrojen giderme döküm hattındaki SNIF degazöründe yapılır.</p>`;
+      <p class="note" style="font-size:13px;color:var(--ink-2);margin:12px 0 0">${c.drainB ? `Alaşım değişimi: B1'deki ${c.heelAlloyB} dibi dolumdan önce sow kalıplarına boşaltıldı. ` : `B1'de ${fmt(c.heelBt, 1)} t ${c.heelAlloyB} dip kalır; ergitme fırını hedefini buna göre ayarlar. `}Asıl hidrojen giderme döküm hattındaki SNIF degazöründe yapılır.</p>`;
   }
 
-  // chemistry: sample 1, the correction it calls for, sample 2 after the additions
-  const spec = a.spec, s1 = isB ? T0 : f.sample1, s2 = isB ? T0 : f.sample2;
-  const got1 = isB || T >= s1 + 6, got2 = isB || (c.corr && T >= s2 + 6), two = c.corr && !isB;
+  // chemistry: melter = sample 1, the correction it calls for, sample 2; B1 = the release sample
+  const spec = a.spec, cell = (v, lo, hi, ok) => ok ? `<td class="r mono ${v < lo || v > hi ? 'bad' : 'ok'}">${fmt(v, 3)}</td>` : '<td class="r mono wait">—</td>';
   $('#chemS').textContent = `OES · ${c.alloy}`;
-  $('#chemA').textContent = isB ? 'Onaylı analiz' : got1 ? `Numune 1 ${hhmm(s1)}${c.corr ? ` · Numune 2 ${hhmm(s2)}` : ''}` : `Numune ${hhmm(s1)}'de`;
-  const cell = (v, lo, hi, ok) => ok ? `<td class="r mono ${v < lo || v > hi ? 'bad' : 'ok'}">${fmt(v, 3)}</td>` : '<td class="r mono wait">—</td>';
-  const v1 = isB ? c.chem : c.chem1;
-  setHTML($('#chem'), `<thead><tr><th>Element</th><th class="r">Min</th><th class="r">Maks</th><th class="r">Hedef</th><th class="r">${isB ? 'Analiz' : 'Numune 1'}</th>${isB ? '' : '<th class="r">Fark</th><th class="r">Ekle</th>'}${two ? '<th class="r">Numune 2</th>' : ''}</tr></thead><tbody>` +
-    Object.entries(spec).map(([el, [lo, hi, tg]]) => {
-      const ad = c.recipe.adds.find(x => x.el === el), d = v1[el] - tg, tol = chemTol(lo, hi);
-      return `<tr class="${ad && got1 && !isB ? 'fix' : ''}"><td><b>${el}</b></td><td class="r mono">${lo ? fmt(lo, 2) : '—'}</td><td class="r mono">${fmt(hi, 2)}</td><td class="r mono">${fmt(tg, 2)}</td>${cell(v1[el], lo, hi, got1)}` +
-        (isB ? '' : `<td class="r mono ${got1 && lo > 0 && Math.abs(d) > tol ? 'dev' : ''}">${got1 ? (d > 0 ? '+' : '') + fmt(d, 3) : '—'}</td><td class="r mono add">${got1 && ad ? fmt(ad.kg, 1) + ' kg' : got1 ? '—' : ''}</td>`) +
-        `${two ? cell(c.chem[el], lo, hi, got2) : ''}</tr>`;
-    }).join('') + '</tbody>');
-  setHTML($('#rcp'), isB ? `<div class="rcp"><div class="msg info">Onaylı analiz. Kimya düzeltmesi ergitme fırınında yapılır, döküm fırınında ilave yapılmaz.</div></div>`
-    : got1 ? recipeHTML(c.recipe, c.alloy, T >= f.corrAt ? `Eklendi ${hhmm(f.corrAt)}` : 'Önerilen') : `<div class="rcp"><div class="msg wait">Numune ${hhmm(s1)}'de alınacak, sonuç 6 dk sonra. Düzeltme reçetesi sonuçla birlikte hesaplanır.</div></div>`);
+  if (!isB) {
+    const s1 = f.sample1, s2 = f.sample2, got1 = T >= s1 + 6, got2 = c.corr && T >= s2 + 6, two = c.corr && got1;
+    $('#chemA').textContent = got1 ? `Numune 1 ${hhmm(s1)}${two ? ` · Numune 2 ${hhmm(s2)}` : ''}` : `Numune ${hhmm(s1)}'de`;
+    setHTML($('#chem'), `<thead><tr><th>Element</th><th class="r">Min</th><th class="r">Maks</th><th class="r">Hedef</th><th class="r" title="B1 dibi ve Mg kaybı hesaba katılmış hedef">Fırın hedefi</th><th class="r">Numune 1</th><th class="r">Ekle</th>${two ? '<th class="r">Numune 2</th>' : ''}</tr></thead><tbody>` +
+      Object.entries(spec).map(([el, [lo, hi, tg]]) => {
+        const ad = c.recipe.adds.find(x => x.el === el), aim = c.aim[el], tol = chemTol(lo, hi), dev = got1 && aim != null && Math.abs(c.chem1[el] - aim) > tol;
+        return `<tr class="${ad && got1 ? 'fix' : ''}"><td><b>${el}</b></td><td class="r mono">${lo ? fmt(lo, 2) : '—'}</td><td class="r mono">${fmt(hi, 2)}</td><td class="r mono">${fmt(tg, 2)}</td><td class="r mono">${aim != null ? fmt(aim, 3) : '—'}</td>` +
+          (got1 ? `<td class="r mono ${c.chem1[el] < lo || c.chem1[el] > hi ? 'bad' : dev ? 'dev' : 'ok'}">${fmt(c.chem1[el], 3)}</td>` : '<td class="r mono wait">—</td>') +
+          `<td class="r mono add">${got1 && ad ? fmt(ad.kg, 1) + ' kg' : got1 ? '—' : ''}</td>${two ? cell(c.chem[el], lo, hi, got2) : ''}</tr>`;
+      }).join('') + '</tbody>');
+    setHTML($('#rcp'), got1 ? recipeHTML(c.recipe, c.alloy, T >= f.corrAt ? `Eklendi ${hhmm(f.corrAt)}` : 'Önerilen', c.chem1) : `<div class="rcp"><div class="msg wait">Numune ${hhmm(s1)}'de alınacak, sonuç 6 dk sonra. Düzeltme reçetesi sonuçla birlikte hesaplanır.</div></div>`);
+  } else {
+    const got = f.chemOk || f.pi >= 2;
+    $('#chemA').textContent = got ? `B1 onay numunesi ${hhmm(f.sampleAt)}` : `Onay numunesi ${hhmm(f.sampleAt)}'de`;
+    setHTML($('#chem'), `<thead><tr><th>Element</th><th class="r">Min</th><th class="r">Maks</th><th class="r">Hedef</th><th class="r">Ergitme (numune 2)</th><th class="r">B1 onay</th></tr></thead><tbody>` +
+      Object.entries(spec).map(([el, [lo, hi, tg]]) => `<tr><td><b>${el}</b></td><td class="r mono">${lo ? fmt(lo, 2) : '—'}</td><td class="r mono">${fmt(hi, 2)}</td><td class="r mono">${fmt(tg, 2)}</td><td class="r mono">${fmt(c.chem[el], 3)}</td>${cell(c.b1chem[el], lo, hi, got)}</tr>`).join('') + '</tbody>');
+    const outWin = Object.entries(spec).filter(([el, [lo, hi, tg]]) => lo > 0 && addable(el) && Math.abs(c.b1chem[el] - tg) > chemTol(lo, hi) + .003).map(([el]) => el);
+    setHTML($('#rcp'), `<div class="rcp"><div class="msg ${got ? 'ok' : 'wait'}">${got ? `<b>Döküm için onaylı.</b> ` : 'Onay numunesi arıtmadan sonra alınır. '}Döküm kimyası B1'de onaylanır: ergitme fırınından gelen metal ${c.drainB ? 'boşaltılmış dip ile' : `${fmt(c.heelBt, 1)} t ${c.heelAlloyB} dip ile`} karışır ve arıtmada yaklaşık ${fmt(PLANT.MG_FADE, 2)} Mg kaybeder.</div>${got && outWin.length ? `<div class="msg info">${outWin.join(', ')} hedef penceresinin dışında ama spesifikasyon içinde.</div>` : ''}</div>`);
+  }
 
   // ready gate
   const G = (ok, txt, val) => `<li class="${ok ? 'ok' : 'no'}">${ok ? CHECK : WAIT}<span>${txt}</span><b>${val}</b></li>`;
@@ -381,8 +407,8 @@ window.onTick = (T, force) => {
     checks = [
       [f.pi >= 2, 'Şarj tamamen eridi', `sıvı %${fmt(f.liq * 100)}`],
       [f.skimmed, 'Cüruf alındı', f.skimmed ? fmt(c.dross * 32 / 1000, 2) + ' t' : '—'],
-      [f.chemOk, 'Kimya spesifikasyonda', f.chemOk ? 'onaylı' : got1 ? 'düzeltme' : 'bekleniyor'],
-      [f.pi >= 3 && f.temp >= 728 && f.temp <= 752, 'Sıcaklık 730–750 °C', fmt(f.temp) + ' °C'],
+      [f.chemOk, 'Kimya fırın hedefinde', f.chemOk ? 'onaylı' : T >= f.sample1 + 6 ? 'düzeltme' : 'bekleniyor'],
+      [f.pi >= 3 && f.temp >= 730 && f.temp <= 750, 'Sıcaklık 730–750 °C', fmt(f.temp) + ' °C'],
       [b.phase === 'BEKLEME' || f.phase === 'TRANSFER', 'B1 boş ve hazır', `B1 ${b.phase.toLowerCase()} · ${fmt(b.mass, 1)} t`],
     ];
     $('#gateT').textContent = 'Transfere hazır kapısı';
@@ -390,9 +416,10 @@ window.onTick = (T, force) => {
     const tb = table(T);
     checks = [
       [f.pi >= 1, 'Dolum tamamlandı', fmt(f.mass, 1) + ' t'],
-      [f.pi >= 2 || f.c > 31, 'Argon + flaks arıtması', f.pi >= 2 || f.c > 31 ? 'tamam' : 'sürüyor'],
-      [f.temp >= 728 && f.temp <= 742, 'Sıcaklık 728–740 °C', fmt(f.temp) + ' °C'],
-      [c.h2In <= .35, 'Fırın H₂ ≤ 0,35', fmt(c.h2In, 2)],
+      [f.pi >= 2 || f.c >= 26, 'Argon + flaks arıtması, cüruf alındı', f.pi >= 2 || f.c >= 26 ? 'tamam' : 'sürüyor'],
+      [f.chemOk || f.pi >= 2, 'B1 onay numunesi spesifikasyonda', f.chemOk || f.pi >= 2 ? 'onaylı' : `${hhmm(f.sampleAt)}'de`],
+      [f.temp >= 728 && f.temp <= 740, 'Sıcaklık 728–740 °C', fmt(f.temp) + ' °C'],
+      [f.h2 <= PLANT.H2_START, `Fırın H₂ ≤ ${fmt(PLANT.H2_START, 2)} (Alspek)`, fmt(f.h2, 2)],
       [tb.pi >= 1 && tb.n === c.n, 'Döküm masası hazır', tb.n === c.n ? tb.phase.toLowerCase() : 'önceki döküm'],
     ];
     $('#gateT').textContent = 'Dökmeye hazır kapısı';
@@ -407,11 +434,11 @@ window.onTick = (T, force) => {
   if (force || lk !== lastSlow) {
     lastSlow = lk;
     const day0 = Math.floor(T / 1440) * 1440, sums = [0, 0, 0];
-    for (let t = day0; t < T; t += 2) { sums[0] += melter(0, t).burn * 6 / 30; sums[1] += melter(1, t).burn * 6 / 30; sums[2] += holder(t).burn * 1.6 / 30; }
-    const tons = doneCasts(T, 12).filter(x => x.end >= day0).reduce((s, x) => s + x.gross, 0);
+    for (let t = day0; t < T; t += 2) { sums[0] += melter(0, t).burn / 100 * PLANT.GAS_E / 30; sums[1] += melter(1, t).burn / 100 * PLANT.GAS_E / 30; sums[2] += holder(t).burn / 100 * PLANT.GAS_B / 30; }
+    const tons = pouredToday(T);
     const card = (n, v, st) => `<div class="m"><span class="l">${n}</span><span class="v num">${fmt(v)}<small>Nm³</small></span><span class="t">${st}</span></div>`;
     $('#energy').innerHTML = card('E1 ergitme', sums[0], `şu an ${fmt(melter(0, T).gas)} Nm³/h`) + card('E2 ergitme', sums[1], `şu an ${fmt(melter(1, T).gas)} Nm³/h`) +
-      card('B1 + toplam', sums[0] + sums[1] + sums[2], tons ? `${fmt((sums[0] + sums[1] + sums[2]) / tons, 1)} Nm³/t · ${fmt(tons, 1)} t döküldü` : 'bugün henüz döküm yok');
+      card('Ergitme + B1 toplam', sums[0] + sums[1] + sums[2], tons > 1 ? `${fmt((sums[0] + sums[1] + sums[2]) / tons, 1)} Nm³/t · ${fmt(tons, 1)} t döküldü` : 'bugün henüz döküm yok');
   }
 };
 window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (UNITS.includes(h)) { cur = h; tick(true); } });

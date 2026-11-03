@@ -10,14 +10,14 @@
 <meta property="og:title" content="Billet Dökümhanesi · Kontrol Merkezi">
 <meta property="og:description" content="Ergitme, döküm, homojenizasyon ve testere tek ekranda: canlı saha planı, metal yolculuğu, günlük döküm takvimi, KPI ve alarmlar. Created by GOTONOM.">
 <meta property="og:url" content="https://billet-dokum-production.up.railway.app/">
-<meta property="og:image" content="https://billet-dokum-production.up.railway.app/og/index.png?v=1">
+<meta property="og:image" content="https://billet-dokum-production.up.railway.app/og/index.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Billet Dökümhanesi · Kontrol Merkezi">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Billet Dökümhanesi · Kontrol Merkezi">
 <meta name="twitter:description" content="Ergitme, döküm, homojenizasyon ve testere tek ekranda: canlı saha planı, metal yolculuğu, günlük döküm takvimi, KPI ve alarmlar. Created by GOTONOM.">
-<meta name="twitter:image" content="https://billet-dokum-production.up.railway.app/og/index.png?v=1">
+<meta name="twitter:image" content="https://billet-dokum-production.up.railway.app/og/index.png?v=2">
 <meta name="theme-color" content="#0a2463">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a2463'/%3E%3Crect x='11' y='5' width='10' height='22' rx='2' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Cpath d='M11 10h10' stroke='%23f97316' stroke-width='3'/%3E%3C/svg%3E">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -249,7 +249,7 @@ svg text{font-family:var(--f-ui)}
 .cal .slot.now{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--melt)}
 .cal .now-line{position:absolute;top:0;bottom:0;width:2px;background:var(--crit)}
 .cal .hr{position:absolute;bottom:4px;font:500 10.5px var(--f-mono);color:var(--muted);transform:translateX(-50%)}
-.q{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.q{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .qbars{display:flex;align-items:flex-end;gap:5px;height:110px;border-bottom:1px solid var(--line);position:relative;margin-top:8px}
 .qbars i{flex:1;border-radius:4px 4px 0 0;min-width:0}
 .qbars .lim{position:absolute;left:0;right:0;border-top:2px dashed var(--crit)}
@@ -257,7 +257,7 @@ svg text{font-family:var(--f-ui)}
 .qx{display:flex;gap:5px;margin-top:4px}.qx span{flex:1;font:500 10px var(--f-mono);color:var(--muted);text-align:center;overflow:hidden}
 .qh{font:600 11.5px var(--f-mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
 .qv{font:700 26px var(--f-display)}
-@media (max-width:1180px){.hero{grid-template-columns:minmax(0,1fr)}.mid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1180px){.hero{grid-template-columns:minmax(0,1fr)}.mid{grid-template-columns:minmax(0,1fr)}.q{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 @media (max-width:720px){.lane{grid-template-columns:minmax(0,1fr)}.q{grid-template-columns:minmax(0,1fr)}.cal .slot{font-size:10px}}
 </style>
 </head>
@@ -289,11 +289,11 @@ svg text{font-family:var(--f-ui)}
       <div class="mimic-hint">Planı yana kaydırın</div>
       <div class="mimic-scroll"><svg id="plan" viewBox="0 0 1400 420" role="group" aria-label="Dökümhane yerleşim planı"></svg></div>
     </section>
-    <section class="card insp" aria-label="Seçili ünite"><div class="cb insp" id="insp"></div></section>
+    <section class="card insp" aria-label="Seçili ünite"><div class="cb insp"><div class="insp" id="insp"></div><a class="ibtn primary" id="inspLink" href="dokum.html">Panele git →</a></div></section>
   </div>
 
   <section class="card" aria-label="Metal yolculuğu">
-    <div class="ch"><h2>Metal yolculuğu <small>HER ÇİP BİR DÖKÜM</small></h2><span class="aside">Hurda fırına girdiği andan pakete kadar ~17 saat</span></div>
+    <div class="ch"><h2>Metal yolculuğu <small>HER ÇİP BİR DÖKÜM</small></h2><span class="aside" id="journey">Hurda fırına girdiği andan pakete kadar</span></div>
     <div class="lanes" id="lanes"></div>
   </section>
 
@@ -314,7 +314,7 @@ svg text{font-family:var(--f-ui)}
   </section>
 
   <section class="card" aria-label="Kalite">
-    <div class="ch"><h2>Kalite <small>SON 10 DÖKÜM</small></h2><span class="aside">Degazör çıkışı H₂ ve tane boyutu</span></div>
+    <div class="ch"><h2>Kalite <small>SON 10 DÖKÜM</small></h2><span class="aside">Degazör çıkışı H₂, tane boyutu, filtre sonrası inklüzyon</span></div>
     <div class="cb q" id="q"></div>
   </section>
 
@@ -323,7 +323,7 @@ svg text{font-family:var(--f-ui)}
 
 <script>
 /* Plant model shared by every panel. Each unit's state is a pure function of plant time T
-   (minutes since today's 00:00), so the control centre and the detail pages always agree.
+   (minutes since today's 00:00 wall clock), so the control centre and the detail pages always agree.
    Numbers marked VARSAYIM in the README are assumptions until the plant confirms them. */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -348,27 +348,46 @@ const PLANT = {
   CYCLE: 144,            // one cast every 144 min → 10 casts a day
   PER_DAY: 10,
   MOULDS: 64, ROWS: 8,   // 7" hot-top table, 8 × 8
-  DIA: 178, LEN: 7000, CROP_HEAD: 300, CROP_TAIL: 200,
+  DIA: 178, LEN: 7000,
+  CROP_BUTT: 300,        // start end (on the starting head): start-up structure is cut off
+  CROP_HEAD: 200,        // last end cast
   T_PER_M: Math.PI * 0.089 * 0.089 * 2.70,   // t per metre of Ø178 billet
   E_CYCLE: 288, H_CYCLE: 720, H_COUNT: 5,
-  PREP_END: 15, CAST_START: 40, UNLOAD_END: 125, FILL_END: 18,
-  COOL_AT: 765, COOL_MIN: 60, SAW_AT: 825, SAW_MIN: 100,
+  // casting table, minutes into the cast cycle
+  PREP_END: 25, CAST_START: 40, UNLOAD_END: 138, FILL_END: 18,
+  POST_WATER: 8,         // water stays on after the metal stops: 6 min full, 2 min taper
+  TILT_MIN: 6,           // table tilts away before the crane lifts the logs
+  // after homogenising: forced cooling, then an ambient buffer until the logs are cool enough for UT
+  COOL_MIN: 60, BUFFER_MIN: 240, SAW_MIN: 100,
+  // metal accounting per cast (t)
+  HEEL_E: 4, HEEL_B: 3, LAUNDER: .45, B1_SKIM: .12,
+  // burners at full fire (Nm³/h): regenerative melters, B1, homogenisers
+  GAS_E: 750, GAS_B: 160, GAS_H: 260,
+  HEEL_DRAIN: .5,        // heel left after draining into sows before an alloy change
+  // casting-water interlock: alarm and trip as a share of setpoint, absolute floor per mould
+  W_ALARM: .90, W_TRIP: .80, W_MIN: 35,
+  H2_START: .30,         // B1 furnace H₂ (Alspek) above this blocks the start
+  MG_FADE: .01,          // Mg lost in B1 fluxing and holding; the melter aims this much higher
   SLOTS: ['6063', '6063', '6060', '6063', '6082', '6063', '6063', '6060', '6063', '6063'],
   ALLOYS: {
-    '6063': { v: 123, color: '--a6063', temp: 695, spec: { Si: [.20, .60, .43], Fe: [0, .35, .20], Cu: [0, .10, .02], Mn: [0, .10, .03], Mg: [.45, .90, .50], Cr: [0, .10, .01], Zn: [0, .10, .02], Ti: [0, .10, .02] } },
-    '6060': { v: 128, color: '--a6060', temp: 692, spec: { Si: [.30, .60, .42], Fe: [.10, .30, .19], Cu: [0, .10, .02], Mn: [0, .10, .03], Mg: [.35, .60, .46], Cr: [0, .05, .01], Zn: [0, .15, .02], Ti: [0, .10, .02] } },
-    '6082': { v: 105, color: '--a6082', temp: 700, spec: { Si: [.70, 1.30, 1.00], Fe: [0, .50, .24], Cu: [0, .10, .04], Mn: [.40, 1.00, .55], Mg: [.60, 1.20, .78], Cr: [0, .25, .04], Zn: [0, .20, .02], Ti: [0, .10, .02] } },
+    '6063': { v: 123, color: '--a6063', temp: 695, soak: [575, 585, 580], airMax: 600, spec: { Si: [.20, .60, .43], Fe: [0, .35, .20], Cu: [0, .10, .02], Mn: [0, .10, .03], Mg: [.45, .90, .50], Cr: [0, .10, .01], Zn: [0, .10, .02], Ti: [0, .10, .02] } },
+    '6060': { v: 128, color: '--a6060', temp: 692, soak: [575, 585, 580], airMax: 600, spec: { Si: [.30, .60, .42], Fe: [.10, .30, .19], Cu: [0, .10, .02], Mn: [0, .10, .03], Mg: [.35, .60, .46], Cr: [0, .05, .01], Zn: [0, .15, .02], Ti: [0, .10, .02] } },
+    // 6082 starts melting near 580 °C: soak lower and never let the air run hot
+    '6082': { v: 105, color: '--a6082', temp: 700, soak: [550, 565, 560], airMax: 575, spec: { Si: [.70, 1.30, 1.00], Fe: [0, .50, .24], Cu: [0, .10, .04], Mn: [.40, 1.00, .55], Mg: [.60, 1.20, .78], Cr: [0, .25, .04], Zn: [0, .20, .02], Ti: [0, .10, .02] } },
   },
 };
 PLANT.LOG_T = PLANT.T_PER_M * PLANT.LEN / 1000;
-PLANT.NET_M = (PLANT.LEN - PLANT.CROP_HEAD - PLANT.CROP_TAIL) / 1000;
+PLANT.NET_M = (PLANT.LEN - PLANT.CROP_BUTT - PLANT.CROP_HEAD) / 1000;
+PLANT.COOL_AT = PLANT.UNLOAD_END + 640;             // homogeniser unloads 640 min after loading
+PLANT.BUF_AT = PLANT.COOL_AT + PLANT.COOL_MIN;
+PLANT.SAW_AT = PLANT.BUF_AT + PLANT.BUFFER_MIN;
 const alloyColor = a => `var(${PLANT.ALLOYS[a].color})`;
 const mouldName = i => 'K-' + pad(i + 1);
 
 /* ---------- casting recipe: speed by cast length, integrated once per alloy ---------- */
 function vTarget(L, vs) {
   if (L < 20) return 50;
-  if (L < 450) return 50 + (vs - 50) * (L - 20) / 430;
+  if (L < 250) return 50 + (vs - 50) * (L - 20) / 230;
   if (L < 6850) return vs;
   return vs - (vs - 80) * clamp((L - 6850) / 150, 0, 1);
 }
@@ -378,15 +397,14 @@ function profile(alloy) {
   if (PROFILES[alloy]) return PROFILES[alloy];
   const vs = PLANT.ALLOYS[alloy].v, Ls = [0], dt = 1 / 60;   // 1 s steps
   const FILL = .5;                                              // metal fills, platen waits 30 s
-  let L = 0, t = 0, tRamp = 0, tSteady = 0;
+  let L = 0, t = 0, tRamp = 0;
   for (let i = 0; i < 30; i++) Ls.push(0);
   t = FILL;
   while (L < PLANT.LEN) {
     L = Math.min(PLANT.LEN, L + vTarget(L, vs) * dt); t += dt; Ls.push(L);
-    if (!tRamp && L >= 450) tRamp = t;
-    if (!tSteady && L >= 6850) tSteady = t;
+    if (!tRamp && L >= 250) tRamp = t;
   }
-  return PROFILES[alloy] = { vs, Ls, FILL, tRamp, tSteady, tEnd: t, tTaper: t + 2.5 };
+  return PROFILES[alloy] = { vs, Ls, FILL, tRamp, tEnd: t, tTaper: t + PLANT.POST_WATER };
 }
 function lengthAt(p, tc) { if (tc <= 0) return 0; const i = tc * 60; if (i >= p.Ls.length - 1) return PLANT.LEN; const a = Math.floor(i); return lerp(p.Ls[a], p.Ls[a + 1], i - a); }
 
@@ -401,6 +419,7 @@ const ADDITIVES = {
 };
 const ADD_ORDER = ['Si', 'Fe', 'Mn', 'Cu', 'Mg'];        // Mg last: it burns off if added early
 const chemTol = (lo, hi) => Math.max(.015, (hi - lo) * .05);   // internal window around target
+const addable = el => !!ADDITIVES[el] && !ADDITIVES[el].minOnly;
 function solveLinear(A, b) {                             // Gaussian elimination, small n
   const n = b.length, M = A.map((r, i) => [...r, b[i]]);
   for (let c = 0; c < n; c++) {
@@ -410,63 +429,122 @@ function solveLinear(A, b) {                             // Gaussian elimination
   }
   return M.map((r, i) => r[n] / r[i]);
 }
-// chem in wt %, M melt mass in kg. Elements below their window are raised to target; additions
-// dilute each other, so the amounts are solved together. Nothing can take an element out:
-// above the spec maximum the only fix is diluting with primary metal.
-function correction(alloy, chem, M) {
-  const spec = PLANT.ALLOYS[alloy].spec, S = [], high = [], over = [];
+// chem in wt %, M melt mass in kg, aim = optional per-element furnace aim (defaults to the spec target).
+// Elements below their window are raised to the aim; additions dilute each other, so the amounts are
+// solved together. Nothing can take an element out: above the spec maximum the only fix is diluting
+// with primary metal, after which the alloying elements are re-solved.
+function correction(alloy, chem, M, aim = {}, nested) {
+  const spec = PLANT.ALLOYS[alloy].spec, S = [], high = [], over = [], tgt = {};
   for (const [el, [lo, hi, tg]] of Object.entries(spec)) {
-    const c = chem[el], tol = chemTol(lo, hi);
+    const c = chem[el], tol = chemTol(lo, hi), t = tgt[el] = aim[el] ?? tg;
     if (c == null || isNaN(c)) continue;
-    if (lo > 0 && ADDITIVES[el] && (ADDITIVES[el].minOnly ? c < lo : c < tg - tol)) S.push(el);
-    else if (c > hi) high.push({ el, c, hi, primer: M * (c / (hi - tol) - 1) });
-    else if (lo > 0 && !ADDITIVES[el]?.minOnly && c > tg + tol) over.push(el);
+    if (c > hi) high.push({ el, c, hi, goal: lo > 0 ? t + tol : hi - tol });
+    else if (lo > 0 && ADDITIVES[el] && (ADDITIVES[el].minOnly ? c < lo : c < t - tol)) S.push(el);
+    else if (lo > 0 && addable(el) && c > t + tol) over.push(el);
   }
   S.sort((a, b) => ADD_ORDER.indexOf(a) - ADD_ORDER.indexOf(b));
-  const A = S.map((ei, i) => S.map((ej, j) => (i === j ? ADDITIVES[ei].y * ADDITIVES[ei].f * 100 : 0) - spec[ei][2]));
-  const x = S.length ? solveLinear(A, S.map(e => M * (spec[e][2] - chem[e]))) : [];
-  const adds = S.map((el, i) => ({ el, kg: x[i], from: chem[el], to: spec[el][2], ...ADDITIVES[el] }));
+  const A = S.map((ei, i) => S.map((ej, j) => (i === j ? ADDITIVES[ei].y * ADDITIVES[ei].f * 100 : 0) - tgt[ei]));
+  const x = S.length ? solveLinear(A, S.map(e => M * (tgt[e] - chem[e]))) : [];
+  const adds = S.map((el, i) => ({ el, kg: x[i], from: chem[el], to: tgt[el], ...ADDITIVES[el] }));
   const total = adds.reduce((s, a) => s + a.kg, 0), M2 = M + total, final = {};
   for (const el in spec) { const a = adds.find(q => q.el === el); final[el] = (M * chem[el] + (a ? a.kg * a.y * a.f * 100 : 0)) / M2; }
-  return { adds, total, final, high, over, M };
+  // dilution: the worst offender sets the primary needed, then the rest is corrected on the diluted melt
+  let dilute = null;
+  if (high.length && !nested) {
+    const D = Math.max(...high.map(h => M * (h.c / h.goal - 1)));
+    const dil = {}; for (const el in chem) dil[el] = chem[el] * M / (M + D);
+    dilute = { primer: D, after: correction(alloy, dil, M + D, aim, true) };
+  }
+  return { adds, total, final, high, over, M, aim: tgt, dilute };
+}
+// does this melt fit an alloy's spec, counting elements that could still be raised by additions?
+function fitsAlloy(alloy, chem) {
+  return Object.entries(PLANT.ALLOYS[alloy].spec).every(([el, [lo, hi]]) => chem[el] <= hi && (chem[el] >= lo || addable(el)));
 }
 
-/* ---------- per-cast facts (memoised) ---------- */
+/* ---------- wall clock: minutes since today's 00:00, safe across midnight and DST ---------- */
 const DAY0 = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); })();
+const dayIndex = ms => { const d = new Date(ms); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); };
+function wallT(ms = Date.now()) {
+  const d = new Date(ms);
+  return (dayIndex(ms) - dayIndex(DAY0)) * 1440 + d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60 + d.getMilliseconds() / 6e4;
+}
+function plantDate(T) { const d = new Date(DAY0); d.setMinutes(Math.floor(T)); return d; }
+
+/* ---------- burner profiles (shared by the live units and the gas accounting) ---------- */
+const MELT_DEFS = [['ŞARJ', 0, 30], ['ERGİTME', 30, 190], ['ALAŞIM', 190, 222], ['NUMUNE', 222, 250], ['HAZIR', 250, 270], ['TRANSFER', 270, 288]];
+const meltBurn = L => L < 30 ? 20 : L < 150 ? 100 : L < 190 ? 70 : L < 222 ? 35 : L < 250 ? 25 : L < 270 ? 20 : 10;
+const HOMO_DEFS = [['YÜKLEME', 0, 20], ['ISITMA', 20, 260], ['BEKLETME', 260, 620], ['BOŞALTMA', 620, 640], ['BOŞ', 640, 720]];
+const homoBurn = L => L < 20 ? 0 : L < 260 ? 100 - 65 * smooth((L - 20) / 240) : L < 620 ? 10 : L < 640 ? 0 : 6;
+const holdBurn = (c, castEnd) => c < 18 ? 25 : c < 40 ? 45 : c < castEnd ? 30 : 15;
+// Nm³ of gas one cast uses in each unit (each cast gets one melter cycle, one B1 cycle, one homogeniser cycle)
+const GAS = (() => {
+  let e = 0, h = 0, b = 0;
+  for (let L = 0; L < 288; L += .5) e += meltBurn(L) / 100 * PLANT.GAS_E / 120;
+  for (let L = 0; L < 720; L += .5) h += homoBurn(L) / 100 * PLANT.GAS_H / 120;
+  for (let c = 0; c < 144; c += .5) b += holdBurn(c, 100) / 100 * PLANT.GAS_B / 120;
+  return { e, h, b, total: e + h + b };
+})();
+
+/* ---------- per-cast facts (memoised) ---------- */
 const CASTS = new Map();
+const alloyOf = n => PLANT.SLOTS[mod(n, PLANT.PER_DAY)];
+// alloy change: drain a furnace's heel into sows when the old metal would push an element of the new
+// alloy more than half its window (e.g. 6082 → 6063 carries Si, Mg and Mn over)
+function needsDrain(prev, next, heelShare) {
+  if (prev === next) return false;
+  const a = PLANT.ALLOYS[prev].spec, b = PLANT.ALLOYS[next].spec;
+  return Object.keys(b).some(el => heelShare * (a[el][2] - b[el][2]) > chemTol(b[el][0], b[el][1]) / 2);
+}
 function castInfo(n) {
   if (CASTS.has(n)) return CASTS.get(n);
-  const slot = mod(n, PLANT.PER_DAY), date = new Date(DAY0 + n * PLANT.CYCLE * 60000);
-  const alloy = PLANT.SLOTS[slot], a = PLANT.ALLOYS[alloy];
+  const slot = mod(n, PLANT.PER_DAY), date = plantDate(n * PLANT.CYCLE);
+  const alloy = alloyOf(n), a = PLANT.ALLOYS[alloy], spec = a.spec;
   const closed = [];
   if (rnd(n, 1) < .45) closed.push(Math.floor(rnd(n, 2) * PLANT.MOULDS));
   if (rnd(n, 3) < .15) { const j = Math.floor(rnd(n, 4) * PLANT.MOULDS); if (!closed.includes(j)) closed.push(j); }
   const logs = PLANT.MOULDS - closed.length;
   const utRej = rnd(n, 5) < .18 ? 1 : 0;
-  const dross = 15 + rnd(n, 6) * 8;                         // kg/t
+  const dross = 15 + rnd(n, 6) * 8;                         // kg per tonne charged
   const gross = logs * PLANT.LOG_T * (1 + (rnd(n, 7) - .5) * .004);
   const net = (logs - utRej) * PLANT.T_PER_M * PLANT.NET_M;
-  const charged = gross * (1 + dross / 1000 + .004);
-  // first sample: alloying elements scatter around target (scrap mix varies, more often low),
-  // impurities sit near their typical level; the correction recipe then sets the second sample
-  const chem1 = {};
-  for (const [el, [lo, hi, tg]] of Object.entries(a.spec)) {
+  // previous metal left in each furnace: the melter last made cast n-2, B1 cast n-1
+  const prevE = alloyOf(n - 2), prevB = alloyOf(n - 1);
+  const drainE = needsDrain(prevE, alloy, PLANT.HEEL_E / (PLANT.HEEL_E + 32)), drainB = needsDrain(prevB, alloy, PLANT.HEEL_B / (PLANT.HEEL_B + 32));
+  const heelEt = drainE ? PLANT.HEEL_DRAIN : PLANT.HEEL_E, heelBt = drainB ? PLANT.HEEL_DRAIN : PLANT.HEEL_B;
+  const heelE = PLANT.ALLOYS[prevE].spec, heelB = PLANT.ALLOYS[prevB].spec;
+  // mass balance: B1 ends every cast on its normal heel, the melter every transfer on its normal heel
+  const transfer = gross + PLANT.LAUNDER + PLANT.B1_SKIM + (PLANT.HEEL_B - heelBt);
+  const drossW = dross * transfer / 1000;
+  // chemistry: charge scatter (scrap mix varies, more often low) mixed with the melter heel = first sample.
+  // The melter aims so that, after mixing with B1's heel and the Mg fade, B1 lands on target.
+  const chem1 = {}, aim = {};
+  for (const [el, [lo, hi, tg]] of Object.entries(spec)) {
     const r = rnd(n, 20 + el.charCodeAt(0) + el.charCodeAt(1));
-    chem1[el] = +(lo > 0 && ADDITIVES[el] && !ADDITIVES[el].minOnly ? tg + (r - .62) * (hi - lo) * .22 : tg + (r - .5) * Math.max(.01, (hi - lo) * .06)).toFixed(3);
+    const chg = lo > 0 && addable(el) ? tg + (r - .62) * (hi - lo) * .22 : tg + (r - .5) * Math.max(.01, (hi - lo) * .06);
+    chem1[el] = +((heelEt * heelE[el][2] + 32 * chg) / (heelEt + 32)).toFixed(3);
+    if (lo > 0 && addable(el)) aim[el] = +(((heelBt + transfer) * (tg + (el === 'Mg' ? PLANT.MG_FADE : 0)) - heelBt * heelB[el][2]) / transfer).toFixed(3);
   }
-  const recipe = correction(alloy, chem1, 36000), corr = recipe.adds.length > 0;
-  const chem = {};
-  for (const el in chem1) chem[el] = +(recipe.final[el] + (corr && recipe.adds.some(x => x.el === el) ? (rnd(n, 40 + el.charCodeAt(0)) - .5) * .008 : 0)).toFixed(3);
+  const recipe = correction(alloy, chem1, (PLANT.HEEL_E + transfer + drossW) * 1000, aim), corr = recipe.adds.length > 0;
+  const chem = {}, b1chem = {};
+  for (const el in chem1) {
+    chem[el] = +(recipe.final[el] + (corr && recipe.adds.some(x => x.el === el) ? (rnd(n, 40 + el.charCodeAt(0)) - .5) * .008 : 0)).toFixed(3);
+    b1chem[el] = +((heelBt * heelB[el][2] + transfer * chem[el]) / (heelBt + transfer) - (el === 'Mg' ? PLANT.MG_FADE : 0) + (rnd(n, 60 + el.charCodeAt(0)) - .5) * .004).toFixed(3);
+  }
   const primer = 34 + rnd(n, 10) * 16, ic = 20 + rnd(n, 11) * 8;
   const info = {
     n, slot, id: `D-${pad(date.getDate())}${pad(date.getMonth() + 1)}-${pad(slot + 1)}`, date, alloy, prof: profile(alloy),
-    closed, logs, utRej, dross, gross, net, charged, recovery: net / charged * 100,
-    h2In: .24 + rnd(n, 12) * .08, h2Out: .10 + rnd(n, 13) * .04, grain: 105 + rnd(n, 14) * 35,
-    corr, chem, chem1, recipe,
+    closed, logs, utRej, dross, gross, net, transfer, drossW, charge: transfer + drossW - recipe.total / 1000 + (PLANT.HEEL_E - heelEt),
+    drainE, drainB, heelEt, heelBt, sows: (PLANT.HEEL_E - heelEt) + (PLANT.HEEL_B - heelBt),
+    castYield: net / gross * 100, meltLoss: (drossW + PLANT.B1_SKIM) / (transfer + drossW) * 100,
+    h2In: .22 + rnd(n, 12) * .08, h2Out: .10 + rnd(n, 13) * .04, grain: 105 + rnd(n, 14) * 35,
+    limca: 4 + rnd(n, 19) * 6,                                // inclusions after the filter, k/kg N20
+    alpha: 89 + rnd(n, 21) * 8,                               // β→α AlFeSi after homogenising, %
+    corr, chem, chem1, aim, recipe, b1chem, heelAlloyB: prevB, heelAlloyE: prevE,
     mix: { primer, ic, dis: 100 - primer - ic },
-    gas: 72 + rnd(n, 16) * 14, kwh: 88 + rnd(n, 17) * 16,     // per net tonne
     start: n * PLANT.CYCLE + PLANT.CAST_START,
   };
+  info.gas = GAS.total / gross;                               // Nm³ per tonne cast
   info.end = info.start + info.prof.tTaper;
   CASTS.set(n, info);
   return info;
@@ -482,142 +560,207 @@ function table(T) {
   const C = PLANT.CYCLE, n = Math.floor((T - PLANT.UNLOAD_END) / C) + 1, c = T - n * C;
   const cast = castInfo(n), p = cast.prof, a = PLANT.ALLOYS[cast.alloy], cs = PLANT.CAST_START;
   const bounds = [['HAZIRLIK', PLANT.UNLOAD_END - C, PLANT.PREP_END], ['HAZIR', PLANT.PREP_END, cs], ['BAŞLANGIÇ', cs, cs + p.tRamp],
-    ['DÖKÜM', cs + p.tRamp, cs + p.tSteady], ['BİTİŞ', cs + p.tSteady, cs + p.tTaper], ['BOŞALTMA', cs + p.tTaper, PLANT.UNLOAD_END]];
+    ['DÖKÜM', cs + p.tRamp, cs + p.tEnd], ['BİTİŞ', cs + p.tEnd, cs + p.tTaper], ['BOŞALTMA', cs + p.tTaper, PLANT.UNLOAD_END]];
   const phases = mkPhases(bounds, n * C), pi = phaseOf(bounds.map(b => [b[1], b[2]]), c);
-  const tc = c - cs, casting = pi >= 2 && tc < p.tEnd, metal = casting;
+  const tc = c - cs, metal = pi === 2 || pi === 3;
   const L = pi < 2 ? 0 : lengthAt(p, tc);
-  const vT = casting && tc > p.FILL ? vTarget(L, p.vs) : 0;
+  const vT = metal && tc > p.FILL ? vTarget(L, p.vs) : 0;
   const v = vT ? vT * (1 + wob(T, 1) * .012) : 0;
   let wT = 0;
-  if (pi >= 2 && tc < p.tEnd) wT = tc < p.FILL ? 45 : wTarget(vT, p.vs);
-  else if (pi === 4) wT = wTarget(80, p.vs) * clamp(1 - (tc - p.tEnd) / 2.5, 0, 1);
+  if (metal) wT = tc < p.FILL ? 45 : wTarget(vT, p.vs);
+  else if (pi === 4) wT = wTarget(80, p.vs) * clamp((PLANT.POST_WATER - (tc - p.tEnd)) / 2, 0, 1);   // full 6 min, taper 2
   const w = wT ? wT * (1 + wob(T, 2) * .015) : 0;
   const logs = cast.logs;
-  const unload = pi === 5 ? clamp((c - (cs + p.tTaper) - 6) / 14, 0, 1) : 0;   // tilt 6 min, then crane 14 min
+  const unloadT = c - (cs + p.tTaper), unloadLen = PLANT.UNLOAD_END - cs - p.tTaper;
+  const tilt = pi === 5 ? smooth(unloadT / PLANT.TILT_MIN) : 0;
+  const unload = pi === 5 ? clamp((unloadT - PLANT.TILT_MIN) / (unloadLen - PLANT.TILT_MIN - 1), 0, 1) : 0;   // crane, done 1 min early
   return {
-    n, cast, c, phase: TABLE_PHASES[pi], pi, phases, L, v, vT, w, wT, logs, metal, unload,
+    n, cast, c, phase: TABLE_PHASES[pi], pi, phases, L, v, vT, w, wT, logs, metal, tilt, unload,
     progress: L / PLANT.LEN,
     tons: L / 1000 * PLANT.T_PER_M * logs,
     water: w * logs * 60 / 1000,                              // m³/h
-    waterIn: 24 + wob(T, 3) * .6, waterOut: w ? 24 + 6.5 * (v / p.vs) + wob(T, 4) * .5 : null,
+    waterIn: 24 + wob(T, 3) * .6,
+    waterOut: w ? 24 + 14 * (metal ? v / p.vs : clamp(1 - (tc - p.tEnd) / PLANT.POST_WATER, 0, 1) * .6) + wob(T, 4) * .5 : null,
+    pitTemp: 30 + (metal ? 4 * (L / PLANT.LEN) : 0) + wob(T, 17) * .4,
     launder: metal ? a.temp + wob(T, 5) * 2.2 : null,
     level: metal ? 75 + wob(T, 6) * 1.6 : 0,                  // mm metal head in the hot-top
-    h2Out: metal ? cast.h2Out + wob(T, 7) * .004 : null, h2In: metal ? cast.h2In + wob(T, 8) * .006 : null,
+    h2Out: metal ? cast.h2Out + wob(T, 7) * .004 : null,
     rotor: metal ? 380 + wob(T, 9) * 6 : (pi === 1 ? 120 : 0), argon: metal ? 42 + wob(T, 10) * 1.5 : 0,
-    rod: metal ? 1.0 + wob(T, 11) * .03 : 0,                  // kg/t AlTi5B1
+    rod: metal ? .8 + wob(T, 11) * .03 : 0,                   // kg/t AlTi5B1
     filterDp: metal ? 14 + 10 * clamp(tc / p.tEnd, 0, 1) + wob(T, 12) * .8 : 0,   // mm metal head across the CFF
     air: metal ? 1.6 + wob(T, 13) * .05 : 0,                  // Nl/min per mould
     oil: metal ? .5 + wob(T, 14) * .02 : 0,                   // ml/min per mould
     pit: 1.15 + wob(T, 15) * .01,                             // m standing water
+    tank: 96 + wob(T, 18) * .5,                               // emergency gravity tank, %
+    ph: 7.6 + wob(T, 19) * .05, cond: 410 + wob(T, 20) * 8,   // casting-water quality
     hyd: 18 + (pi === 5 && unload > 0 ? 6 : 0) + wob(T, 16) * .3,
   };
 }
 
 /* ---------- melting furnaces E1, E2 ---------- */
-const MELT_DEFS = [['ŞARJ', 0, 30], ['ERGİTME', 30, 190], ['ALAŞIM', 190, 222], ['NUMUNE', 222, 250], ['HAZIR', 250, 270], ['TRANSFER', 270, 288]];
 function melter(k, T) {
   const L = mod(T + (k === 0 ? 270 : 126), PLANT.E_CYCLE), n = Math.round((T - L + 270) / PLANT.CYCLE), cast = castInfo(n);
   const pi = phaseOf(MELT_DEFS.map(d => [d[1], d[2]]), L), phases = mkPhases(MELT_DEFS, T - L);
-  const heel = 4, charge = 32, s = clamp((L - 30) / 160, 0, 1);
-  let temp, mass, liq, burn;
-  if (pi === 0) { temp = lerp(718, 682, L / 30); mass = heel + charge * smooth(L / 30); liq = heel / mass; burn = 20; }
-  else if (pi === 1) { temp = 672 + 83 * Math.pow(s, 2.2); mass = heel + charge; liq = (heel + charge * smooth(s * 1.08)) / mass; burn = L < 150 ? 100 : 70; }
-  else if (pi === 2) { temp = lerp(755, 748, (L - 190) / 32); mass = 36; liq = 1; burn = 35; }
-  else if (pi === 3) { temp = lerp(748, 742, (L - 222) / 28); mass = 36; liq = 1; burn = 25; }
-  else if (pi === 4) { temp = lerp(742, 738, (L - 250) / 20); mass = 36; liq = 1; burn = 20; }
-  else { temp = lerp(738, 732, (L - 270) / 18); mass = 36 - charge * (L - 270) / 18; liq = 1; burn = 10; }
-  temp += wob(T, 30 + k) * 1.4;
+  const heel = cast.heelEt, charge = cast.charge, s = clamp((L - 30) / 160, 0, 1), drain = cast.drainE && L < 5;
   // OES result comes 6 min after each sample; additions go in right after the first result
   const sample1 = phases[3].start + 2, corrAt = sample1 + 7, sample2 = corrAt + 14;
+  const full = heel + charge, skim = L >= 216 ? cast.drossW : 0, added = T >= corrAt ? cast.recipe.total / 1000 : 0;
+  let temp, mass, liq;
+  if (pi === 0) {   // a drained furnace first taps its old heel into sows (5 min), then charges
+    const c0 = cast.drainE ? 5 : 0;
+    temp = lerp(718, 682, L / 30); mass = drain ? lerp(PLANT.HEEL_E, heel, L / 5) : heel + charge * smooth((L - c0) / (30 - c0)); liq = (drain ? mass : heel) / mass;
+  }
+  else if (pi === 1) { temp = 672 + 83 * Math.pow(s, 2.2); mass = full; liq = (heel + charge * smooth(s * 1.08)) / mass; }
+  else if (pi === 2) { temp = lerp(755, 748, (L - 190) / 32); mass = full - skim; liq = 1; }
+  else if (pi === 3) { temp = lerp(748, 742, (L - 222) / 28); mass = full - skim + added; liq = 1; }
+  else if (pi === 4) { temp = lerp(742, 738, (L - 250) / 20); mass = full - skim + added; liq = 1; }
+  else { temp = lerp(738, 732, (L - 270) / 18); mass = full - skim + added - cast.transfer * (L - 270) / 18; liq = 1; }
+  temp += wob(T, 30 + k) * 1.4;
+  const burn = meltBurn(L);
   const chemOk = cast.corr ? T >= sample2 + 6 : T >= sample1 + 6;
   return {
     k, name: 'E' + (k + 1), L, n, cast, phase: MELT_DEFS[pi][0], pi, phases, temp, mass, liq, burn,
-    gas: burn * 6 * (1 + wob(T, 32 + k) * .02),             // Nm³/h, 600 at full fire
+    gas: burn / 100 * PLANT.GAS_E * (1 + wob(T, 32 + k) * .02),
     roof: pi === 1 ? 1060 + 80 * (burn / 100) + wob(T, 34 + k) * 8 : 880 + burn * 2 + wob(T, 34 + k) * 6,
-    stir: pi === 2, door: pi === 0, skimmed: pi >= 3, sample1, corrAt, sample2, chemOk,
+    stir: pi === 2, door: pi === 0 && !drain, drain, skimmed: L >= 216, sample1, corrAt, sample2, chemOk,
     pressure: pi === 0 ? 0 : 8 + wob(T, 36 + k) * 1.5,       // Pa
   };
 }
 
 /* ---------- holding / casting furnace B1 ---------- */
+// ARITMA: argon lance + flux 18–26, skim 26, release sample 27 (result 33), settle until the cast at 40
 const HOLD_DEFS = [['DOLUM', 0, 18], ['ARITMA', 18, 40], ['DÖKÜM', 40, null], ['BEKLEME', null, 144]];
+const B1_SAMPLE = 27, B1_RESULT = 33;
 function holder(T) {
   const n = Math.floor(T / PLANT.CYCLE), c = T - n * PLANT.CYCLE, cast = castInfo(n), p = cast.prof;
   const castEnd = PLANT.CAST_START + p.tEnd;
   const defs = HOLD_DEFS.map(d => [d[0], d[1] ?? castEnd, d[2] ?? castEnd]);
   const pi = phaseOf(defs.map(d => [d[1], d[2]]), c), phases = mkPhases(defs, n * PLANT.CYCLE);
-  const poured = pi === 2 ? lengthAt(p, c - PLANT.CAST_START) / PLANT.LEN * cast.gross : (pi === 3 ? cast.gross : 0);
-  const heel = 3, full = heel + 32;
-  const mass = pi === 0 ? heel + 32 * smooth(c / 18) : full - poured;
+  const frac = pi === 2 ? lengthAt(p, c - PLANT.CAST_START) / PLANT.LEN : (pi === 3 ? 1 : 0);
+  const out = cast.gross + PLANT.LAUNDER, poured = frac * cast.gross;
+  const heel = cast.heelBt, full = heel + cast.transfer, skim = c >= 26 ? PLANT.B1_SKIM : 0;
+  // before an alloy change B1 taps its heel into sows at the end of the wait (8 min from c = 130)
+  const next = castInfo(n + 1), drain = pi === 3 && next.drainB && c >= 130;
+  let mass = pi === 0 ? heel + cast.transfer * smooth(c / 18) : full - skim - frac * out;
+  if (drain) mass = lerp(PLANT.HEEL_B, PLANT.HEEL_DRAIN, clamp((c - 130) / 8, 0, 1));
   const temp = (pi === 0 ? lerp(722, 730, c / 18) : pi === 1 ? lerp(730, 736, (c - 18) / 22) : pi === 2 ? lerp(736, 731, (c - 40) / p.tEnd) : 722) + wob(T, 40) * 1.2;
   return {
     name: 'B1', n, cast, c, phase: defs[pi][0], pi, phases, mass, temp, poured,
-    tilt: pi === 2 ? 2 + 22 * (poured / cast.gross) : 0,
-    burn: pi === 1 ? 45 : pi === 2 ? 30 : pi === 0 ? 25 : 15, lance: pi === 1,
+    tilt: pi === 2 ? 2 + 22 * frac : 0, burn: holdBurn(c, castEnd), lance: c >= 18 && c < 26,
+    h2: cast.h2In + wob(T, 41) * .004,                       // Alspek in the furnace
+    sampleAt: phases[0].start + B1_SAMPLE, chemOk: c >= B1_RESULT,
+    alloyChange: cast.heelAlloyB !== cast.alloy, drain, nextAlloy: next.alloy,
   };
 }
 
-/* ---------- homogenising furnaces H1–H5, cooling chamber, saw ---------- */
-const HOMO_DEFS = [['YÜKLEME', 0, 20], ['ISITMA', 20, 260], ['BEKLETME', 260, 620], ['BOŞALTMA', 620, 640], ['BOŞ', 640, 720]];
-function homoTemp(L) {   // [air, metal] °C at local time L
+/* ---------- homogenising furnaces H1–H5, cooling chamber, buffer, saw ---------- */
+function homoTemp(L, alloy) {   // [air, metal] °C at local time L, per alloy recipe
+  const { soak: [, , st], airMax } = PLANT.ALLOYS[alloy];
   if (L < 20) return [lerp(520, 470, L / 20), 60];
-  if (L < 260) { const x = L - 20; return [615 - 145 * Math.exp(-x / 22) - 30 * smooth((x - 120) / 120), 580 - 520 * Math.exp(-x / 48)]; }
-  if (L < 620) return [585, 580];
-  if (L < 640) return [lerp(584, 525, (L - 620) / 20), 579];
+  if (L < 260) { const x = L - 20; return [airMax - (airMax - 470) * Math.exp(-x / 22) - (airMax - st - 5) * smooth((x - 120) / 120), st - (st - 60) * Math.exp(-x / 48)]; }
+  if (L < 620) return [st + 5, st];
+  if (L < 640) return [lerp(st + 4, 525, (L - 620) / 20), st - 1];
   return [520, null];
 }
+function soakFrom(alloy) { const [lo, , st] = PLANT.ALLOYS[alloy].soak; return 20 + 48 * Math.log((st - 60) / (st - lo)); }   // metal enters the soak window
 function homog(k, T) {
   const L = mod(T - PLANT.UNLOAD_END - k * PLANT.CYCLE, PLANT.H_CYCLE), n = Math.round((T - L - PLANT.UNLOAD_END) / PLANT.CYCLE);
   const pi = phaseOf(HOMO_DEFS.map(d => [d[1], d[2]]), L), phases = mkPhases(HOMO_DEFS, T - L);
-  let [air, metal] = homoTemp(L);
+  const cast = pi === 4 ? null : castInfo(n), alloy = cast ? cast.alloy : alloyOf(n + PLANT.H_COUNT);
+  let [air, metal] = homoTemp(L, alloy);
   air += wob(T, 50 + k) * 1.5; if (metal != null) metal += wob(T, 55 + k) * (L > 260 ? .8 : 1.2);
-  const soakFrom = 20 + 48 * Math.log(520 / 5);              // metal reaches 575 °C
-  const soak = clamp(L - soakFrom, 0, 640 - soakFrom);
-  const burn = pi === 1 ? 100 - 60 * smooth((L - 20) / 240) : pi === 2 ? 22 : pi === 4 ? 8 : 0;
-  return { k, name: 'H' + (k + 1), L, n: pi === 4 ? null : n, cast: pi === 4 ? null : castInfo(n), phase: HOMO_DEFS[pi][0], pi, phases, air, metal, soak, soakNeed: 360, burn, gas: burn * 1.2 };
+  const sf = soakFrom(alloy), soak = clamp(L - sf, 0, 620 - sf);
+  const burn = homoBurn(L);
+  return { k, name: 'H' + (k + 1), L, n: cast ? n : null, cast, alloy, recipe: PLANT.ALLOYS[alloy].soak, airMax: PLANT.ALLOYS[alloy].airMax, phase: HOMO_DEFS[pi][0], pi, phases, air, metal, soak, soakNeed: 360, burn, gas: burn / 100 * PLANT.GAS_H };
 }
-function homoCurve(L) { return homoTemp(L); }
+function homoCurve(L, alloy) { return homoTemp(L, alloy); }
 function cooler(T) {
   const n = Math.floor((T - PLANT.COOL_AT) / PLANT.CYCLE), t = T - (n * PLANT.CYCLE + PLANT.COOL_AT);
-  if (t >= PLANT.COOL_MIN) return { active: false, n, next: (n + 1) * PLANT.CYCLE + PLANT.COOL_AT, cast: castInfo(n) };
-  const temp = 25 + 555 * Math.exp(-t / 55) + wob(T, 60) * .8;
-  return { active: true, n, cast: castInfo(n), t, temp, rate: 555 / 55 * Math.exp(-t / 55) * 60, avgRate: 330 / (55 * Math.log(555 / 225)) * 60, fans: 100 };
+  const cast = castInfo(n), st = PLANT.ALLOYS[cast.alloy].soak[2];
+  const curve = x => 25 + (st - 25) * Math.exp(-x / 55);
+  const avgRate = (st - 250) / (55 * Math.log((st - 25) / 225)) * 60;
+  if (t >= PLANT.COOL_MIN) return { active: false, n, cast, next: (n + 1) * PLANT.CYCLE + PLANT.COOL_AT, avgRate, curve };
+  return { active: true, n, cast, t, temp: curve(t) + wob(T, 60) * .8, rate: (st - 25) / 55 * Math.exp(-t / 55) * 60, avgRate, curve, fans: 100 };
+}
+// ambient buffer between the cooler and UT: logs drift from ~210 °C to ≤ 60 °C
+const bufferTemp = t => 25 + 186 * Math.exp(-t / 120);
+function buffer(T) {
+  const list = [];
+  for (let n = Math.floor((T - PLANT.SAW_AT) / PLANT.CYCLE); n <= Math.floor((T - PLANT.BUF_AT) / PLANT.CYCLE); n++) {
+    const t = T - (n * PLANT.CYCLE + PLANT.BUF_AT);
+    if (t >= 0 && t < PLANT.BUFFER_MIN) list.push({ cast: castInfo(n), t, temp: bufferTemp(t), out: n * PLANT.CYCLE + PLANT.SAW_AT });
+  }
+  return list;
 }
 function saw(T) {
   const n = Math.floor((T - PLANT.SAW_AT) / PLANT.CYCLE), t = T - (n * PLANT.CYCLE + PLANT.SAW_AT), cast = castInfo(n);
-  if (t >= PLANT.SAW_MIN) return { active: false, n, cast, next: (n + 1) * PLANT.CYCLE + PLANT.SAW_AT, done: cast.logs };
+  const logTemp = bufferTemp(PLANT.BUFFER_MIN) + wob(T, 61) * .6;
+  if (t >= PLANT.SAW_MIN) return { active: false, n, cast, next: (n + 1) * PLANT.CYCLE + PLANT.SAW_AT, done: cast.logs, logTemp };
   const done = Math.floor(t / PLANT.SAW_MIN * cast.logs);
-  return { active: true, n, cast, t, done, cur: Math.min(cast.logs, done + 1), rejIdx: cast.utRej ? Math.floor(cast.logs * rnd(n, 18)) : -1 };
+  return { active: true, n, cast, t, done, cur: Math.min(cast.logs, done + 1), rejIdx: cast.utRej ? Math.floor(cast.logs * rnd(n, 18)) : -1, logTemp };
+}
+// which mould a sawn log came from (closed moulds produce none) and its homogenising batch
+function logTrace(cast, idx) {
+  const moulds = [...Array(PLANT.MOULDS).keys()].filter(i => !cast.closed.includes(i));
+  const m = moulds[Math.min(idx, moulds.length - 1)];
+  return { id: `${cast.id}-${mouldName(m)}`, mould: mouldName(m), batch: 'H' + (mod(cast.n, PLANT.H_COUNT) + 1) };
 }
 
 /* ---------- where each cast is on the plant floor ---------- */
 const STAGES = [
-  { key: 'firin', label: 'Ergitme', from: -270, to: 18 },
-  { key: 'dokum', label: 'Döküm', from: 18, to: PLANT.UNLOAD_END },
+  { key: 'firin', label: 'Ergitme', from: -270, to: PLANT.FILL_END },
+  { key: 'dokum', label: 'Döküm', from: PLANT.FILL_END, to: PLANT.UNLOAD_END },
   { key: 'homo', label: 'Homojenizasyon', from: PLANT.UNLOAD_END, to: PLANT.COOL_AT },
-  { key: 'sogut', label: 'Soğutma', from: PLANT.COOL_AT, to: PLANT.SAW_AT },
-  { key: 'testere', label: 'Testere ve UT', from: PLANT.SAW_AT, to: PLANT.SAW_AT + PLANT.SAW_MIN },
+  { key: 'sogut', label: 'Soğutma', from: PLANT.COOL_AT, to: PLANT.BUF_AT },
+  { key: 'tampon', label: 'Soğuma tamponu', from: PLANT.BUF_AT, to: PLANT.SAW_AT },
+  { key: 'testere', label: 'UT ve testere', from: PLANT.SAW_AT, to: PLANT.SAW_AT + PLANT.SAW_MIN },
 ];
+PLANT.JOURNEY = STAGES[STAGES.length - 1].to - STAGES[0].from;   // minutes from charging to packed
 function castStage(n, T) {
   const r = T - n * PLANT.CYCLE;
   for (let i = 0; i < STAGES.length; i++) if (r >= STAGES[i].from && r < STAGES[i].to) return { i, ...STAGES[i], p: (r - STAGES[i].from) / (STAGES[i].to - STAGES[i].from) };
-  return r >= STAGES[STAGES.length - 1].to ? { i: 5, key: 'stok', label: 'Stok', p: 1 } : null;
+  return r >= STAGES[STAGES.length - 1].to ? { i: STAGES.length, key: 'stok', label: 'Stok', p: 1 } : null;
 }
-// casts whose casting has finished, newest first
+// casts whose casting (incl. the water after it) has finished, newest first
 function doneCasts(T, count = 10) {
   const out = []; let n = Math.floor((T - PLANT.CAST_START) / PLANT.CYCLE);
   while (out.length < count) { const c = castInfo(n); if (c.end <= T) out.push(c); n--; }
   return out;
 }
+const dayStart = T => Math.floor(T / 1440) * 1440;
+// metal poured into the moulds since 00:00 (casts started today, the running one pro rata)
+function pouredToday(T) {
+  let s = 0;
+  for (let n = Math.ceil((dayStart(T) - PLANT.CAST_START) / PLANT.CYCLE); n * PLANT.CYCLE + PLANT.CAST_START <= T; n++) {
+    const c = castInfo(n); s += c.gross * lengthAt(c.prof, T - c.start) / PLANT.LEN;
+  }
+  return s;
+}
+// good billet that left the saw since 00:00, including logs already cut from the running batch
+function shippedToday(T) {
+  const fin = PLANT.SAW_AT + PLANT.SAW_MIN, by = {}; let total = 0, batches = 0;
+  for (let n = Math.floor((dayStart(T) - fin) / PLANT.CYCLE); n * PLANT.CYCLE + PLANT.SAW_AT <= T; n++) {
+    const c = castInfo(n), t0 = n * PLANT.CYCLE + PLANT.SAW_AT, end = t0 + PLANT.SAW_MIN;
+    let logs;
+    if (end <= T) { if (end < dayStart(T)) continue; logs = c.logs - c.utRej; batches++; }
+    else { const s = saw(T); logs = Math.max(0, s.done - (s.rejIdx >= 0 && s.done > s.rejIdx ? 1 : 0)); }
+    const t = logs * PLANT.T_PER_M * PLANT.NET_M; by[c.alloy] = (by[c.alloy] || 0) + t; total += t;
+  }
+  return { total, by, batches };
+}
 function avg(list, f) { return list.reduce((s, x) => s + f(x), 0) / list.length; }
 
 /* ---------- simulated clock (live by default; ×10 / ×60 demo continues across pages) ---------- */
-const SIM = { T0: (Date.now() - DAY0) / 60000, t0: Date.now(), speed: 1 };
-try { const s = JSON.parse(sessionStorage.getItem('bd-sim') || 'null'); if (s && s.speed > 1) Object.assign(SIM, s); } catch (e) {}
+const SIM = { T0: wallT(), t0: Date.now(), speed: 1 };
+try {
+  const s = JSON.parse(sessionStorage.getItem('bd-sim') || 'null');
+  // saved T is relative to the saving page's day; shift it onto this page's day
+  if (s && s.speed > 1) Object.assign(SIM, s, { T0: s.T0 - (dayIndex(DAY0) - (s.day ?? dayIndex(DAY0))) * 1440 });
+} catch (e) {}
 SIM.T = () => SIM.T0 + (Date.now() - SIM.t0) / 60000 * SIM.speed;
-function simSave() { try { sessionStorage.setItem('bd-sim', JSON.stringify({ T0: SIM.T0, t0: SIM.t0, speed: SIM.speed })); } catch (e) {} }
+function simSave() { try { sessionStorage.setItem('bd-sim', JSON.stringify({ T0: SIM.T0, t0: SIM.t0, speed: SIM.speed, day: dayIndex(DAY0) })); } catch (e) {} }
 function simSet(speed, T) {
-  if (speed === 1 && T == null) { SIM.T0 = (Date.now() - DAY0) / 60000; } else SIM.T0 = T ?? SIM.T();
+  if (speed === 1 && T == null) { SIM.T0 = wallT(); } else SIM.T0 = T ?? SIM.T();
   SIM.t0 = Date.now(); SIM.speed = speed; simSave(); syncChrome(); tick(true);
 }
 function simJump(T) { simSet(SIM.speed === 1 ? 10 : SIM.speed, T); }
@@ -733,34 +876,34 @@ function states(T) {
   return { tb, e1, e2, b1, H, co, sw };
 }
 
+const LANE_HREF = { firin: 'firin.html', dokum: 'dokum.html', homo: 'homojen.html', sogut: 'homojen.html', tampon: 'homojen.html', testere: 'homojen.html' };
+const LANE_SUB = { firin: 'E1 / E2 → B1', dokum: 'B1 · hat · D1', homo: 'H1–H5 · alaşıma özel', sogut: '> 250 °C/sa', tampon: '≤ 60 °C olana kadar', testere: 'UT · kesim · paket' };
 let lastMin = -1;
 window.onTick = (T, force) => {
-  const S = states(T), { tb, e1, e2, b1, H, co, sw } = S;
-  const day0 = Math.floor(T / 1440) * 1440;
+  const S = states(T), { tb, e1, e2, b1, H, co, sw } = S, bf = buffer(T);
+  const day0 = dayStart(T);
   const today = doneCasts(T, 12).filter(c => c.end >= day0), last10 = doneCasts(T, 10);
-  const castToday = today.reduce((s, c) => s + c.gross, 0) + (tb.metal ? tb.tons : 0);
-  let ready = 0; doneCasts(T, 14).forEach(x => { const fin = x.n * PLANT.CYCLE + PLANT.SAW_AT + PLANT.SAW_MIN; if (fin <= T && fin >= day0) ready += x.net; });
-  if (sw.active) ready += Math.max(0, sw.done - (sw.rejIdx >= 0 && sw.done > sw.rejIdx ? 1 : 0)) * PLANT.T_PER_M * PLANT.NET_M;
-  const rec = avg(last10, c => c.recovery), dross = avg(last10, c => c.dross), gas = avg(last10, c => c.gas);
-  const done = today.length, planned = Math.min(PLANT.PER_DAY, Math.round((T - day0) / 144 + 1));
+  const castToday = pouredToday(T), ready = shippedToday(T).total;
+  const yieldC = avg(last10, c => c.castYield), loss = avg(last10, c => c.meltLoss), dross = avg(last10, c => c.dross), gas = avg(last10, c => c.gas);
+  const done = today.length, nextCast = castInfo(tb.n + (tb.pi <= 1 ? 0 : 1));
   setHTML($('#kpis'), [
-    `<div class="card kpi"><span class="l">Bugün döküm</span><span class="v num">${done}<small>/ ${PLANT.PER_DAY}</small></span><span class="s">${tb.metal ? `${tb.cast.id} döküyor` : `sonraki ${hhmm(tb.phases[2].start)}`}</span><span class="bar"><i style="width:${done * 10}%;background:var(--ok)"></i>${tb.metal ? `<i style="width:${tb.progress * 10}%;background:var(--melt)"></i>` : ''}</span></div>`,
-    `<div class="card kpi"><span class="l">Dökülen metal</span><span class="v num">${fmt(castToday, 1)}<small>t</small></span><span class="s">gün hedefi ${fmt(PLANT.PER_DAY * PLANT.MOULDS * PLANT.LOG_T, 0)} t</span></div>`,
+    `<div class="card kpi"><span class="l">Bugün döküm</span><span class="v num">${done}<small>/ ${PLANT.PER_DAY}</small></span><span class="s">${tb.metal ? `${tb.cast.id} döküyor` : `sonraki ${hhmm(nextCast.start)}`}</span><span class="bar"><i style="width:${done * 10}%;background:var(--ok)"></i>${tb.metal ? `<i style="width:${tb.progress * 10}%;background:var(--melt)"></i>` : ''}</span></div>`,
+    `<div class="card kpi"><span class="l">Dökülen metal</span><span class="v num">${fmt(castToday, 1)}<small>t</small></span><span class="s">gün planı ${fmt(PLANT.PER_DAY * PLANT.MOULDS * PLANT.LOG_T, 0)} t</span></div>`,
     `<div class="card kpi"><span class="l">Sevke hazır</span><span class="v num">${fmt(ready, 1)}<small>t</small></span><span class="s">kesilmiş, UT'den geçmiş</span></div>`,
-    `<div class="card kpi ${rec < 90 ? 'warn' : 'ok'}"><span class="l">Metal verimi</span><span class="v num">%${fmt(rec, 1)}</span><span class="s">sevke hazır / şarj · son 10</span></div>`,
-    `<div class="card kpi ${dross > 22 ? 'warn' : ''}"><span class="l">Cüruf</span><span class="v num">${fmt(dross, 1)}<small>kg/t</small></span><span class="s">tipik 15–25 kg/t</span></div>`,
-    `<div class="card kpi"><span class="l">Doğalgaz</span><span class="v num">${fmt(gas)}<small>Nm³/t</small></span><span class="s">ergitme + homojenizasyon</span></div>`,
+    `<div class="card kpi ${yieldC < 90 ? 'warn' : 'ok'}"><span class="l">Döküm verimi</span><span class="v num">%${fmt(yieldC, 1)}</span><span class="s">iyi billet / brüt döküm · son 10</span></div>`,
+    `<div class="card kpi ${loss > 2.5 ? 'warn' : ''}"><span class="l">Ergitme kaybı</span><span class="v num">%${fmt(loss, 1)}</span><span class="s">cüruf ${fmt(dross, 1)} kg/t · hedef ≤ %2,5</span></div>`,
+    `<div class="card kpi"><span class="l">Doğalgaz</span><span class="v num">${fmt(gas)}<small>Nm³/t</small></span><span class="s">ergitme + B1 + homojenizasyon</span></div>`,
   ].join(''));
 
   // plan
   const info = {
     hurda: { fill: 'var(--panel-2)', sub: `şarj ${e1.phase === 'ŞARJ' ? 'E1' : e2.phase === 'ŞARJ' ? 'E2' : 'bekliyor'}`, ph: '' },
-    e1: { fill: e1.liq > .5 ? heat(e1.temp - 160) : 'var(--steel-2)', sub: `${fmt(e1.temp)} °C · ${fmt(e1.mass, 1)} t`, ph: e1.phase },
-    e2: { fill: e2.liq > .5 ? heat(e2.temp - 160) : 'var(--steel-2)', sub: `${fmt(e2.temp)} °C · ${fmt(e2.mass, 1)} t`, ph: e2.phase },
-    b1: { fill: b1.mass > 6 ? heat(b1.temp - 160) : 'var(--panel-2)', sub: `${fmt(b1.temp)} °C`, ph: b1.phase },
+    e1: { fill: e1.liq > .5 ? heat(e1.temp - 160) : 'var(--steel-2)', sub: `${fmt(e1.temp)} °C · ${fmt(e1.mass, 1)} t`, ph: e1.drain ? 'DİP → SOW' : e1.phase },
+    e2: { fill: e2.liq > .5 ? heat(e2.temp - 160) : 'var(--steel-2)', sub: `${fmt(e2.temp)} °C · ${fmt(e2.mass, 1)} t`, ph: e2.drain ? 'DİP → SOW' : e2.phase },
+    b1: { fill: b1.mass > 6 ? heat(b1.temp - 160) : 'var(--panel-2)', sub: `${fmt(b1.temp)} °C`, ph: b1.drain ? 'DİP → SOW' : b1.phase },
     hat: { fill: tb.metal ? 'color-mix(in srgb,var(--melt) 22%,var(--panel-2))' : 'var(--panel-2)', sub: tb.metal ? `H₂ ${fmt(tb.h2Out, 3)}` : 'metal yok', ph: 'SNIF · CFF' },
     d1: { fill: 'var(--panel-2)', sub: tb.metal ? `${fmt(tb.L)} mm · ${fmt(tb.v, 0)} mm/dk` : tb.cast.id, ph: tb.phase },
-    sog: { fill: heat(co.active ? co.temp : null), sub: co.active ? `${fmt(co.temp)} °C` : 'boş', ph: co.active ? 'SOĞUTMA' : '' },
+    sog: { fill: heat(co.active ? co.temp : null), sub: co.active ? `${fmt(co.temp)} °C` : 'boş', ph: bf.length ? `TAMPON ${bf.length}` : '' },
     saw: { fill: sw.active ? 'color-mix(in srgb,var(--accent) 14%,var(--panel-2))' : 'var(--panel-2)', sub: sw.active ? `${sw.done}/${sw.cast.logs} log` : 'bekliyor', ph: sw.active ? 'KESİM' : '' },
     stok: { fill: 'var(--panel-2)', sub: `${fmt(ready, 0)} t bugün`, ph: '' },
   };
@@ -784,37 +927,49 @@ window.onTick = (T, force) => {
   const P = (st, t) => `<span class="pill ${st}"><i></i>${t}</span>`;
   let h = '';
   const K = rows => `<div class="kv">${rows.map(([a, b]) => `<span>${a}</span><b>${b}</b>`).join('')}</div>`;
-  const link = `<a class="ibtn primary" href="${U[sel][5]}">Panele git →</a>`;
+  $('#inspLink').href = U[sel][5];
   if (sel === 'e1' || sel === 'e2') {
     const f = sel === 'e1' ? e1 : e2;
-    h = `<h3>${f.name} ${P(f.phase === 'HAZIR' ? 'ok' : 'run', f.phase)}</h3>${K([['Döküm', f.cast.id + ' · ' + f.cast.alloy], ['Metal', fmt(f.temp) + ' °C'], ['Kütle', fmt(f.mass, 1) + ' t · sıvı %' + fmt(f.liq * 100)], ['Brülör', '%' + fmt(f.burn) + ' · ' + fmt(f.gas) + ' Nm³/h'], ['Kimya', f.chemOk ? 'onaylı' : 'bekleniyor'], ['Transfer', hhmm(f.phases[5].start)]])}<p>Ergitme fırını 288 dakikalık çevrimde çalışır. İki fırın sırayla B1'i besler.</p>`;
+    h = `<h3>${f.name} ${P(f.phase === 'HAZIR' ? 'ok' : 'run', f.phase)}</h3>${K([['Döküm', f.cast.id + ' · ' + f.cast.alloy], ['Metal', fmt(f.temp) + ' °C'], ['Kütle', fmt(f.mass, 1) + ' t · sıvı %' + fmt(f.liq * 100)], ['Brülör', '%' + fmt(f.burn) + ' · ' + fmt(f.gas) + ' Nm³/h'], ['Kimya', f.chemOk ? 'fırın hedefinde' : 'bekleniyor'], ['Dip', `${fmt(f.cast.heelEt, 1)} t ${f.cast.heelAlloyE}${f.cast.drainE ? ' (boşaltıldı)' : ''}`], ['Transfer', hhmm(f.phases[5].start) + ' · ' + fmt(f.cast.transfer, 1) + ' t']])}<p>Ergitme fırını 288 dakikalık çevrimde çalışır. İki fırın sırayla B1'i besler.</p>`;
   } else if (sel === 'b1') {
-    h = `<h3>B1 ${P(b1.phase === 'DÖKÜM' ? 'run' : 'idle', b1.phase)}</h3>${K([['Döküm', b1.cast.id], ['Metal', fmt(b1.temp) + ' °C'], ['Kütle', fmt(b1.mass, 1) + ' t'], ['Eğim', fmt(b1.tilt, 1) + '°'], ['Döküm başlangıcı', hhmm(b1.phases[2].start + (b1.pi >= 2 ? PLANT.CYCLE : 0))]])}<p>Devirmeli döküm fırını. Dolumdan sonra argon ve flaks ile arıtılır, dinlendirilir.</p>`;
+    h = `<h3>B1 ${P(b1.phase === 'DÖKÜM' ? 'run' : 'idle', b1.phase)}</h3>${K([['Döküm', b1.cast.id], ['Metal', fmt(b1.temp) + ' °C'], ['Kütle', fmt(b1.mass, 1) + ' t'], ['Eğim', fmt(b1.tilt, 1) + '°'], ['H₂ (Alspek)', fmt(b1.h2, 2) + ' ml/100g'], ['Kimya', b1.chemOk || b1.pi >= 2 ? 'B1 onaylı' : 'onay numunesi ' + hhmm(b1.sampleAt)], ['Döküm başlangıcı', hhmm(b1.phases[2].start + (b1.pi >= 2 ? PLANT.CYCLE : 0))]])}<p>Devirmeli döküm fırını. Dolumdan sonra argon ve flaks ile arıtılır, onay numunesi alınır, dinlendirilir.${b1.drain ? ` Şu an dibi sow kalıplarına boşaltılıyor: sonraki döküm ${b1.nextAlloy}.` : ''}</p>`;
   } else if (sel === 'hat') {
     h = `<h3>Döküm hattı ${P(tb.metal ? 'run' : 'idle', tb.metal ? 'METAL AKIYOR' : 'BOŞ')}</h3>${K([['Oluk metali', tb.metal ? fmt(tb.launder) + ' °C' : '—'], ['H₂ çıkış', tb.metal ? fmt(tb.h2Out, 3) + ' ml/100g' : '—'], ['Degazör', fmt(tb.rotor) + ' d/dk'], ['Tane inceltici', tb.metal ? fmt(tb.rod, 2) + ' kg/t' : '—'], ['Filtre ΔP', tb.metal ? fmt(tb.filterDp) + ' mm' : '—']])}<p>SNIF degazör, AlTi5B1 çubuk besleyici ve 40 ppi seramik köpük filtre.</p>`;
   } else if (sel === 'd1') {
     h = `<h3>D1 ${P(tb.metal ? 'run' : tb.phase === 'HAZIR' ? 'ok' : 'idle', tb.phase)}</h3>${K([['Döküm', c.id + ' · ' + c.alloy], ['Kalıp', `${c.logs} / 64`], ['Boy', fmt(tb.L) + ' / 7.000 mm'], ['Hız', fmt(tb.v, 1) + ' mm/dk'], ['Su', fmt(tb.water) + ' m³/h'], [tb.pi <= 1 ? 'Başlangıç' : 'Bitiş', hhmm(tb.pi <= 1 ? tb.phases[2].start : tb.phases[4].end)]])}<p>Hot-top DC döküm masası, 8 × 8 kalıp, Ø178 mm × 7 m log.</p>`;
   } else if (sel[0] === 'h' && sel !== 'hurda') {
     const x = H[+sel[1] - 1];
-    h = `<h3>${x.name} ${P(x.phase === 'BEKLETME' ? 'run' : x.phase === 'BOŞ' ? 'idle' : 'warn', x.phase)}</h3>${K([['Parti', x.cast ? x.cast.id : '—'], ['Metal', x.metal != null ? fmt(x.metal) + ' °C' : '—'], ['Hava', fmt(x.air) + ' °C'], ['Bekletme', fmt(x.soak / 60, 1) + ' / 6 sa'], ['Çıkış', hhmm(x.phases[3].start)]])}<p>575–585 °C'de en az 6 saat. Yükleme döküm masasından 20 dakika içinde yapılır.</p>`;
+    h = `<h3>${x.name} ${P(x.phase === 'BEKLETME' ? 'run' : x.phase === 'BOŞ' ? 'idle' : 'warn', x.phase)}</h3>${K([['Parti', x.cast ? x.cast.id : '—'], ['Metal', x.metal != null ? fmt(x.metal) + ' °C' : '—'], ['Hava', fmt(x.air) + ' °C'], ['Bekletme', fmt(x.soak / 60, 1) + ' / 6 sa'], ['Reçete', `${x.alloy} · ${x.recipe[0]}–${x.recipe[1]} °C`], ['Çıkış', hhmm(x.phases[3].start)]])}<p>Alaşıma özel sıcaklıkta en az 6 saat: 6063/6060 için 575–585 °C, 6082 için 550–565 °C.</p>`;
   } else if (sel === 'sog') {
-    h = `<h3>Soğutma ${P(co.active ? 'run' : 'idle', co.active ? 'AKTİF' : 'BOŞ')}</h3>${K(co.active ? [['Parti', co.cast.id], ['Metal', fmt(co.temp) + ' °C'], ['Soğuma hızı', fmt(co.rate) + ' °C/sa'], ['Hedef', '> 250 °C/sa']] : [['Son parti', co.cast.id], ['Sonraki', hhmm(co.next)]])}<p>Fan ve su sisiyle zorlanmış soğutma. Mg₂Si'yi ince tutar.</p>`;
+    h = `<h3>Soğutma ${P(co.active ? 'run' : 'idle', co.active ? 'AKTİF' : 'BOŞ')}</h3>${K(co.active ? [['Parti', co.cast.id], ['Metal', fmt(co.temp) + ' °C'], ['Soğuma hızı', fmt(co.rate) + ' °C/sa'], ['Hedef', '> 250 °C/sa']] : [['Son parti', co.cast.id], ['Sonraki', hhmm(co.next)]]) + K([['Tamponda', bf.length ? bf.map(b => `${b.cast.id} ${fmt(b.temp)} °C`).join(', ') : 'boş']])}<p>Fan ve su sisiyle zorlanmış soğutma Mg₂Si'yi ince tutar. Sonra loglar tamponda 60 °C'nin altına iner.</p>`;
   } else if (sel === 'saw') {
-    h = `<h3>UT + testere ${P(sw.active ? 'run' : 'idle', sw.active ? 'KESİM' : 'BEKLİYOR')}</h3>${K(sw.active ? [['Parti', sw.cast.id], ['İlerleme', `${sw.done} / ${sw.cast.logs} log`], ['Kesim', 'baş 300 · kuyruk 200 mm'], ['UT', sw.rejIdx >= 0 && sw.done > sw.rejIdx ? '1 red' : 'temiz']] : [['Son parti', sw.cast.id], ['Sonraki', hhmm(sw.next)]])}<p>Ultrasonik muayene merkez çatlağını yakalar. Kesim artığı iç hurda olarak döner.</p>`;
+    h = `<h3>UT + testere ${P(sw.active ? 'run' : 'idle', sw.active ? 'KESİM' : 'BEKLİYOR')}</h3>${K(sw.active ? [['Parti', sw.cast.id], ['İlerleme', `${sw.done} / ${sw.cast.logs} log`], ['Kesim', `dip ${PLANT.CROP_BUTT} · baş ${PLANT.CROP_HEAD} mm`], ['Log sıcaklığı', fmt(sw.logTemp) + ' °C'], ['UT', sw.rejIdx >= 0 && sw.done > sw.rejIdx ? '1 red' : 'temiz']] : [['Son parti', sw.cast.id], ['Sonraki', hhmm(sw.next)]])}<p>Ultrasonik muayene merkez çatlağını yakalar. Kesim artığı iç hurda olarak döner.</p>`;
   } else if (sel === 'stok') {
-    h = `<h3>Stok</h3>${K([['Bugün sevke hazır', fmt(ready, 1) + ' t'], ['Paket', '7 log · ' + fmt(7 * PLANT.T_PER_M * PLANT.NET_M, 2) + ' t'], ['Ürün', 'Ø178 × 6.500 mm']])}<p>Paketler döküm numarası, alaşım ve homojenizasyon partisiyle etiketlenir.</p>`;
+    h = `<h3>Stok</h3>${K([['Bugün sevke hazır', fmt(ready, 1) + ' t'], ['Paket', '7 log · ' + fmt(7 * PLANT.T_PER_M * PLANT.NET_M, 2) + ' t'], ['Ürün', `Ø178 × ${fmt(PLANT.NET_M * 1000)} mm`]])}<p>Paketler döküm numarası, alaşım ve homojenizasyon partisiyle etiketlenir.</p>`;
   } else {
-    h = `<h3>Hurda sahası</h3>${K([['Sıradaki şarj', (e1.phases[0].start + PLANT.E_CYCLE < e2.phases[0].start + PLANT.E_CYCLE ? 'E1 ' + hhmm(e1.phases[0].start + PLANT.E_CYCLE) : 'E2 ' + hhmm(e2.phases[0].start + PLANT.E_CYCLE))], ['Karışım', 'primer · iç hurda · dış hurda'], ['Şarj başına', '32 t']])}<p>Yağlı ve boyalı hurda cürufu artırır. Şarj öncesi kontrol edilir.</p>`;
+    h = `<h3>Hurda sahası</h3>${K([['Sıradaki şarj', (e1.phases[0].start + PLANT.E_CYCLE < e2.phases[0].start + PLANT.E_CYCLE ? 'E1 ' + hhmm(e1.phases[0].start + PLANT.E_CYCLE) : 'E2 ' + hhmm(e2.phases[0].start + PLANT.E_CYCLE))], ['Karışım', 'primer · iç hurda · dış hurda'], ['Şarj başına', `~${fmt(castInfo(e1.n).charge, 0)} t`]])}<p>Yağlı ve boyalı hurda cürufu artırır. Şarj öncesi kontrol edilir.</p>`;
   }
-  setHTML($('#insp'), h + link);
+  setHTML($('#insp'), h);
 
-  // lanes: every cast currently somewhere between the furnace and the saw
-  const base = Math.floor(T / PLANT.CYCLE);
-  const lanes = STAGES.map(s => ({ ...s, chips: [] }));
-  for (let n = base - 7; n <= base + 3; n++) { const st = castStage(n, T); if (st && st.i < 5) lanes[st.i].chips.push({ c: castInfo(n), p: st.p }); }
-  const hrefs = { firin: 'firin.html', dokum: 'dokum.html', homo: 'homojen.html', sogut: 'homojen.html', testere: 'homojen.html' };
-  const sub = { firin: 'E1 / E2 → B1', dokum: 'B1 · hat · D1', homo: 'H1–H5 · 580 °C', sogut: '> 250 °C/sa', testere: 'UT · kesim · paket' };
-  setHTML($('#lanes'), lanes.map(l => `<div class="lane"><div class="lh"><b>${l.label}</b><span>${sub[l.key]} · ${dur(l.to - l.from)}</span></div><div class="track">${l.chips.map(x => `<a class="chipu" href="${hrefs[l.key]}" title="${x.c.id} · ${x.c.alloy}" style="left:${4 + x.p * 92}%;background:${alloyColor(x.c.alloy)}">${x.c.id.slice(-2)}</a>`).join('')}</div></div>`).join(''));
+  // lanes: every cast currently somewhere between the furnace and the saw. Chips are kept and moved,
+  // not redrawn, so links stay clickable and focusable while they travel.
+  const lanesBox = $('#lanes'), base = Math.floor(T / PLANT.CYCLE);
+  if (!lanesBox.children.length) {
+    lanesBox.innerHTML = STAGES.map(st => `<div class="lane"><div class="lh"><b>${st.label}</b><span>${LANE_SUB[st.key]} · ${dur(st.to - st.from)}</span></div><div class="track"></div></div>`).join('');
+    $('#journey').textContent = `Hurda fırına girdiği andan pakete kadar ~${Math.round(PLANT.JOURNEY / 60)} saat`;
+  }
+  const want = new Map();
+  for (let n = base - 11; n <= base + 3; n++) { const st = castStage(n, T); if (st && st.i < STAGES.length) want.set(n, st); }
+  $$('.lane', lanesBox).forEach((lane, li) => {
+    const track = lane.querySelector('.track');
+    $$('.chipu', track).forEach(a => { const st = want.get(+a.dataset.n); if (!st || st.i !== li) a.remove(); });
+    for (const [n, st] of want) {
+      if (st.i !== li) continue;
+      let a = track.querySelector(`[data-n="${n}"]`);
+      if (!a) { const x = castInfo(n); a = document.createElement('a'); a.className = 'chipu'; a.dataset.n = n; a.href = LANE_HREF[st.key]; a.title = `${x.id} · ${x.alloy}`; a.style.background = alloyColor(x.alloy); a.textContent = x.id.slice(-2); track.append(a); }
+      a.style.left = (4 + st.p * 92).toFixed(2) + '%';
+    }
+  });
 
   // slower parts once per plant-minute
   const lk = Math.floor(T);
@@ -845,11 +1000,14 @@ window.onTick = (T, force) => {
       F.push({ t: mk.corrAt, sev: 'warn', txt: `<b>${mk.name} numune 1:</b> ${low}. Eklendi: ${r.adds.map(a => `${fmt(a.kg, 1)} kg ${a.el === 'Mg' ? 'Mg' : a.el === 'Si' ? 'Si metal' : a.name}`).join(', ')}.` });
       F.push({ t: mk.sample2 + 6, sev: 'ok', txt: `${mk.name} numune 2 onaylandı · ${x.id} · ${r.adds.map(a => `${a.el} ${fmt(x.chem[a.el], 3)}`).join(', ')}.` });
     }
+    if (x.drainE) F.push({ t: mk.phases[0].start + 5, sev: 'info', txt: `<b>${mk.name}</b> alaşım değişimi (${x.heelAlloyE} → ${x.alloy}): dip sow kalıplarına boşaltıldı.` });
+    if (x.drainB) F.push({ t: n * PLANT.CYCLE - 6, sev: 'info', txt: `<b>B1</b> alaşım değişimi (${x.heelAlloyB} → ${x.alloy}): dip sow kalıplarına boşaltıldı.` });
+    F.push({ t: n * PLANT.CYCLE + B1_RESULT, sev: 'ok', txt: `<b>B1 onay numunesi</b> · ${x.id} · Si ${fmt(x.b1chem.Si, 3)}, Mg ${fmt(x.b1chem.Mg, 3)}${x.alloy === '6082' ? `, Mn ${fmt(x.b1chem.Mn, 3)}` : ''}: döküme onaylı.` });
     if (x.closed.length) F.push({ t: x.start - 20, sev: 'info', txt: `${x.closed.map(mouldName).join(', ')} bakımda. <b>${x.id}</b> ${x.logs} kalıpla dökülecek.` });
     F.push({ t: x.start, sev: 'info', txt: `<b>${x.id}</b> döküm başladı · ${x.alloy} · ${x.logs} kalıp.` });
     if (x.h2Out > .135) F.push({ t: x.start + 12, sev: 'warn', txt: `<b>${x.id}</b> H₂ ${fmt(x.h2Out, 3)} sınıra yakın. Degazör rotor devri artırıldı.` });
     F.push({ t: x.end, sev: 'ok', txt: `<b>${x.id}</b> tamamlandı · ${fmt(x.gross, 1)} t · ${x.logs} log · ${dur(x.prof.tTaper)}.` });
-    const hk = mod(n, 5); F.push({ t: n * PLANT.CYCLE + PLANT.UNLOAD_END + 20 + 48 * Math.log(520 / 5) + 360, sev: 'ok', txt: `H${hk + 1} · ${x.id} 6 saat bekletmeyi tamamladı.` });
+    const hk = mod(n, 5); F.push({ t: n * PLANT.CYCLE + PLANT.UNLOAD_END + soakFrom(x.alloy) + 360, sev: 'ok', txt: `H${hk + 1} · ${x.id} ${PLANT.ALLOYS[x.alloy].soak[0]}–${PLANT.ALLOYS[x.alloy].soak[1]} °C'de 6 saat bekletmeyi tamamladı.` });
     if (x.utRej) F.push({ t: n * PLANT.CYCLE + PLANT.SAW_AT + PLANT.SAW_MIN * .5, sev: 'warn', txt: `<b>UT:</b> ${x.id} 1 logda merkez çatlağı. Log iç hurdaya ayrıldı.` });
   }
   const shown = F.filter(e => e.t <= T && e.t > T - 720).sort((a, b) => b.t - a.t).slice(0, 16);
@@ -858,7 +1016,7 @@ window.onTick = (T, force) => {
   $('#bellN').textContent = recent; $('#bell').classList.toggle('warn', recent > 0);
 
   // calendar
-  const d = new Date(DAY0 + day0 * 60000);
+  const d = plantDate(day0);
   $('#calD').textContent = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' }).toUpperCase();
   let cal = '';
   for (let k = 0; k < PLANT.PER_DAY; k++) {
@@ -874,7 +1032,8 @@ window.onTick = (T, force) => {
   const L10 = last10.slice().reverse();
   const bars = (vals, max, lim, col, lbl) => `<div class="qbars">${vals.map(v => `<i style="height:${v / max * 100}%;background:${v > lim ? 'var(--warn)' : col}"></i>`).join('')}<span class="lim" style="bottom:${lim / max * 100}%"><span>${lbl}</span></span></div><div class="qx">${L10.map(x => `<span>${x.id.slice(-2)}</span>`).join('')}</div>`;
   $('#q').innerHTML = `<div><span class="qh">H₂ çıkış · ml/100 g</span><div class="qv num">${fmt(avg(L10, x => x.h2Out), 3)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.h2Out), .2, .15, 'var(--accent)', 'sınır 0,15')}</div>
-    <div><span class="qh">Tane boyutu · µm</span><div class="qv num">${fmt(avg(L10, x => x.grain))} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.grain), 200, 150, 'var(--a6060)', 'sınır 150')}</div>`;
+    <div><span class="qh">Tane boyutu · µm</span><div class="qv num">${fmt(avg(L10, x => x.grain))} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.grain), 200, 150, 'var(--a6060)', 'sınır 150')}</div>
+    <div><span class="qh">LiMCA N20 · k/kg</span><div class="qv num">${fmt(avg(L10, x => x.limca), 1)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.limca), 14, 10, 'var(--accent-2)', 'sınır 10')}</div>`;
 };
 window.onInit = () => buildPlan();
 </script>
