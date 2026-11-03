@@ -1,0 +1,317 @@
+<title>Kontrol Merkezi · Billet Dökümhanesi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/*@COMMON_CSS*/
+/* Layout: control room. Live site plan is the hero with a unit inspector beside it, the metal's
+   journey through the plant as lanes below, upcoming steps and the event feed, then the day's
+   casting calendar and the last ten casts' quality. */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px}
+#plan{display:block;width:100%;min-width:980px;height:auto}
+#plan .u{cursor:pointer}
+#plan .u:focus{outline:none}
+#plan .u:hover .shape,#plan .u:focus-visible .shape{stroke:var(--accent);stroke-width:3}
+#plan .u.sel .shape{stroke:var(--ink);stroke-width:3.5}
+#plan .lbl{font:800 15px var(--f-display);letter-spacing:.04em;fill:var(--ink)}
+#plan .sub{font:600 11px var(--f-mono);fill:var(--ink-2)}
+#plan .ph{font:700 10.5px var(--f-mono);fill:var(--ink-2);letter-spacing:.04em}
+.insp{display:flex;flex-direction:column;gap:10px}
+.insp h3{margin:0;font:800 30px/1 var(--f-display);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.insp .kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px}
+.insp .kv span{color:var(--ink-2)} .insp .kv b{font:600 13.5px var(--f-mono);text-align:right}
+.insp p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.4}
+.lanes{display:flex;flex-direction:column;gap:4px;padding:8px 16px 14px}
+.lane{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:center}
+.lane .lh b{font:800 18px var(--f-display);letter-spacing:.02em;display:block}
+.lane .lh span{font-size:12px;color:var(--muted)}
+.track{position:relative;height:44px;border-radius:8px;background:linear-gradient(90deg,var(--panel-2),var(--bg-2));border:1px solid var(--line-2)}
+.chipu{position:absolute;top:50%;transform:translate(-50%,-50%);height:26px;padding:0 8px;border-radius:13px;border:2px solid var(--panel);font:700 12px var(--f-mono);color:#fff;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap;text-decoration:none}
+:root[data-theme="dark"] .chipu{color:#04101f}
+.chipu:hover{z-index:2;transform:translate(-50%,-50%) scale(1.12)}
+.mid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.next{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.next li{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;background:var(--panel-2);font-size:14px}
+.next li time{font:700 14px var(--f-mono)}
+.next li small{display:block;color:var(--muted);font-size:12px}
+.next li .in{font:600 12px var(--f-mono);color:var(--accent);white-space:nowrap}
+.feedwrap{max-height:380px;overflow:auto}
+.cal{position:relative;height:74px;margin:6px 0 4px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line-2)}
+.cal .slot{position:absolute;top:10px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font:700 12px var(--f-mono);color:#fff;overflow:hidden;text-decoration:none}
+:root[data-theme="dark"] .cal .slot{color:#04101f}
+.cal .slot.plan{background:repeating-linear-gradient(45deg,var(--line) 0 4px,var(--line-2) 4px 8px)!important;color:var(--ink-2)}
+.cal .slot.now{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--melt)}
+.cal .now-line{position:absolute;top:0;bottom:0;width:2px;background:var(--crit)}
+.cal .hr{position:absolute;bottom:4px;font:500 10.5px var(--f-mono);color:var(--muted);transform:translateX(-50%)}
+.q{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.qbars{display:flex;align-items:flex-end;gap:5px;height:110px;border-bottom:1px solid var(--line);position:relative;margin-top:8px}
+.qbars i{flex:1;border-radius:4px 4px 0 0;min-width:0}
+.qbars .lim{position:absolute;left:0;right:0;border-top:2px dashed var(--crit)}
+.qbars .lim span{position:absolute;right:0;top:-17px;font:600 10.5px var(--f-mono);color:var(--crit)}
+.qx{display:flex;gap:5px;margin-top:4px}.qx span{flex:1;font:500 10px var(--f-mono);color:var(--muted);text-align:center;overflow:hidden}
+.qh{font:600 11.5px var(--f-mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.qv{font:700 26px var(--f-display)}
+@media (max-width:1180px){.hero{grid-template-columns:minmax(0,1fr)}.mid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:720px){.lane{grid-template-columns:minmax(0,1fr)}.q{grid-template-columns:minmax(0,1fr)}.cal .slot{font-size:10px}}
+</style>
+
+<div class="wrap">
+  <nav class="sitenav" aria-label="Dökümhane modülleri"><a class="sn-brand" href="./" aria-current="page"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#0a2463"/><rect x="11" y="5" width="10" height="22" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M11 10h10" stroke="#f97316" stroke-width="3"/></svg>DÖKÜMHANE</a><a href="firin.html">Fırınlar</a><a href="dokum.html">Döküm Masası</a><a href="homojen.html">Homojenizasyon ve Testere</a></nav>
+
+  <header class="head">
+    <div class="title">
+      <div class="eyebrow"><span class="live"></span>ALÜMİNYUM BİLLET · 6060 / 6063 / 6082 · Ø178 mm · GÜNDE 10 DÖKÜM</div>
+      <h1>BİLLET DÖKÜMHANESİ <span>KONTROL MERKEZİ</span></h1>
+      <p class="sum">Hurdadan sevke kadar tüm hat tek ekranda: <b>2 ergitme fırını</b>, döküm fırını, hot-top döküm masası, <b>5 homojenizasyon fırını</b>, soğutma odası, ultrasonik muayene ve testere.</p>
+      <span class="credit">created by <b>GOTONOM</b></span>
+    </div>
+    <div class="hctl">
+      <span class="demo" id="demoTag">CANLI SAAT · DEMO VERİ</span>
+      <div class="seg" role="group" aria-label="Simülasyon hızı"><button type="button" data-speed="1" title="Gerçek saat">×1</button><button type="button" data-speed="10">×10</button><button type="button" data-speed="60">×60</button></div>
+      <div class="clock"><small id="clockLbl">TESİS SAATİ</small><b class="num" id="clock">00:00:00</b></div>
+      <a class="ibtn bell" id="bell" href="#olaylar" title="Son 1 saatteki uyarılar"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 22a2.5 2.5 0 0 0 2.4-2h-4.8a2.5 2.5 0 0 0 2.4 2zm7-6V11a7 7 0 0 0-5.5-6.8V3a1.5 1.5 0 0 0-3 0v1.2A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg><span class="num" id="bellN">0</span></a>
+      <button type="button" class="ibtn" id="themeBtn" aria-pressed="false" title="Koyu / açık tema"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+  </header>
+
+  <section class="kpis" aria-label="Günün özeti" id="kpis"></section>
+
+  <div class="hero">
+    <section class="card" aria-label="Saha planı">
+      <div class="ch"><h2>Saha planı <small>CANLI</small></h2><span class="aside">Bir üniteye dokunun</span></div>
+      <div class="mimic-hint">Planı yana kaydırın</div>
+      <div class="mimic-scroll"><svg id="plan" viewBox="0 0 1400 420" role="group" aria-label="Dökümhane yerleşim planı"></svg></div>
+    </section>
+    <section class="card insp" aria-label="Seçili ünite"><div class="cb insp" id="insp"></div></section>
+  </div>
+
+  <section class="card" aria-label="Metal yolculuğu">
+    <div class="ch"><h2>Metal yolculuğu <small>HER ÇİP BİR DÖKÜM</small></h2><span class="aside">Hurda fırına girdiği andan pakete kadar ~17 saat</span></div>
+    <div class="lanes" id="lanes"></div>
+  </section>
+
+  <div class="mid" id="olaylar">
+    <section class="card" aria-label="Sıradaki işlemler">
+      <div class="ch"><h2>Sıradaki işlemler</h2><span class="aside">Önümüzdeki 4 saat</span></div>
+      <div class="cb"><ul class="next" id="next"></ul></div>
+    </section>
+    <section class="card" aria-label="Olaylar">
+      <div class="ch"><h2>Olaylar ve uyarılar</h2><span class="aside">Son 12 saat</span></div>
+      <div class="cb feedwrap"><ul class="feed" id="feed"></ul></div>
+    </section>
+  </div>
+
+  <section class="card" aria-label="Günlük döküm takvimi">
+    <div class="ch"><h2>Döküm takvimi <small id="calD"></small></h2><span class="aside"><span class="alloy" style="background:var(--a6063)">6063</span> <span class="alloy" style="background:var(--a6060)">6060</span> <span class="alloy" style="background:var(--a6082)">6082</span> · taralı: planlı</span></div>
+    <div class="cb"><div class="cal" id="cal"></div></div>
+  </section>
+
+  <section class="card" aria-label="Kalite">
+    <div class="ch"><h2>Kalite <small>SON 10 DÖKÜM</small></h2><span class="aside">Degazör çıkışı H₂ ve tane boyutu</span></div>
+    <div class="cb q" id="q"></div>
+  </section>
+
+  <footer class="foot"><span>Değerler PLC bağlantısı kurulana kadar örnek veriyle çalışan simülasyondur. Tesis ve süreç varsayımları README'de.</span><span>created by <b>GOTONOM</b></span></footer>
+</div>
+
+<script>
+//@COMMON_JS
+const SV = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(SV, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+let sel = 'd1';
+const heat = t => t == null ? 'var(--panel-2)' : `hsl(${lerp(212, 24, clamp((t - 40) / 540, 0, 1))} ${lerp(25, 92, clamp((t - 40) / 540, 0, 1))}% ${lerp(70, 55, clamp((t - 40) / 540, 0, 1))}%)`;
+// unit boxes on the plan: key → [x, y, w, h, label, href]
+const U = {
+  hurda: [36, 52, 150, 300, 'HURDA SAHASI', 'firin.html'],
+  e1: [222, 52, 140, 120, 'E1', 'firin.html#e1'], e2: [222, 232, 140, 120, 'E2', 'firin.html#e2'],
+  b1: [404, 146, 110, 110, 'B1', 'firin.html#b1'],
+  hat: [540, 158, 150, 84, 'DÖKÜM HATTI', 'dokum.html'],
+  d1: [716, 110, 170, 180, 'D1 MASA', 'dokum.html'],
+  h1: [960, 40, 150, 56, 'H1', 'homojen.html#h1'], h2: [960, 104, 150, 56, 'H2', 'homojen.html#h2'], h3: [960, 168, 150, 56, 'H3', 'homojen.html#h3'], h4: [960, 232, 150, 56, 'H4', 'homojen.html#h4'], h5: [960, 296, 150, 56, 'H5', 'homojen.html#h5'],
+  sog: [1140, 52, 100, 110, 'SOĞUTMA', 'homojen.html'],
+  saw: [1140, 200, 100, 110, 'UT + TESTERE', 'homojen.html'],
+  stok: [1268, 52, 100, 300, 'STOK', 'homojen.html'],
+};
+
+function buildPlan() {
+  const s = $('#plan');
+  s.innerHTML = `<defs><radialGradient id="gMR"><stop offset="0" stop-color="#fde68a"/><stop offset=".55" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></radialGradient>
+    <pattern id="pH" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="var(--panel-2)"/><path d="M0 0v8" stroke="var(--line)" stroke-width="3"/></pattern></defs>`;
+  el('rect', { x: 12, y: 16, width: 1376, height: 392, rx: 14, fill: 'none', stroke: 'var(--line)', 'stroke-width': 2, 'stroke-dasharray': '8 6' }, s);
+  el('text', { x: 28, y: 400, class: 'sub' }, s).textContent = 'DÖKÜMHANE · YERLEŞİM ŞEMASI (ÖLÇEKSİZ)';
+  // flow paths (animated when active)
+  const F = [['fE1', 'M362 112 H384 V180 H404'], ['fE2', 'M362 292 H384 V222 H404'], ['fB1', 'M514 200 H540'], ['fHat', 'M690 200 H716'], ['fBuf', 'M886 200 H930 V68 H960 M930 200 V324 H960'], ['fSog', 'M1110 68 H1125 V108 H1140'], ['fSaw', 'M1190 162 V200'], ['fStk', 'M1240 256 H1254 V200 H1268'], ['fHur', 'M186 112 H222 M186 292 H222']];
+  F.forEach(([id, d]) => { el('path', { d, fill: 'none', stroke: 'var(--line)', 'stroke-width': 6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, s); el('path', { id, d, class: 'flow', stroke: 'var(--melt)', 'stroke-width': 4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: 0 }, s); });
+  for (const [k, [x, y, w, h, label]] of Object.entries(U)) {
+    const g = el('g', { class: 'u', 'data-k': k, tabindex: 0, role: 'button', 'aria-label': label }, s);
+    el('rect', { class: 'shape', x, y, width: w, height: h, rx: 10, fill: 'var(--panel)', stroke: 'var(--line)', 'stroke-width': 2 }, g);
+    el('rect', { class: 'fill', x: x + 6, y: y + 6, width: w - 12, height: h - 12, rx: 6, fill: 'var(--panel-2)' }, g);
+    el('text', { class: 'lbl', x: x + 12, y: y + 24 }, g).textContent = label;
+    const low = h < 70;   // short boxes (H1–H5): reading beside the name, phase underneath
+    el('text', { class: 'sub', x: x + (low ? 44 : 12), y: y + (low ? 24 : 40) }, g);
+    el('text', { class: 'ph', x: x + 12, y: y + h - (low ? 11 : 12) }, g);
+    g.addEventListener('click', () => { sel = k; tick(true); });
+    g.addEventListener('dblclick', () => location.href = U[k][5]);
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sel = k; tick(true); } });
+  }
+  // scrap bins
+  const hb = $('[data-k="hurda"]', s);
+  [['Primer külçe', 'var(--accent)'], ['İç hurda', 'var(--a6060)'], ['Dış hurda', 'var(--accent-2)']].forEach(([n, c], i) => { el('rect', { x: 52, y: 120 + i * 62, width: 118, height: 48, rx: 6, fill: c, opacity: .18, stroke: c }, hb); el('text', { x: 62, y: 149 + i * 62, 'font-size': 12.5, 'font-weight': 700, fill: 'var(--ink)' }, hb).textContent = n; });
+  // mould dots on D1
+  const d = $('[data-k="d1"]', s);
+  for (let i = 0; i < 64; i++) el('circle', { class: 'md', cx: 744 + (i % 8) * 16, cy: 160 + Math.floor(i / 8) * 13.5, r: 5.5, fill: 'var(--steel)' }, d);
+  // degasser + filter marks on the line
+  const ht = $('[data-k="hat"]', s);
+  el('rect', { x: 560, y: 192, width: 34, height: 20, rx: 3, fill: 'var(--steel-2)', stroke: 'var(--steel-3)' }, ht);
+  el('rect', { x: 630, y: 192, width: 34, height: 20, rx: 3, fill: 'var(--refr-2)', stroke: 'var(--refr)' }, ht);
+  // stock stacks
+  const st = $('[data-k="stok"]', s);
+  for (let i = 0; i < 12; i++) el('rect', { class: 'pk', x: 1282 + (i % 2) * 38, y: 312 - Math.floor(i / 2) * 26, width: 34, height: 20, rx: 4, fill: 'var(--billet-2)', stroke: 'var(--steel-3)', 'stroke-width': .8 }, st);
+}
+
+function states(T) {
+  const tb = table(T), e1 = melter(0, T), e2 = melter(1, T), b1 = holder(T), H = [0, 1, 2, 3, 4].map(k => homog(k, T)), co = cooler(T), sw = saw(T);
+  return { tb, e1, e2, b1, H, co, sw };
+}
+
+let lastMin = -1;
+window.onTick = (T, force) => {
+  const S = states(T), { tb, e1, e2, b1, H, co, sw } = S;
+  const day0 = Math.floor(T / 1440) * 1440;
+  const today = doneCasts(T, 12).filter(c => c.end >= day0), last10 = doneCasts(T, 10);
+  const castToday = today.reduce((s, c) => s + c.gross, 0) + (tb.metal ? tb.tons : 0);
+  let ready = 0; doneCasts(T, 14).forEach(x => { const fin = x.n * PLANT.CYCLE + PLANT.SAW_AT + PLANT.SAW_MIN; if (fin <= T && fin >= day0) ready += x.net; });
+  if (sw.active) ready += Math.max(0, sw.done - (sw.rejIdx >= 0 && sw.done > sw.rejIdx ? 1 : 0)) * PLANT.T_PER_M * PLANT.NET_M;
+  const rec = avg(last10, c => c.recovery), dross = avg(last10, c => c.dross), gas = avg(last10, c => c.gas);
+  const done = today.length, planned = Math.min(PLANT.PER_DAY, Math.round((T - day0) / 144 + 1));
+  setHTML($('#kpis'), [
+    `<div class="card kpi"><span class="l">Bugün döküm</span><span class="v num">${done}<small>/ ${PLANT.PER_DAY}</small></span><span class="s">${tb.metal ? `${tb.cast.id} döküyor` : `sonraki ${hhmm(tb.phases[2].start)}`}</span><span class="bar"><i style="width:${done * 10}%;background:var(--ok)"></i>${tb.metal ? `<i style="width:${tb.progress * 10}%;background:var(--melt)"></i>` : ''}</span></div>`,
+    `<div class="card kpi"><span class="l">Dökülen metal</span><span class="v num">${fmt(castToday, 1)}<small>t</small></span><span class="s">gün hedefi ${fmt(PLANT.PER_DAY * PLANT.MOULDS * PLANT.LOG_T, 0)} t</span></div>`,
+    `<div class="card kpi"><span class="l">Sevke hazır</span><span class="v num">${fmt(ready, 1)}<small>t</small></span><span class="s">kesilmiş, UT'den geçmiş</span></div>`,
+    `<div class="card kpi ${rec < 90 ? 'warn' : 'ok'}"><span class="l">Metal verimi</span><span class="v num">%${fmt(rec, 1)}</span><span class="s">sevke hazır / şarj · son 10</span></div>`,
+    `<div class="card kpi ${dross > 22 ? 'warn' : ''}"><span class="l">Cüruf</span><span class="v num">${fmt(dross, 1)}<small>kg/t</small></span><span class="s">tipik 15–25 kg/t</span></div>`,
+    `<div class="card kpi"><span class="l">Doğalgaz</span><span class="v num">${fmt(gas)}<small>Nm³/t</small></span><span class="s">ergitme + homojenizasyon</span></div>`,
+  ].join(''));
+
+  // plan
+  const info = {
+    hurda: { fill: 'var(--panel-2)', sub: `şarj ${e1.phase === 'ŞARJ' ? 'E1' : e2.phase === 'ŞARJ' ? 'E2' : 'bekliyor'}`, ph: '' },
+    e1: { fill: e1.liq > .5 ? heat(e1.temp - 160) : 'var(--steel-2)', sub: `${fmt(e1.temp)} °C · ${fmt(e1.mass, 1)} t`, ph: e1.phase },
+    e2: { fill: e2.liq > .5 ? heat(e2.temp - 160) : 'var(--steel-2)', sub: `${fmt(e2.temp)} °C · ${fmt(e2.mass, 1)} t`, ph: e2.phase },
+    b1: { fill: b1.mass > 6 ? heat(b1.temp - 160) : 'var(--panel-2)', sub: `${fmt(b1.temp)} °C`, ph: b1.phase },
+    hat: { fill: tb.metal ? 'color-mix(in srgb,var(--melt) 22%,var(--panel-2))' : 'var(--panel-2)', sub: tb.metal ? `H₂ ${fmt(tb.h2Out, 3)}` : 'metal yok', ph: 'SNIF · CFF' },
+    d1: { fill: 'var(--panel-2)', sub: tb.metal ? `${fmt(tb.L)} mm · ${fmt(tb.v, 0)} mm/dk` : tb.cast.id, ph: tb.phase },
+    sog: { fill: heat(co.active ? co.temp : null), sub: co.active ? `${fmt(co.temp)} °C` : 'boş', ph: co.active ? 'SOĞUTMA' : '' },
+    saw: { fill: sw.active ? 'color-mix(in srgb,var(--accent) 14%,var(--panel-2))' : 'var(--panel-2)', sub: sw.active ? `${sw.done}/${sw.cast.logs} log` : 'bekliyor', ph: sw.active ? 'KESİM' : '' },
+    stok: { fill: 'var(--panel-2)', sub: `${fmt(ready, 0)} t bugün`, ph: '' },
+  };
+  H.forEach(h => info['h' + (h.k + 1)] = { fill: heat(h.metal), sub: h.metal != null ? `${fmt(h.metal)} °C${h.cast ? ' · ' + h.cast.id.slice(-5) : ''}` : 'boş', ph: h.phase });
+  $$('#plan .u').forEach(g => {
+    const k = g.dataset.k, i = info[k];
+    g.querySelector('.fill').setAttribute('fill', i.fill);
+    g.querySelector('.sub').textContent = i.sub;
+    g.querySelector('.ph').textContent = i.ph;
+    g.classList.toggle('sel', k === sel);
+  });
+  const c = tb.cast;
+  $$('#plan .md').forEach((m, i) => m.setAttribute('fill', c.closed.includes(i) ? 'var(--panel)' : tb.metal ? 'url(#gMR)' : tb.w > 0 ? 'var(--water-2)' : 'var(--steel)'));
+  const pk = Math.min(12, Math.round(ready / 25));
+  $$('#plan .pk').forEach((r, i) => r.style.opacity = i < pk ? 1 : .15);
+  const on = (id, v) => $('#' + id).setAttribute('opacity', v ? 1 : 0);
+  on('fE1', e1.phase === 'TRANSFER'); on('fE2', e2.phase === 'TRANSFER'); on('fB1', b1.phase === 'DÖKÜM'); on('fHat', tb.metal);
+  on('fBuf', H.some(h => h.phase === 'YÜKLEME') || tb.phase === 'BOŞALTMA'); on('fSog', H.some(h => h.phase === 'BOŞALTMA')); on('fSaw', sw.active); on('fStk', sw.active); on('fHur', e1.phase === 'ŞARJ' || e2.phase === 'ŞARJ');
+
+  // inspector
+  const P = (st, t) => `<span class="pill ${st}"><i></i>${t}</span>`;
+  let h = '';
+  const K = rows => `<div class="kv">${rows.map(([a, b]) => `<span>${a}</span><b>${b}</b>`).join('')}</div>`;
+  const link = `<a class="ibtn primary" href="${U[sel][5]}">Panele git →</a>`;
+  if (sel === 'e1' || sel === 'e2') {
+    const f = sel === 'e1' ? e1 : e2;
+    h = `<h3>${f.name} ${P(f.phase === 'HAZIR' ? 'ok' : 'run', f.phase)}</h3>${K([['Döküm', f.cast.id + ' · ' + f.cast.alloy], ['Metal', fmt(f.temp) + ' °C'], ['Kütle', fmt(f.mass, 1) + ' t · sıvı %' + fmt(f.liq * 100)], ['Brülör', '%' + fmt(f.burn) + ' · ' + fmt(f.gas) + ' Nm³/h'], ['Kimya', f.chemOk ? 'onaylı' : 'bekleniyor'], ['Transfer', hhmm(f.phases[5].start)]])}<p>Ergitme fırını 288 dakikalık çevrimde çalışır. İki fırın sırayla B1'i besler.</p>`;
+  } else if (sel === 'b1') {
+    h = `<h3>B1 ${P(b1.phase === 'DÖKÜM' ? 'run' : 'idle', b1.phase)}</h3>${K([['Döküm', b1.cast.id], ['Metal', fmt(b1.temp) + ' °C'], ['Kütle', fmt(b1.mass, 1) + ' t'], ['Eğim', fmt(b1.tilt, 1) + '°'], ['Döküm başlangıcı', hhmm(b1.phases[2].start + (b1.pi >= 2 ? PLANT.CYCLE : 0))]])}<p>Devirmeli döküm fırını. Dolumdan sonra argon ve flaks ile arıtılır, dinlendirilir.</p>`;
+  } else if (sel === 'hat') {
+    h = `<h3>Döküm hattı ${P(tb.metal ? 'run' : 'idle', tb.metal ? 'METAL AKIYOR' : 'BOŞ')}</h3>${K([['Oluk metali', tb.metal ? fmt(tb.launder) + ' °C' : '—'], ['H₂ çıkış', tb.metal ? fmt(tb.h2Out, 3) + ' ml/100g' : '—'], ['Degazör', fmt(tb.rotor) + ' d/dk'], ['Tane inceltici', tb.metal ? fmt(tb.rod, 2) + ' kg/t' : '—'], ['Filtre ΔP', tb.metal ? fmt(tb.filterDp) + ' mm' : '—']])}<p>SNIF degazör, AlTi5B1 çubuk besleyici ve 40 ppi seramik köpük filtre.</p>`;
+  } else if (sel === 'd1') {
+    h = `<h3>D1 ${P(tb.metal ? 'run' : tb.phase === 'HAZIR' ? 'ok' : 'idle', tb.phase)}</h3>${K([['Döküm', c.id + ' · ' + c.alloy], ['Kalıp', `${c.logs} / 64`], ['Boy', fmt(tb.L) + ' / 7.000 mm'], ['Hız', fmt(tb.v, 1) + ' mm/dk'], ['Su', fmt(tb.water) + ' m³/h'], [tb.pi <= 1 ? 'Başlangıç' : 'Bitiş', hhmm(tb.pi <= 1 ? tb.phases[2].start : tb.phases[4].end)]])}<p>Hot-top DC döküm masası, 8 × 8 kalıp, Ø178 mm × 7 m log.</p>`;
+  } else if (sel[0] === 'h' && sel !== 'hurda') {
+    const x = H[+sel[1] - 1];
+    h = `<h3>${x.name} ${P(x.phase === 'BEKLETME' ? 'run' : x.phase === 'BOŞ' ? 'idle' : 'warn', x.phase)}</h3>${K([['Parti', x.cast ? x.cast.id : '—'], ['Metal', x.metal != null ? fmt(x.metal) + ' °C' : '—'], ['Hava', fmt(x.air) + ' °C'], ['Bekletme', fmt(x.soak / 60, 1) + ' / 6 sa'], ['Çıkış', hhmm(x.phases[3].start)]])}<p>575–585 °C'de en az 6 saat. Yükleme döküm masasından 20 dakika içinde yapılır.</p>`;
+  } else if (sel === 'sog') {
+    h = `<h3>Soğutma ${P(co.active ? 'run' : 'idle', co.active ? 'AKTİF' : 'BOŞ')}</h3>${K(co.active ? [['Parti', co.cast.id], ['Metal', fmt(co.temp) + ' °C'], ['Soğuma hızı', fmt(co.rate) + ' °C/sa'], ['Hedef', '> 250 °C/sa']] : [['Son parti', co.cast.id], ['Sonraki', hhmm(co.next)]])}<p>Fan ve su sisiyle zorlanmış soğutma. Mg₂Si'yi ince tutar.</p>`;
+  } else if (sel === 'saw') {
+    h = `<h3>UT + testere ${P(sw.active ? 'run' : 'idle', sw.active ? 'KESİM' : 'BEKLİYOR')}</h3>${K(sw.active ? [['Parti', sw.cast.id], ['İlerleme', `${sw.done} / ${sw.cast.logs} log`], ['Kesim', 'baş 300 · kuyruk 200 mm'], ['UT', sw.rejIdx >= 0 && sw.done > sw.rejIdx ? '1 red' : 'temiz']] : [['Son parti', sw.cast.id], ['Sonraki', hhmm(sw.next)]])}<p>Ultrasonik muayene merkez çatlağını yakalar. Kesim artığı iç hurda olarak döner.</p>`;
+  } else if (sel === 'stok') {
+    h = `<h3>Stok</h3>${K([['Bugün sevke hazır', fmt(ready, 1) + ' t'], ['Paket', '7 log · ' + fmt(7 * PLANT.T_PER_M * PLANT.NET_M, 2) + ' t'], ['Ürün', 'Ø178 × 6.500 mm']])}<p>Paketler döküm numarası, alaşım ve homojenizasyon partisiyle etiketlenir.</p>`;
+  } else {
+    h = `<h3>Hurda sahası</h3>${K([['Sıradaki şarj', (e1.phases[0].start + PLANT.E_CYCLE < e2.phases[0].start + PLANT.E_CYCLE ? 'E1 ' + hhmm(e1.phases[0].start + PLANT.E_CYCLE) : 'E2 ' + hhmm(e2.phases[0].start + PLANT.E_CYCLE))], ['Karışım', 'primer · iç hurda · dış hurda'], ['Şarj başına', '32 t']])}<p>Yağlı ve boyalı hurda cürufu artırır. Şarj öncesi kontrol edilir.</p>`;
+  }
+  setHTML($('#insp'), h + link);
+
+  // lanes: every cast currently somewhere between the furnace and the saw
+  const base = Math.floor(T / PLANT.CYCLE);
+  const lanes = STAGES.map(s => ({ ...s, chips: [] }));
+  for (let n = base - 7; n <= base + 3; n++) { const st = castStage(n, T); if (st && st.i < 5) lanes[st.i].chips.push({ c: castInfo(n), p: st.p }); }
+  const hrefs = { firin: 'firin.html', dokum: 'dokum.html', homo: 'homojen.html', sogut: 'homojen.html', testere: 'homojen.html' };
+  const sub = { firin: 'E1 / E2 → B1', dokum: 'B1 · hat · D1', homo: 'H1–H5 · 580 °C', sogut: '> 250 °C/sa', testere: 'UT · kesim · paket' };
+  setHTML($('#lanes'), lanes.map(l => `<div class="lane"><div class="lh"><b>${l.label}</b><span>${sub[l.key]} · ${dur(l.to - l.from)}</span></div><div class="track">${l.chips.map(x => `<a class="chipu" href="${hrefs[l.key]}" title="${x.c.id} · ${x.c.alloy}" style="left:${4 + x.p * 92}%;background:${alloyColor(x.c.alloy)}">${x.c.id.slice(-2)}</a>`).join('')}</div></div>`).join(''));
+
+  // slower parts once per plant-minute
+  const lk = Math.floor(T);
+  if (!force && lk === lastMin) return;
+  lastMin = lk;
+
+  // upcoming steps
+  const ev = [];
+  const push = (unit, p, href) => { if (p.start > T && p.start < T + 240) ev.push({ t: p.start, unit, what: p.key, href }); };
+  for (const dt of [0, 144, 288]) {
+    const tb2 = table(T + dt), m1 = melter(0, T + dt), m2 = melter(1, T + dt), bb = holder(T + dt);
+    tb2.phases.forEach(p => push('D1 · ' + tb2.cast.id, p, 'dokum.html'));
+    m1.phases.forEach(p => push('E1 · ' + m1.cast.id, p, 'firin.html#e1'));
+    m2.phases.forEach(p => push('E2 · ' + m2.cast.id, p, 'firin.html#e2'));
+    bb.phases.forEach(p => push('B1 · ' + bb.cast.id, p, 'firin.html#b1'));
+    [0, 1, 2, 3, 4].forEach(k => { const x = homog(k, T + dt); x.phases.filter(p => p.key !== 'BOŞ').forEach(p => push(x.name + (x.cast ? ' · ' + x.cast.id : ''), p, 'homojen.html#h' + (k + 1))); });
+  }
+  const seen = new Set();
+  const list = ev.sort((a, b) => a.t - b.t).filter(e => { const k = e.unit + e.what + Math.round(e.t); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+  $('#next').innerHTML = list.map(e => `<li><time>${hhmm(e.t)}</time><span><b>${e.what}</b><small>${e.unit}</small></span><a class="in" href="${e.href}">${dur(e.t - T)} sonra</a></li>`).join('') || '<li><span class="empty">Planlı adım yok</span></li>';
+
+  // event feed from the last 12 hours
+  const F = [];
+  for (let n = base - 6; n <= base + 1; n++) {
+    const x = castInfo(n), mk = melter(n % 2 ? 1 : 0, n * PLANT.CYCLE - 5);
+    if (x.corr) { F.push({ t: mk.sample1 + 8, sev: 'warn', txt: `<b>${mk.name} numune:</b> Mg ${fmt(x.chem1.Mg, 3)} alt sınırın altında (${x.alloy}). ${x.mgAdd} kg Mg eklendi.` }); F.push({ t: mk.sample2 + 8, sev: 'ok', txt: `${mk.name} numune 2 onaylandı · ${x.id}.` }); }
+    if (x.closed.length) F.push({ t: x.start - 20, sev: 'info', txt: `${x.closed.map(mouldName).join(', ')} bakımda. <b>${x.id}</b> ${x.logs} kalıpla dökülecek.` });
+    F.push({ t: x.start, sev: 'info', txt: `<b>${x.id}</b> döküm başladı · ${x.alloy} · ${x.logs} kalıp.` });
+    if (x.h2Out > .135) F.push({ t: x.start + 12, sev: 'warn', txt: `<b>${x.id}</b> H₂ ${fmt(x.h2Out, 3)} sınıra yakın. Degazör rotor devri artırıldı.` });
+    F.push({ t: x.end, sev: 'ok', txt: `<b>${x.id}</b> tamamlandı · ${fmt(x.gross, 1)} t · ${x.logs} log · ${dur(x.prof.tTaper)}.` });
+    const hk = mod(n, 5); F.push({ t: n * PLANT.CYCLE + PLANT.UNLOAD_END + 20 + 48 * Math.log(520 / 5) + 360, sev: 'ok', txt: `H${hk + 1} · ${x.id} 6 saat bekletmeyi tamamladı.` });
+    if (x.utRej) F.push({ t: n * PLANT.CYCLE + PLANT.SAW_AT + PLANT.SAW_MIN * .5, sev: 'warn', txt: `<b>UT:</b> ${x.id} 1 logda merkez çatlağı. Log iç hurdaya ayrıldı.` });
+  }
+  const shown = F.filter(e => e.t <= T && e.t > T - 720).sort((a, b) => b.t - a.t).slice(0, 16);
+  $('#feed').innerHTML = shown.map(e => `<li class="${e.sev}"><time>${hhmm(e.t)}</time><span>${e.txt}</span></li>`).join('');
+  const recent = F.filter(e => e.t <= T && e.t > T - 60 && e.sev === 'warn').length;
+  $('#bellN').textContent = recent; $('#bell').classList.toggle('warn', recent > 0);
+
+  // calendar
+  const d = new Date(DAY0 + day0 * 60000);
+  $('#calD').textContent = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' }).toUpperCase();
+  let cal = '';
+  for (let k = 0; k < PLANT.PER_DAY; k++) {
+    const n = Math.round(day0 / PLANT.CYCLE) + k, x = castInfo(n), l = (x.start - day0) / 1440 * 100, w = x.prof.tTaper / 1440 * 100;
+    const st = x.end <= T ? '' : x.start <= T ? 'now' : 'plan';
+    cal += `<a class="slot ${st}" href="dokum.html" title="${x.id} · ${x.alloy} · ${hhmm(x.start)}–${hhmm(x.end)}" style="left:${l}%;width:${w}%;background:${alloyColor(x.alloy)}">${x.id.slice(-2)}</a>`;
+  }
+  for (let hr = 0; hr <= 24; hr += 3) cal += `<span class="hr" style="left:${hr / 24 * 100}%">${pad(hr)}</span>`;
+  cal += `<span class="now-line" style="left:${(T - day0) / 1440 * 100}%"></span>`;
+  $('#cal').innerHTML = cal;
+
+  // quality (last 10, oldest left)
+  const L10 = last10.slice().reverse();
+  const bars = (vals, max, lim, col, lbl) => `<div class="qbars">${vals.map(v => `<i style="height:${v / max * 100}%;background:${v > lim ? 'var(--warn)' : col}"></i>`).join('')}<span class="lim" style="bottom:${lim / max * 100}%"><span>${lbl}</span></span></div><div class="qx">${L10.map(x => `<span>${x.id.slice(-2)}</span>`).join('')}</div>`;
+  $('#q').innerHTML = `<div><span class="qh">H₂ çıkış · ml/100 g</span><div class="qv num">${fmt(avg(L10, x => x.h2Out), 3)} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.h2Out), .2, .15, 'var(--accent)', 'sınır 0,15')}</div>
+    <div><span class="qh">Tane boyutu · µm</span><div class="qv num">${fmt(avg(L10, x => x.grain))} <small style="font-size:14px;color:var(--ink-2)">ortalama</small></div>${bars(L10.map(x => x.grain), 200, 150, 'var(--a6060)', 'sınır 150')}</div>`;
+};
+window.onInit = () => buildPlan();
+</script>

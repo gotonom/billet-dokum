@@ -1,0 +1,584 @@
+<title>Döküm Masası · Billet Dökümhanesi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/*@COMMON_CSS*/
+/* Layout: the pit cross-section is the hero, the cast's numbers sit right under it, then the mould
+   table (top view), the recipe curve, operator controls, alarm scenarios and PLC interlocks. */
+.kpi .v.id{font-size:28px}
+#mimic{display:block;width:100%;min-width:980px;height:auto}
+.tagbox{fill:var(--panel);stroke:var(--line)}
+.tagl{font:600 10.5px var(--f-mono);fill:var(--muted);letter-spacing:.06em}
+.tagv{font:700 19px var(--f-display);fill:var(--ink)}
+.tag.warn .tagbox{stroke:var(--warn);stroke-width:2}.tag.warn .tagv{fill:var(--warn)}
+.tag.crit .tagbox{stroke:var(--crit);stroke-width:2}.tag.crit .tagv{fill:var(--crit)}
+.lead{stroke:var(--line);stroke-dasharray:3 4;fill:none}
+.spray{stroke:var(--water);stroke-width:2;stroke-linecap:round;stroke-dasharray:3 4;animation:dash .5s linear infinite}
+.bub{fill:#fff;opacity:.85;animation:bub 1.4s linear infinite}
+@keyframes bub{from{transform:translateY(0);opacity:.9}to{transform:translateY(-26px);opacity:0}}
+.grid2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px}
+.grid3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.mtable{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px;align-items:start}
+#moulds{display:block;width:100%;max-width:470px;height:auto;margin:0 auto}
+#moulds .mo{cursor:pointer}
+#moulds .mo:focus{outline:none}
+#moulds .mo:hover circle.ring,#moulds .mo:focus-visible circle.ring{stroke:var(--accent);stroke-width:3}
+.mdet{display:flex;flex-direction:column;gap:8px}
+.mdet h3{margin:0;font:800 26px var(--f-display);display:flex;align-items:center;gap:10px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:5px 10px;font-size:14px}
+.kv span{color:var(--ink-2)} .kv b{font-family:var(--f-mono);font-weight:600;font-size:13.5px;text-align:right}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);padding-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.ctl{display:flex;flex-direction:column;gap:12px}
+.ctl .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ctl .lbl{font:600 11.5px var(--f-mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;width:100%}
+.note{font-size:13px;color:var(--ink-2);line-height:1.4;margin:0}
+.note b{color:var(--ink)}
+.trip{display:none;gap:10px;align-items:center;padding:12px 14px;border-radius:10px;background:var(--crit);color:#fff;font-weight:700}
+.trip.on{display:flex;flex-wrap:wrap}
+.trip svg{width:26px;height:26px;flex:none}
+.trip .ibtn{margin-left:auto;background:#fff;color:var(--crit);border-color:#fff}
+.scn{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.scn button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border:1px solid var(--line);background:var(--panel-2);border-radius:10px;padding:10px 12px;cursor:pointer;min-height:64px}
+.scn button b{font:800 16px var(--f-display);letter-spacing:.03em;display:flex;gap:7px;align-items:center}
+.scn button span{font-size:12.5px;color:var(--ink-2);line-height:1.3}
+.scn button:hover:not(:disabled){border-color:var(--accent)}
+.scn button:disabled{opacity:.5;cursor:not-allowed}
+.scn button[aria-pressed="true"]{border-color:var(--crit);background:color-mix(in srgb,var(--crit) 8%,var(--panel))}
+.scn button i{width:9px;height:9px;border-radius:50%;background:var(--warn)}
+.scn button.c i{background:var(--crit)}
+.rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rules li{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:4px 10px;align-items:start;padding:8px 10px;border-radius:8px;background:var(--panel-2);font-size:13.5px;line-height:1.3}
+.rules li > i{width:10px;height:10px;border-radius:50%;background:var(--ok);margin-top:4px}
+.rules li.warn > i{background:var(--warn)} .rules li.crit > i{background:var(--crit)} .rules li.idle > i{background:var(--line)}
+.rules li small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.rules li b.mono{font-size:12.5px;white-space:nowrap}
+.feedwrap{max-height:340px;overflow:auto}
+@media (max-width:1100px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.mtable{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<div class="wrap">
+  <nav class="sitenav" aria-label="Dökümhane modülleri"><a class="sn-brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#0a2463"/><rect x="11" y="5" width="10" height="22" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M11 10h10" stroke="#f97316" stroke-width="3"/></svg>DÖKÜMHANE</a><a href="firin.html">Fırınlar</a><a href="dokum.html" aria-current="page">Döküm Masası</a><a href="homojen.html">Homojenizasyon ve Testere</a></nav>
+
+  <header class="head">
+    <div class="title">
+      <div class="eyebrow"><span class="live"></span>D1 · HOT-TOP DC DÖKÜM · 64 × Ø178 mm · 7.000 mm</div>
+      <h1>DÖKÜM <span>MASASI</span></h1>
+      <p class="sum">Döküm fırınından gelen metal gaz giderme, tane inceltme ve filtreden geçip 64 kalıba dağılıyor. Platform reçetedeki hızla iniyor, kalıp altındaki su jetleri billeti dondururken <b>her kalıp ayrı ayrı izleniyor</b>.</p>
+      <span class="credit">created by <b>GOTONOM</b></span>
+    </div>
+    <div class="hctl">
+      <span class="demo" id="demoTag">CANLI SAAT · DEMO VERİ</span>
+      <div class="seg" role="group" aria-label="Simülasyon hızı"><button type="button" data-speed="1" title="Gerçek saat">×1</button><button type="button" data-speed="10">×10</button><button type="button" data-speed="60">×60</button></div>
+      <div class="clock"><small id="clockLbl">TESİS SAATİ</small><b class="num" id="clock">00:00:00</b></div>
+      <a class="ibtn bell" id="bell" href="#alarmlar" title="Aktif alarmlar"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 22a2.5 2.5 0 0 0 2.4-2h-4.8a2.5 2.5 0 0 0 2.4 2zm7-6V11a7 7 0 0 0-5.5-6.8V3a1.5 1.5 0 0 0-3 0v1.2A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg><span class="num" id="bellN">0</span></a>
+      <button type="button" class="ibtn" id="themeBtn" aria-pressed="false" title="Koyu / açık tema"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+  </header>
+
+  <div class="trip" id="trip" role="alert"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2zm12-3h-2v-2h2zm0-4h-2v-4h2z"/></svg><span id="tripTxt">ACİL BİTİŞ</span><button type="button" class="ibtn" id="tripReset">Kilidi kaldır</button></div>
+
+  <section class="kpis" aria-label="Döküm özeti">
+    <div class="card kpi"><span class="l">Döküm</span><span class="v id num" id="kId">—</span><span class="s" id="kAlloy">—</span></div>
+    <div class="card kpi"><span class="l">Etap</span><span class="v" id="kPhase">—</span><span class="s" id="kPhaseS">—</span></div>
+    <div class="card kpi"><span class="l">Döküm hızı</span><span class="v num"><span id="kV">0</span><small>mm/dk</small></span><span class="s" id="kVs">hedef —</span></div>
+    <div class="card kpi"><span class="l">Döküm boyu</span><span class="v num"><span id="kL">0</span><small>mm</small></span><span class="bar"><i id="kLbar" style="background:var(--melt);width:0"></i></span></div>
+    <div class="card kpi"><span class="l">Dökülen metal</span><span class="v num"><span id="kT">0</span><small>t</small></span><span class="s" id="kTs">—</span></div>
+    <div class="card kpi"><span class="l">Soğutma suyu</span><span class="v num"><span id="kW">0</span><small>m³/h</small></span><span class="s" id="kWs">—</span></div>
+  </section>
+
+  <ol class="steps" id="steps" aria-label="Döküm etapları"></ol>
+
+  <section class="card" aria-label="Döküm hattı proses şeması">
+    <div class="ch"><h2>Döküm hattı <small>FIRIN → DEGAZÖR → TANE İNCELTİCİ → FİLTRE → MASA → PİT</small></h2><span class="aside" id="mimicNote"></span></div>
+    <div class="mimic-hint">Şemayı yana kaydırın</div>
+    <div class="mimic-scroll"><svg id="mimic" viewBox="0 0 1400 600" role="img" aria-label="Döküm fırını, oluk, degazör, tane inceltici, filtre, döküm masası ve pit kesiti"></svg></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card" aria-label="Kalıp masası">
+      <div class="ch"><h2>Kalıp masası <small>ÜSTTEN · 8 × 8</small></h2><span class="aside">Bir kalıba dokunun</span></div>
+      <div class="cb mtable">
+        <div>
+          <svg id="moulds" viewBox="0 0 440 440" role="group" aria-label="64 kalıp"></svg>
+          <div class="legend"><span><i style="background:var(--melt)"></i>Döküyor</span><span><i style="background:var(--steel)"></i>Hazır</span><span><i style="background:var(--warn)"></i>Sapma</span><span><i style="background:var(--crit)"></i>Tıkalı</span><span><i style="background:repeating-linear-gradient(45deg,var(--line) 0 3px,transparent 3px 6px);border:1px solid var(--line)"></i>Bakımda</span></div>
+        </div>
+        <div class="mdet" id="mdet"></div>
+      </div>
+    </section>
+    <section class="card" aria-label="Anlık ölçümler">
+      <div class="ch"><h2>Anlık ölçümler</h2><span class="aside">Hat ve masa sensörleri</span></div>
+      <div class="cb"><div class="meas" id="meas"></div></div>
+    </section>
+  </div>
+
+  <div class="grid3">
+    <section class="card" aria-label="Döküm reçetesi">
+      <div class="ch"><h2>Reçete <small id="recipeName">—</small></h2><span class="aside"><span style="color:var(--melt)">━</span> hız mm/dk &nbsp; <span style="color:var(--water)">━</span> su l/dk·kalıp &nbsp; kesikli: hedef</span></div>
+      <div class="cb" id="recipe"></div>
+    </section>
+    <section class="card" aria-label="Manuel müdahale">
+      <div class="ch"><h2>Manuel müdahale</h2><span class="aside">Her işlem kayda geçer</span></div>
+      <div class="cb ctl">
+        <div class="row"><span class="lbl">Yetki</span><div class="seg" role="group" aria-label="Yetki"><button type="button" data-role="op" aria-pressed="true">Operatör</button><button type="button" data-role="mgr" aria-pressed="false">Yönetici</button></div></div>
+        <div class="row"><span class="lbl">Hız düzeltmesi · <span id="ovTxt">reçete</span></span>
+          <div class="seg" role="group" aria-label="Hız düzeltmesi"><button type="button" data-ov="-10">−%10</button><button type="button" data-ov="-5">−%5</button><button type="button" data-ov="0" aria-pressed="true">Reçete</button><button type="button" data-ov="5">+%5</button></div>
+        </div>
+        <p class="note">Operatör hızı en fazla <b>%10 düşürebilir</b> (merkez çatlağı riskinde ilk müdahale). Hızı artırmak ve reçeteyi değiştirmek <b>yönetici yetkisi</b> ister.</p>
+        <div class="row"><span class="lbl">Seçili kalıp</span><button type="button" class="ibtn warnb" id="plugBtn">Kalıbı tıka</button><span class="note" id="plugNote"></span></div>
+        <div class="row"><span class="lbl">Acil</span><button type="button" class="ibtn danger" id="estop"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 2h8l6 6v8l-6 6H8l-6-6V8z"/></svg>ACİL BİTİŞ</button><span class="note">İki kez basın: metal kesilir, platform durur, su devam eder.</span></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid3" id="alarmlar">
+    <section class="card" aria-label="Alarm senaryoları">
+      <div class="ch"><h2>Alarm senaryoları <small>DEMO</small></h2><button type="button" class="ibtn" id="jumpCast" title="Bir sonraki dökümün kararlı etabına atla">Döküme atla</button></div>
+      <div class="cb" style="display:flex;flex-direction:column;gap:12px">
+        <div class="scn" id="scn"></div>
+        <div class="feedwrap"><ul class="feed" id="feed"></ul></div>
+      </div>
+    </section>
+    <section class="card" aria-label="PLC kilitleri">
+      <div class="ch"><h2>PLC kilitleri <span class="assume">VARSAYIM</span></h2><span class="aside">Canlı değerle</span></div>
+      <div class="cb"><ul class="rules" id="rules"></ul></div>
+    </section>
+  </div>
+
+  <section class="card" aria-label="Döküm kayıtları">
+    <div class="ch"><h2>Döküm kayıtları <small>SON 24 SAAT</small></h2><span class="aside">H₂ çıkış ml/100 g · tane µm</span></div>
+    <div class="cb tscroll"><table class="tbl" id="log"></table></div>
+  </section>
+
+  <footer class="foot"><span>Değerler PLC bağlantısı kurulana kadar örnek veriyle çalışan simülasyondur. Varsayımlar README'de.</span><span>created by <b>GOTONOM</b></span></footer>
+</div>
+
+<script>
+//@COMMON_JS
+const SV = 'http://www.w3.org/2000/svg';
+const MX = i => 900 + i * 58;                   // side-view mould x (one row of 8)
+const PXMM = 0.047;                             // px per mm of billet in the pit
+let sel = 36, role = 'op', ov = 0, lastCastN = null, estopArm = 0;
+const scn = {};                                 // active scenarios: key → {at: ms, ...}
+const plugged = new Set(), alarms = [];         // per cast; alarms = {sev, txt, T, key, active}
+let trip = null;                                // {reason, L, T}
+
+function el(tag, attrs = {}, parent) { const e = document.createElementNS(SV, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function tagBox(p, id, x, y, w, label) {
+  const g = el('g', { class: 'tag', id }, p);
+  el('rect', { class: 'tagbox', x, y, width: w, height: 46, rx: 7 }, g);
+  el('text', { class: 'tagl', x: x + 10, y: y + 16 }, g).textContent = label;
+  el('text', { class: 'tagv', x: x + 10, y: y + 37 }, g);
+  return g;
+}
+
+function buildMimic() {
+  const s = $('#mimic');
+  s.innerHTML = `<defs>
+    <linearGradient id="gMelt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset=".35" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
+    <linearGradient id="gSump" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset=".6" stop-color="#fb923c" stop-opacity=".45"/><stop offset="1" stop-color="#fb923c" stop-opacity="0"/></linearGradient>
+    <linearGradient id="gBil" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="var(--billet-2)"/><stop offset=".45" stop-color="var(--billet-1)"/><stop offset="1" stop-color="var(--billet-2)"/></linearGradient>
+    <linearGradient id="gConc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--refr-2)"/><stop offset="1" stop-color="var(--refr)"/></linearGradient>
+    <pattern id="pFoam" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#fef3c7"/><circle cx="3" cy="3" r="1.6" fill="#d6a35c"/></pattern>
+    <pattern id="pWater" width="8" height="16" patternUnits="userSpaceOnUse"><rect width="8" height="16" fill="var(--water)" opacity=".22"/><path d="M2 0v7M6 8v7" stroke="var(--water)" stroke-width="1.2" opacity=".6"/></pattern>
+  </defs>`;
+  // floor and pit
+  el('rect', { x: 0, y: 200, width: 846, height: 22, fill: 'url(#gConc)' }, s);
+  el('rect', { x: 1354, y: 200, width: 46, height: 22, fill: 'url(#gConc)' }, s);
+  el('rect', { x: 846, y: 200, width: 14, height: 396, fill: 'url(#gConc)' }, s);
+  el('rect', { x: 1340, y: 200, width: 14, height: 396, fill: 'url(#gConc)' }, s);
+  el('rect', { x: 846, y: 584, width: 508, height: 14, fill: 'url(#gConc)' }, s);
+  el('rect', { id: 'pitW', x: 860, y: 556, width: 480, height: 28, fill: 'var(--water)', opacity: .45 }, s);
+  el('text', { x: 872, y: 575, 'font-size': 12, 'font-weight': 700, fill: '#fff', id: 'pitTxt' }, s);
+
+  // B1 tilting furnace
+  const b1 = el('g', { id: 'b1' }, s);
+  el('rect', { x: 36, y: 56, width: 268, height: 140, rx: 18, fill: 'var(--steel-3)' }, b1);
+  el('rect', { x: 50, y: 70, width: 240, height: 112, rx: 10, fill: 'var(--refr)' }, b1);
+  el('rect', { x: 58, y: 78, width: 224, height: 98, rx: 6, fill: '#3b2a20' }, b1);
+  el('rect', { id: 'b1bath', x: 58, y: 120, width: 224, height: 56, rx: 4, fill: 'url(#gMelt)' }, b1);
+  el('path', { id: 'b1fl', class: 'flick', d: 'M84 84 q34 -2 64 10 q-32 10 -64 6z', fill: '#fbbf24', opacity: .9 }, b1);
+  el('rect', { x: 70, y: 44, width: 26, height: 14, rx: 2, fill: 'var(--steel)' }, b1);
+  el('path', { d: 'M296 104 l30 10 v8 l-30 -4z', fill: 'var(--refr)' }, b1);
+  el('text', { x: 170, y: 140, 'text-anchor': 'middle', 'font-size': 22, 'font-weight': 800, fill: '#fff', 'font-family': 'var(--f-display)', opacity: .9 }, b1).textContent = 'B1';
+  el('path', { d: 'M300 196 l-14 4 h28z', fill: 'var(--steel-3)' }, s);
+
+  // launder
+  el('rect', { x: 318, y: 112, width: 560, height: 20, rx: 3, fill: 'var(--refr)' }, s);
+  el('rect', { x: 318, y: 112, width: 560, height: 5, fill: 'var(--refr-2)' }, s);
+  el('line', { id: 'lMetal0', x1: 322, y1: 122, x2: 876, y2: 122, stroke: '#c2410c', 'stroke-width': 8, opacity: .55 }, s);
+  el('line', { id: 'lMetal', class: 'flow', x1: 322, y1: 122, x2: 876, y2: 122, stroke: '#fbbf24', 'stroke-width': 4 }, s);
+  el('line', { x1: 380, y1: 132, x2: 380, y2: 200, stroke: 'var(--steel-3)', 'stroke-width': 4 }, s);
+  el('line', { x1: 810, y1: 132, x2: 810, y2: 200, stroke: 'var(--steel-3)', 'stroke-width': 4 }, s);
+
+  // degasser
+  el('rect', { x: 396, y: 22, width: 34, height: 22, rx: 3, fill: 'var(--steel-3)' }, s);
+  el('rect', { x: 372, y: 46, width: 118, height: 90, rx: 8, fill: 'var(--steel-2)', stroke: 'var(--steel-3)', 'stroke-width': 2 }, s);
+  el('rect', { id: 'dgBath', x: 382, y: 92, width: 98, height: 36, rx: 3, fill: 'url(#gMelt)' }, s);
+  el('line', { x1: 413, y1: 44, x2: 413, y2: 114, stroke: 'var(--steel-3)', 'stroke-width': 5 }, s);
+  const rot = el('g', { id: 'rotor', class: 'spin' }, s);
+  el('rect', { x: 401, y: 111, width: 24, height: 6, rx: 2, fill: 'var(--steel-3)' }, rot);
+  el('rect', { x: 410, y: 102, width: 6, height: 24, rx: 2, fill: 'var(--steel-3)' }, rot);
+  const bubs = el('g', { id: 'bubs' }, s);
+  [[396, 0], [430, .4], [452, .8], [468, .2], [440, 1.1]].forEach(([x, d]) => el('circle', { class: 'bub', cx: x, cy: 124, r: 2.6, style: `animation-delay:${d}s` }, bubs));
+  el('text', { x: 431, y: 64, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: 'var(--ink-2)' }, s).textContent = 'SNIF';
+
+  // grain refiner rod feeder
+  el('circle', { id: 'coil', class: 'spin', cx: 560, cy: 62, r: 24, fill: 'none', stroke: 'var(--steel-3)', 'stroke-width': 7, 'stroke-dasharray': '10 5' }, s);
+  el('circle', { cx: 560, cy: 62, r: 6, fill: 'var(--steel-3)' }, s);
+  el('path', { d: 'M576 80 Q590 98 592 120', fill: 'none', stroke: 'var(--steel-3)', 'stroke-width': 3 }, s);
+
+  // ceramic foam filter box
+  el('rect', { x: 640, y: 82, width: 108, height: 56, rx: 5, fill: 'var(--refr-2)', stroke: 'var(--refr)', 'stroke-width': 3 }, s);
+  el('rect', { id: 'fBath', x: 646, y: 104, width: 96, height: 30, fill: 'url(#gMelt)' }, s);
+  el('rect', { x: 688, y: 88, width: 12, height: 46, fill: 'url(#pFoam)', stroke: '#b45309', 'stroke-width': 1 }, s);
+
+  // casting table (tilts away when unloading)
+  const tb = el('g', { id: 'tbl' }, s);
+  el('rect', { x: 866, y: 146, width: 470, height: 18, rx: 3, fill: 'var(--refr)' }, tb);
+  el('rect', { id: 'hMetal', x: 870, y: 150, width: 462, height: 9, fill: 'url(#gMelt)' }, tb);
+  el('rect', { x: 860, y: 164, width: 480, height: 18, fill: 'var(--steel-3)' }, tb);
+  for (let i = 0; i < 8; i++) {
+    const x = MX(i);
+    el('rect', { x: x - 21, y: 158, width: 42, height: 44, rx: 4, fill: 'var(--steel-2)', stroke: 'var(--steel-3)', 'stroke-width': 1.5 }, tb);
+    el('rect', { x: x - 19, y: 166, width: 5, height: 30, fill: 'var(--water)', opacity: .8 }, tb);
+    el('rect', { x: x + 14, y: 166, width: 5, height: 30, fill: 'var(--water)', opacity: .8 }, tb);
+  }
+  // billets, platen, cylinder
+  const bg = el('g', { id: 'bil' }, s);
+  for (let i = 0; i < 8; i++) {
+    const x = MX(i);
+    el('rect', { class: 'bil', x: x - 14, y: 186, width: 28, height: 14, fill: 'url(#gBil)', stroke: 'var(--steel)', 'stroke-width': .8 }, bg);
+    el('rect', { class: 'film', x: x - 14, y: 202, width: 28, height: 0, fill: 'url(#pWater)' }, bg);
+    el('rect', { class: 'sump', x: x - 14, y: 172, width: 28, height: 40, fill: 'url(#gSump)' }, bg);
+    el('path', { class: 'spr', d: `M${x - 18} 202 L${x - 13} 214 M${x + 18} 202 L${x + 13} 214`, }, bg).setAttribute('class', 'spr spray');
+  }
+  el('rect', { id: 'platen', x: 870, y: 200, width: 460, height: 14, rx: 2, fill: 'var(--steel-3)' }, s);
+  el('rect', { id: 'rod', x: 1092, y: 214, width: 16, height: 370, fill: 'var(--steel-2)', stroke: 'var(--steel)' }, s);
+
+  // length ruler
+  const r = el('g', {}, s);
+  el('line', { x1: 1376, y1: 200, x2: 1376, y2: 200 + 7000 * PXMM, stroke: 'var(--muted)', 'stroke-width': 1.5 }, r);
+  for (let m = 0; m <= 7; m++) {
+    const y = 200 + m * 1000 * PXMM;
+    el('line', { x1: 1370, y1: y, x2: 1382, y2: y, stroke: 'var(--muted)' }, r);
+    el('text', { x: 1386, y: y + 4, 'font-size': 11, fill: 'var(--muted)', 'font-family': 'var(--f-mono)' }, r).textContent = m;
+  }
+  el('text', { x: 1360, y: 192, 'font-size': 11, fill: 'var(--muted)', 'font-family': 'var(--f-mono)' }, r).textContent = 'm';
+  el('path', { id: 'rmark', d: 'M1362 200 l12 -6 v12z', fill: 'var(--melt)' }, s);
+
+  // live tags + leader lines
+  [['M150 236 V196', 1], ['M431 236 V136', 1], ['M560 236 V90', 1], ['M694 236 V138', 1]].forEach(([d]) => el('path', { class: 'lead', d }, s));
+  tagBox(s, 'tB1', 60, 236, 180, 'B1 DÖKÜM FIRINI');
+  tagBox(s, 'tDg', 352, 236, 158, 'DEGAZÖR · H₂ ÇIKIŞ');
+  tagBox(s, 'tRod', 520, 236, 112, 'AlTi5B1');
+  tagBox(s, 'tF', 642, 236, 118, 'FİLTRE ΔP');
+  tagBox(s, 'tLa', 870, 18, 108, 'OLUK METALİ');
+  tagBox(s, 'tV', 988, 18, 108, 'DÖKÜM HIZI');
+  tagBox(s, 'tL', 1106, 18, 108, 'DÖKÜM BOYU');
+  tagBox(s, 'tW', 1224, 18, 112, 'SU');
+  el('path', { class: 'lead', d: 'M924 64 V112' }, s);
+
+  // status board (empty ground left of the pit)
+  const sb = el('g', {}, s);
+  el('text', { id: 'sbPh', x: 60, y: 360, 'font-size': 52, 'font-weight': 800, 'font-family': 'var(--f-display)', fill: 'var(--ink)' }, sb);
+  el('text', { id: 'sbMsg', x: 62, y: 392, 'font-size': 17, fill: 'var(--ink-2)' }, sb);
+  el('rect', { x: 62, y: 410, width: 720, height: 12, rx: 6, fill: 'var(--line-2)' }, sb);
+  el('rect', { id: 'sbBar', x: 62, y: 410, width: 0, height: 12, rx: 6, fill: 'var(--melt)' }, sb);
+  el('text', { id: 'sbL', x: 62, y: 446, 'font-size': 13, fill: 'var(--muted)', 'font-family': 'var(--f-mono)' }, sb);
+  el('text', { id: 'sbR', x: 782, y: 446, 'text-anchor': 'end', 'font-size': 13, fill: 'var(--muted)', 'font-family': 'var(--f-mono)' }, sb);
+  el('text', { id: 'sbX', x: 62, y: 500, 'font-size': 14, fill: 'var(--ink-2)' }, sb);
+  el('text', { id: 'sbX2', x: 62, y: 524, 'font-size': 14, fill: 'var(--ink-2)' }, sb);
+}
+function setTag(id, v, st) { const g = $('#' + id); g.querySelector('.tagv').textContent = v; g.setAttribute('class', 'tag ' + (st || '')); }
+
+function buildMoulds() {
+  const s = $('#moulds');
+  el('rect', { x: 6, y: 6, width: 428, height: 428, rx: 16, fill: 'var(--panel-2)', stroke: 'var(--line)', 'stroke-width': 2 }, s);
+  for (let r = 0; r < 8; r++) el('rect', { x: 22, y: 44 + r * 50 - 4, width: 396, height: 8, rx: 4, fill: 'var(--refr-2)', class: 'chan' }, s);
+  for (let i = 0; i < PLANT.MOULDS; i++) {
+    const cx = 45 + (i % 8) * 50, cy = 44 + Math.floor(i / 8) * 50;
+    const g = el('g', { class: 'mo', tabindex: 0, role: 'button', 'data-i': i, 'aria-label': mouldName(i) }, s);
+    el('circle', { class: 'ring', cx, cy, r: 20, fill: 'var(--steel-2)', stroke: 'var(--steel-3)', 'stroke-width': 2 }, g);
+    el('circle', { class: 'core', cx, cy, r: 14, fill: 'var(--steel)' }, g);
+    el('path', { class: 'x', d: `M${cx - 9} ${cy - 9}L${cx + 9} ${cy + 9}M${cx + 9} ${cy - 9}L${cx - 9} ${cy + 9}`, stroke: 'var(--ink-2)', 'stroke-width': 2.5, opacity: 0 }, g);
+    el('text', { x: cx, cy, y: cy + 4, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, 'font-family': 'var(--f-mono)', fill: 'var(--ink)' }, g).textContent = pad(i + 1);
+    g.addEventListener('click', () => { sel = i; tick(true); });
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sel = i; tick(true); } });
+  }
+}
+
+/* ---------- scenarios ---------- */
+const SCN = [
+  { key: 'bleed', c: 1, name: 'Bleed-out', desc: 'Seçili kalıpta kabuk yırtılır, metal kaçar' },
+  { key: 'water', c: 1, name: 'Su pompası arızası', desc: 'Debi düşer, %70 altında döküm kesilir' },
+  { key: 'level', name: 'Metal seviyesi yüksek', desc: 'Hot-top seviyesi 85 mm üstüne çıkar' },
+  { key: 'temp', name: 'Oluk metali soğuk', desc: 'Metal 680 °C altına iner' },
+  { key: 'h2', name: 'Yüksek hidrojen', desc: 'Degazör çıkışında H₂ 0,15 üstü' },
+  { key: 'filter', name: 'Filtre tıkanıyor', desc: 'ΔP 35 mm sınırını geçer' },
+];
+function addAlarm(sev, txt, key, T) { alarms.unshift({ sev, txt, key, T: T ?? SIM.T(), active: sev === 'crit' || sev === 'warn' }); renderFeed(); }
+function resolve(key, txt) { alarms.forEach(a => { if (a.key === key) a.active = false; }); if (txt) addAlarm('ok', txt, key); }
+function startScn(k, t) {
+  if (scn[k] || !t.metal || trip) return;
+  const now = Date.now();
+  if (k === 'bleed') {
+    const i = t.cast.closed.includes(sel) || plugged.has(sel) ? 36 : sel;
+    scn.bleed = { at: now, i }; plugged.add(i);
+    addAlarm('crit', `<b>${mouldName(i)} bleed-out algılandı.</b> Kalıp otomatik tıkandı, soğutma suyu açık tutuldu.`, 'bleed');
+    setTimeout(() => { addAlarm('info', `Döküm ${t.logs - plugged.size} kalıpla devam ediyor. ${mouldName(i)} döküm sonrası bakıma alınacak.`, 'bleed'); resolve('bleed'); }, 5000);
+    if (plugged.size >= 3) doTrip('3 kalıpta bleed-out, döküm sonlandırıldı', t);
+  } else scn[k] = { at: now };
+  if (k === 'water') addAlarm('warn', '<b>P2 soğutma suyu pompası devreden çıktı.</b> Yedek pompa devreye alınıyor, debi düşüyor.', 'water');
+  if (k === 'level') addAlarm('warn', '<b>Hot-top metal seviyesi yükseliyor.</b> Seviye lazeri 85 mm üstü.', 'level');
+  if (k === 'temp') addAlarm('warn', '<b>Oluk metali soğuyor.</b> 680 °C altında donma ve soğuk birleşme riski.', 'temp');
+  if (k === 'h2') addAlarm('warn', '<b>Degazör çıkışında H₂ yüksek.</b> Profilde kabarcık riski.', 'h2');
+  if (k === 'filter') addAlarm('warn', '<b>Filtre ΔP artıyor.</b> Seramik köpük filtre tıkanıyor.', 'filter');
+  tick(true);
+}
+// scenario effects on the live readings; returns the adjusted copy
+function applyScn(t) {
+  const now = Date.now(), r = { ...t };
+  const f = (k, a, b) => clamp((now - scn[k].at) / 1000 - a, 0, b) / b;
+  if (scn.water) {
+    const drop = f('water', 0, 7); r.water *= 1 - .38 * drop; r.w *= 1 - .38 * drop; r.wDrop = 1 - .38 * drop;
+    if (r.wDrop < .70 && !trip) doTrip(`Soğutma suyu %${Math.round(r.wDrop * 100)} — %70 sınırının altında. Metal kesildi, platform durdu.`, t);
+  }
+  if (scn.level) { const up = f('level', 0, 4), down = f('level', 7, 9); r.level += 14 * up * (1 - down); if (down >= 1) endScn('level', 'Seviye otomatik dam pimi kontrolüyle 75 mm\'ye döndü.'); else if (down > 0 && !scn.level.act) { scn.level.act = 1; addAlarm('info', 'Dam pimi otomatik kısıldı, seviye düşüyor.', 'level'); } }
+  if (scn.temp) { const dn = f('temp', 0, 5), up = f('temp', 8, 16); r.launder -= 19 * dn * (1 - up); if (up >= 1) endScn('temp', 'Oluk metali 695 °C\'ye döndü.'); else if (up > 0 && !scn.temp.act) { scn.temp.act = 1; addAlarm('info', 'B1 brülörü %30 → %60, oluk ısıtıcıları açıldı.', 'temp'); } }
+  if (scn.h2) { const up = f('h2', 0, 4), dn = f('h2', 7, 14); r.h2Out += (.17 - t.cast.h2Out) * up * (1 - dn); if (dn > 0) { r.rotor = 450; r.argon = 55; } if (dn >= 1) endScn('h2', 'H₂ çıkışı normale döndü (rotor 450 d/dk, argon 55 l/dk).'); else if (dn > 0 && !scn.h2.act) { scn.h2.act = 1; addAlarm('info', 'Degazör rotoru 380 → 450 d/dk, argon 42 → 55 l/dk.', 'h2'); } }
+  if (scn.filter) { r.filterDp += 20 * f('filter', 0, 6); if (!scn.filter.act && r.filterDp > 35) { scn.filter.act = 1; addAlarm('info', 'Filtre döküm sonunda değiştirilecek. Seviye farkı izleniyor.', 'filter'); } }
+  if (ov) { r.v *= 1 + ov / 100; r.vT *= 1 + ov / 100; }
+  if (trip) { r.v = 0; r.vT = 0; r.metal = false; r.L = trip.L; r.tons = trip.tons; r.level = 0; r.launder = null; r.h2Out = null; r.h2In = null; r.rotor = 120; r.argon = 0; r.rod = 0; r.filterDp = 0; r.air = 0; r.oil = 0; }
+  return r;
+}
+function endScn(k, txt) { delete scn[k]; resolve(k, txt); }
+function doTrip(reason, t) {
+  trip = { reason, L: t.L, tons: t.tons, T: SIM.T() };
+  addAlarm('crit', `<b>ACİL BİTİŞ.</b> ${reason}`, 'trip');
+  tick(true);
+}
+
+/* ---------- static parts ---------- */
+function renderSteps(t) {
+  const ol = $('#steps'), T = SIM.T();
+  if (ol.dataset.n != t.n) {
+    ol.dataset.n = t.n;
+    ol.innerHTML = t.phases.map((p, i) => `<li data-i="${i}"><button type="button" title="Bu etaba atla (demo)" data-t="${p.start}"><b>${p.key}</b><span>${hhmm(p.start)}–${hhmm(p.end)}</span><i></i></button></li>`).join('');
+    $$('button', ol).forEach(b => b.addEventListener('click', () => simJump(+b.dataset.t + .05)));
+  }
+  $$('li', ol).forEach((li, i) => {
+    const p = t.phases[i];
+    li.className = i < t.pi ? 'done' : i === t.pi ? 'now' : '';
+    li.querySelector('i').style.width = i === t.pi ? (clamp((T - p.start) / (p.end - p.start), 0, 1) * 100) + '%' : '';
+  });
+}
+function renderFeed() {
+  $('#feed').innerHTML = alarms.length ? alarms.slice(0, 40).map(a => `<li class="${a.sev}"><time>${hhmm(a.T)}</time><span>${a.txt}</span></li>`).join('') : '<li class="info"><time>—</time><span>Aktif alarm yok. Döküm sırasında bir senaryo seçin.</span></li>';
+}
+function renderScn(t) {
+  const box = $('#scn');
+  if (!box.children.length) {
+    box.innerHTML = SCN.map(s => `<button type="button" data-k="${s.key}" class="${s.c ? 'c' : ''}"><b><i></i>${s.name}</b><span>${s.desc}</span></button>`).join('');
+    $$('button', box).forEach(b => b.addEventListener('click', () => startScn(b.dataset.k, applyScn(table(SIM.T())))));
+  }
+  $$('button', box).forEach(b => {
+    b.disabled = !t.metal || !!trip;
+    b.title = trip ? 'Önce kilidi kaldırın' : t.metal ? '' : 'Döküm sırasında denenebilir';
+    b.setAttribute('aria-pressed', !!scn[b.dataset.k] || (b.dataset.k === 'bleed' && plugged.size > 0));
+  });
+}
+function renderLog(T, cur) {
+  const list = doneCasts(T, 8);
+  const rows = [cur, ...list].filter((c, i, a) => a.findIndex(x => x.n === c.n) === i);
+  $('#log').innerHTML = `<thead><tr><th>Döküm</th><th>Alaşım</th><th>Başlangıç</th><th class="r">Süre</th><th class="r">Log</th><th class="r">Ton</th><th class="r">H₂</th><th class="r">Tane</th><th>Not</th></tr></thead><tbody>` +
+    rows.map(c => {
+      const live = c.end > T;
+      const notes = [];
+      if (c.closed.length) notes.push(c.closed.map(mouldName).join(', ') + ' bakımda');
+      if (c.utRej) notes.push('UT: 1 log merkez çatlağı');
+      if (c.h2Out > .135) notes.push('H₂ sınıra yakın');
+      return `<tr class="${live ? 'now' : ''}"><td class="mono">${c.id}</td><td><span class="alloy" style="background:${alloyColor(c.alloy)}">${c.alloy}</span></td><td class="mono">${hhmm(c.start)}</td><td class="r mono">${live ? (c.start > T ? 'planlı' : 'döküyor') : dur(c.prof.tTaper)}</td><td class="r mono">${c.logs}</td><td class="r mono">${fmt(c.gross, 1)}</td><td class="r mono">${live ? '—' : fmt(c.h2Out, 3)}</td><td class="r mono">${live ? '—' : fmt(c.grain)}</td><td>${notes.join(' · ') || '<span style="color:var(--muted)">—</span>'}</td></tr>`;
+    }).join('') + '</tbody>';
+}
+
+/* ---------- per tick ---------- */
+let lastLog = -1;
+window.onTick = (T, force) => {
+  const base = table(T);
+  if (base.n !== lastCastN) {          // new cast: clear per-cast state
+    if (lastCastN != null) { plugged.clear(); for (const k in scn) delete scn[k]; trip = null; ov = 0; syncOv(); alarms.forEach(a => a.active = false); addAlarm('info', `<b>${base.cast.id}</b> hazırlığı başladı · ${base.cast.alloy} · ${base.cast.logs} kalıp.`, 'cast', T); }
+    lastCastN = base.n;
+  }
+  if (!base.metal && (scn.level || scn.temp || scn.h2 || scn.water)) { for (const k of ['level', 'temp', 'h2', 'water']) if (scn[k]) endScn(k); }
+  const t = applyScn(base), c = t.cast, p = c.prof, a = PLANT.ALLOYS[c.alloy];
+  const logsNow = c.logs - plugged.size;
+  const tons = trip ? trip.tons : t.L / 1000 * PLANT.T_PER_M * logsNow;
+
+  // trip banner
+  $('#trip').classList.toggle('on', !!trip);
+  if (trip) { $('#tripTxt').textContent = 'ACİL BİTİŞ · ' + trip.reason; const rb = $('#tripReset'); rb.disabled = role !== 'mgr'; rb.title = role === 'mgr' ? '' : 'Yönetici yetkisi gerekli'; rb.textContent = role === 'mgr' ? 'Kilidi kaldır' : 'Kilit · yönetici gerekli'; }
+
+  // KPIs
+  $('#kId').textContent = c.id;
+  $('#kAlloy').innerHTML = `<span class="alloy" style="background:${alloyColor(c.alloy)}">${c.alloy}</span> · ${logsNow} / 64 kalıp · Ø178 × 7.000`;
+  const ph = trip ? 'ACİL BİTİŞ' : t.phase, cur = t.phases[t.pi];
+  $('#kPhase').textContent = ph; $('#kPhase').style.color = trip ? 'var(--crit)' : t.metal ? 'var(--melt-dk)' : '';
+  const castEnd = t.phases[4].end;
+  $('#kPhaseS').textContent = trip ? 'Kilit kaldırılana kadar' : t.pi <= 1 ? `Döküm başlangıcı ${hhmm(t.phases[2].start)} · ${dur(t.phases[2].start - T)} sonra` : t.pi <= 4 ? `Bitiş ${hhmm(castEnd)} · kalan ${dur(castEnd - T)}` : `Masa ${hhmm(cur.end)}'de hazırlığa döner`;
+  $('#kV').textContent = fmt(t.v, 1);
+  $('#kVs').textContent = t.vT ? `hedef ${fmt(t.vT, 0)} · reçete ${p.vs} mm/dk${ov ? ` · düzeltme %${ov > 0 ? '+' : ''}${ov}` : ''}` : `kararlı etap hedefi ${p.vs} mm/dk`;
+  $('#kL').textContent = fmt(t.L); $('#kLbar').style.width = (t.L / PLANT.LEN * 100) + '%';
+  $('#kT').textContent = fmt(tons, 1); $('#kTs').textContent = `hedef ${fmt(c.logs * PLANT.LOG_T, 1)} t · ${logsNow} log × ${fmt(PLANT.LOG_T * 1000)} kg`;
+  $('#kW').textContent = fmt(t.water); $('#kWs').textContent = t.w ? `${fmt(t.w, 0)} l/dk·kalıp · giriş ${fmt(t.waterIn, 1)} °C` : 'Su kapalı';
+  $('#kW').parentElement.parentElement.classList.toggle('warn', !!scn.water);
+
+  // mimic
+  const metal = t.metal, s = $('#mimic');
+  const b1 = holder(T);
+  $('#b1').setAttribute('transform', `rotate(${-b1.tilt * .55} 300 196)`);
+  const bathH = 92 * clamp(b1.mass / 36, 0, 1);
+  $('#b1bath').setAttribute('y', 176 - bathH); $('#b1bath').setAttribute('height', bathH);
+  $('#b1fl').style.opacity = b1.burn > 20 ? 1 : .35;
+  ['lMetal', 'lMetal0', 'hMetal', 'dgBath', 'fBath'].forEach(id => $('#' + id).style.opacity = metal ? '' : 0);
+  $('#rotor').style.animationPlayState = t.rotor ? 'running' : 'paused';
+  $('#bubs').style.display = metal ? '' : 'none';
+  $('#coil').style.animationPlayState = metal ? 'running' : 'paused';
+  const tilt = t.pi === 5 ? 58 * smooth((t.c - t.phases[5].start + t.n * PLANT.CYCLE) / 6) : 0;
+  $('#tbl').setAttribute('transform', `rotate(${-tilt} 1340 182)`);
+  const hB = 14 + t.L * PXMM, lift = t.pi === 5 ? -40 * smooth((t.unload) * 3) : 0;
+  const bil = $('#bil'); bil.setAttribute('transform', `translate(0 ${lift})`);
+  bil.style.opacity = t.pi === 5 ? 1 - smooth(t.unload) : 1;
+  const plugSide = new Set([...plugged, ...c.closed].filter(i => i < 8));
+  $$('.bil', bil).forEach((r, i) => { r.setAttribute('height', plugSide.has(i) && t.L > 0 ? Math.min(hB, 40) : hB); r.style.opacity = c.closed.includes(i) ? 0 : 1; });
+  $$('.film', bil).forEach((r, i) => { r.setAttribute('height', Math.max(0, hB - 16)); r.style.opacity = t.w > 0 && !c.closed.includes(i) ? .5 : 0; });
+  $$('.sump', bil).forEach((r, i) => r.style.opacity = metal && !plugSide.has(i) ? 1 : 0);
+  $$('.spray', bil).forEach((r, i) => r.style.opacity = t.w > 0 && !c.closed.includes(i) ? 1 : 0);
+  const yP = 186 + hB + lift;
+  $('#platen').setAttribute('y', yP); $('#rod').setAttribute('y', yP + 14); $('#rod').setAttribute('height', Math.max(0, 584 - yP - 14));
+  $('#rmark').setAttribute('transform', `translate(0 ${t.L * PXMM})`);
+  $('#pitTxt').textContent = `PİT SUYU ${fmt(t.pit, 2)} m · kalıba ${fmt(9.0 - t.pit, 1)} m`;
+  setTag('tB1', `${fmt(b1.temp)} °C · ${fmt(b1.mass, 1)} t`);
+  setTag('tDg', t.h2Out != null ? `${fmt(t.h2Out, 3)} ml/100g` : (t.rotor ? 'bekleme' : 'kapalı'), t.h2Out > .15 ? 'warn' : '');
+  setTag('tRod', t.rod ? `${fmt(t.rod, 2)} kg/t` : '—');
+  setTag('tF', t.filterDp ? `${fmt(t.filterDp)} mm` : '—', t.filterDp > 35 ? 'warn' : '');
+  setTag('tLa', t.launder != null ? `${fmt(t.launder)} °C` : '—', t.launder != null && t.launder < 680 ? 'warn' : '');
+  setTag('tV', `${fmt(t.v, 0)} mm/dk`);
+  setTag('tL', `${fmt(t.L)} mm`);
+  setTag('tW', `${fmt(t.water)} m³/h`, scn.water ? (trip ? 'crit' : 'warn') : '');
+  const msgs = { 'HAZIRLIK': 'Masa servisi: grafit halkalar yağlanıyor, filtre değişiyor, başlangıç kafaları kalıplarda.', 'HAZIR': `Masa hazır. ${c.id} için döküm fırını arıtmada, metal ${hhmm(t.phases[2].start)}'de geliyor.`, 'BAŞLANGIÇ': 'Kalıplar doluyor, platform yavaş iniyor, hız ve su rampada.', 'DÖKÜM': 'Kararlı döküm: hız ve su reçetede sabit.', 'BİTİŞ': 'Metal kesildi, hız ve su kademeli azalıyor.', 'BOŞALTMA': `Masa yatırıldı. Loglar vinçle alınıyor: ${Math.floor(t.unload * logsNow)} / ${logsNow}.` };
+  $('#sbPh').textContent = ph; $('#sbPh').setAttribute('fill', trip ? 'var(--crit)' : metal ? 'var(--melt-dk)' : 'var(--ink)');
+  $('#sbMsg').textContent = trip ? trip.reason : msgs[t.phase];
+  $('#sbBar').setAttribute('width', 720 * t.L / PLANT.LEN);
+  $('#sbL').textContent = `${fmt(t.L)} / 7.000 mm`;
+  $('#sbR').textContent = `${fmt(tons, 1)} t · ${logsNow} log`;
+  $('#sbX').textContent = `Döküm fırını eğimi ${fmt(b1.tilt, 1)}° · B1 ${b1.phase.toLowerCase()} · ${fmt(b1.mass, 1)} t`;
+  $('#sbX2').textContent = `Platform hidroliği ${fmt(t.hyd, 1)} bar · kalıp havası ${fmt(t.air, 2)} Nl/dk · yağ ${fmt(t.oil, 2)} ml/dk`;
+  $('#mimicNote').textContent = metal ? 'Metal akıyor' : t.phase === 'BOŞALTMA' ? 'Masa yatık' : 'Metal yok';
+
+  // moulds
+  $$('#moulds .mo').forEach(g => {
+    const i = +g.dataset.i, closed = c.closed.includes(i), plug = plugged.has(i);
+    const dev = metal && !plug && !closed && (scn.level || (scn.water && i % 3 === 0));
+    const core = g.querySelector('.core'), ring = g.querySelector('.ring');
+    core.setAttribute('fill', closed ? 'var(--panel)' : plug ? 'var(--crit)' : metal ? 'url(#gMeltR)' : t.w > 0 ? 'var(--water-2)' : 'var(--steel)');
+    ring.setAttribute('stroke', i === sel ? 'var(--ink)' : dev ? 'var(--warn)' : 'var(--steel-3)');
+    ring.setAttribute('stroke-width', i === sel ? 4 : dev ? 3.5 : 2);
+    ring.setAttribute('fill', closed ? 'var(--panel-2)' : 'var(--steel-2)');
+    ring.setAttribute('stroke-dasharray', closed ? '4 3' : '');
+    g.querySelector('.x').setAttribute('opacity', closed || plug ? 1 : 0);
+    g.querySelector('text').setAttribute('opacity', closed || plug ? 0 : 1);
+    g.setAttribute('aria-pressed', i === sel);
+  });
+  const i = sel, closed = c.closed.includes(i), plug = plugged.has(i);
+  const mw = closed || plug ? (t.w > 0 && plug ? t.w : 0) : t.w * (1 + Math.sin(i * 1.7) * .012);
+  const mst = closed ? ['idle', 'BAKIMDA'] : plug ? ['crit', 'TIKALI'] : metal ? ['run', 'DÖKÜYOR'] : t.w > 0 ? ['run', 'SU AÇIK'] : ['idle', 'HAZIR'];
+  const casts = 180 + Math.floor(rnd(i, 70) * 1100) + Math.max(0, t.n % 50);
+  $('#mdet').innerHTML = `<h3>${mouldName(i)} <span class="pill ${mst[0]}"><i></i>${mst[1]}</span></h3>
+    <div class="kv"><span>Su debisi</span><b>${mw ? fmt(mw, 1) + ' l/dk' : '—'}</b><span>Hedef</span><b>${t.wT ? fmt(t.wT, 0) + ' l/dk' : '—'}</b>
+    <span>Metal seviyesi</span><b>${metal && !closed && !plug ? fmt(t.level + Math.sin(i) * .6, 1) + ' mm' : '—'}</b>
+    <span>Kalıp havası</span><b>${metal && !closed && !plug ? fmt(t.air + Math.sin(i * 2.3) * .03, 2) + ' Nl/dk' : '—'}</b>
+    <span>Yağ</span><b>${metal && !closed && !plug ? fmt(t.oil, 2) + ' ml/dk' : '—'}</b>
+    <span>Konum</span><b>Sıra ${Math.floor(i / 8) + 1} · ${i % 8 + 1}</b>
+    <span>Grafit halka</span><b>${casts} döküm</b>
+    <span>Halka değişimi</span><b>${casts > 1100 ? '<span style="color:var(--warn)">yaklaşıyor</span>' : 'uygun'}</b></div>
+    <p class="note">${closed ? 'Bu dökümde bakım için kapalı. Başlık delikleri tıpalı.' : plug ? 'Bleed-out ya da operatör kararıyla tıkandı. Döküm bitince bakıma alınır.' : 'Kalıp normal çalışıyor.'}</p>`;
+  const pb = $('#plugBtn'); pb.disabled = !metal || closed || plug || !!trip; pb.textContent = `${mouldName(i)} tıka`;
+  $('#plugNote').textContent = metal ? '' : 'Sadece döküm sırasında';
+
+  // measurements
+  const M = (l, v, u, tx, st) => `<div class="m ${st || ''}"><span class="dot"></span><span class="l">${l}</span><span class="v num">${v}<small>${u}</small></span><span class="t">${tx}</span></div>`;
+  $('#meas').innerHTML = [
+    M('Oluk metali', t.launder != null ? fmt(t.launder) : '—', '°C', `hedef ${a.temp} ±8`, t.launder == null ? 'idle' : t.launder < 680 ? 'warn' : ''),
+    M('Hot-top seviyesi', t.level ? fmt(t.level, 1) : '—', 'mm', 'hedef 75 ±5', !t.level ? 'idle' : t.level > 85 ? 'warn' : ''),
+    M('H₂ çıkış', t.h2Out != null ? fmt(t.h2Out, 3) : '—', 'ml/100g', `giriş ${t.h2In != null ? fmt(t.h2In, 2) : '—'} · sınır 0,15`, t.h2Out == null ? 'idle' : t.h2Out > .15 ? 'warn' : ''),
+    M('Degazör rotoru', fmt(t.rotor), 'd/dk', `argon ${fmt(t.argon)} l/dk`, t.rotor ? '' : 'idle'),
+    M('Tane inceltici', t.rod ? fmt(t.rod, 2) : '—', 'kg/t', 'AlTi5B1 çubuk', t.rod ? '' : 'idle'),
+    M('Filtre ΔP', t.filterDp ? fmt(t.filterDp) : '—', 'mm', 'CFF 40 ppi · sınır 35', !t.filterDp ? 'idle' : t.filterDp > 35 ? 'warn' : ''),
+    M('Su giriş', fmt(t.waterIn, 1), '°C', `çıkış ${t.waterOut ? fmt(t.waterOut, 1) + ' °C' : '—'}`),
+    M('Su debisi', t.wT ? fmt(t.w / t.wT * 100 * (t.wDrop ? 1 : 1)) : '—', '%', 'hedefe oran · kilit %70', !t.wT ? 'idle' : t.wDrop && t.wDrop < .85 ? (t.wDrop < .7 ? 'crit' : 'warn') : ''),
+    M('Pit suyu', fmt(t.pit, 2), 'm', 'en az 0,90 m'),
+    M('Platform hidroliği', fmt(t.hyd, 1), 'bar', 'sistem sınırı 41 bar'),
+  ].join('');
+
+  // recipe chart
+  const pts = [], wts = [], act = [], wact = [];
+  for (let L = 0; L <= PLANT.LEN; L += 50) { const v = vTarget(L, p.vs); pts.push([L, v]); wts.push([L, wTarget(v, p.vs)]); }
+  if (t.L > 0) for (let L = 0; L <= t.L; L += 50) { const v = vTarget(L, p.vs); act.push([L, v * (1 + Math.sin(L / 300 + c.n) * .008) * (L > t.L - 300 ? 1 + ov / 100 * clamp((L - t.L + 300) / 300, 0, 1) : 1)]); wact.push([L, wTarget(v, p.vs) * (1 + Math.cos(L / 260 + c.n) * .01) * (scn.water && L > t.L - 200 ? (t.wDrop || 1) : 1)]); }
+  $('#recipeName').textContent = `${c.alloy} · Ø178 · kararlı ${p.vs} mm/dk`;
+  $('#recipe').innerHTML = lineChart({
+    w: 640, h: 240, x: [0, 7000], y: [0, 140], y2: [0, 130], label: 'Hız ve su reçetesi',
+    zones: [{ x0: 0, x1: 450, label: 'BAŞLANGIÇ' }, { x0: 6850, x1: 7000, label: '' }],
+    yTicks: [0, 40, 80, 120], y2Ticks: [0, 40, 80, 120], xTicks: [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000].map(x => ({ x, l: x / 1000 + ' m' })),
+    series: [{ pts, color: 'var(--melt)', dash: '5 5' }, { pts: wts, color: 'var(--water)', dash: '5 5', ax: 2 }, { pts: act, color: 'var(--melt)', width: 3 }, { pts: wact, color: 'var(--water)', width: 3, ax: 2 }],
+    marker: t.L > 0 ? t.L : null,
+  });
+
+  // rules
+  const R = (st, txt, sub, val) => `<li class="${st}"><i></i><span>${txt}<small>${sub}</small></span><b class="mono">${val}</b></li>`;
+  const wr = t.wT ? t.w / t.wT : null;
+  $('#rules').innerHTML = [
+    R(t.pit >= .9 ? '' : 'crit', 'Pit suyu ≥ 0,90 m', 'Altında döküm başlatılamaz (patlama riski)', fmt(t.pit, 2) + ' m'),
+    R('', 'Su yüzeyi kalıbın ≥ 3 m altında', 'Kalıp ile pit suyu arasındaki mesafe', fmt(9 - t.pit, 1) + ' m'),
+    R(wr == null ? 'idle' : wr < .7 ? 'crit' : wr < .85 ? 'warn' : '', 'Su debisi ≥ %70 hedef', 'Altına düşerse metal kesilir, platform durur', wr == null ? '—' : '%' + fmt(wr * 100)),
+    R(plugged.size >= 3 ? 'crit' : plugged.size ? 'warn' : '', 'Bleed-out: kalıp otomatik tıkanır', 'Aynı dökümde 3 kalıpta acil bitiş', `${plugged.size} kalıp`),
+    R(t.launder == null ? 'idle' : t.launder < 675 ? 'crit' : t.launder < 680 ? 'warn' : '', 'Oluk metali 680–710 °C', '675 °C altında döküm başlatılamaz', t.launder == null ? '—' : fmt(t.launder) + ' °C'),
+    R(t.h2Out == null ? 'idle' : t.h2Out > .2 ? 'crit' : t.h2Out > .15 ? 'warn' : '', 'H₂ ≤ 0,15 ml/100 g', '0,20 üstünde döküm başlatılamaz', t.h2Out == null ? '—' : fmt(t.h2Out, 3)),
+    R(ov > 0 ? 'warn' : '', 'Hız reçeteden en fazla −%10', 'Artırma ve reçete değişikliği yönetici yetkisi', ov ? `%${ov > 0 ? '+' : ''}${ov}` : 'reçete'),
+    R(t.filterDp > 35 ? 'warn' : !t.filterDp ? 'idle' : '', 'Filtre ΔP ≤ 35 mm', 'Üstünde döküm sonunda değişim', t.filterDp ? fmt(t.filterDp) + ' mm' : '—'),
+  ].join('');
+
+  renderSteps(base);
+  renderScn(t);
+  const act2 = alarms.filter(a => a.active), bell = $('#bell');
+  $('#bellN').textContent = act2.length;
+  bell.classList.toggle('on', act2.some(a => a.sev === 'crit')); bell.classList.toggle('warn', !act2.some(a => a.sev === 'crit') && act2.length > 0);
+  const lk = Math.floor(T);
+  if (force || lk !== lastLog) { lastLog = lk; renderLog(T, c); }
+};
+
+function syncOv() { $$('[data-ov]').forEach(b => { b.setAttribute('aria-pressed', +b.dataset.ov === ov); b.disabled = +b.dataset.ov > 0 && role !== 'mgr'; b.title = b.disabled ? 'Yönetici yetkisi gerekli' : ''; }); $('#ovTxt').textContent = ov ? `%${ov > 0 ? '+' : ''}${ov}` : 'reçete'; }
+window.onInit = T => {
+  // radial melt fill for mould cores (top view)
+  $('#moulds').insertAdjacentHTML('afterbegin', '<defs><radialGradient id="gMeltR"><stop offset="0" stop-color="#fde68a"/><stop offset=".55" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></radialGradient></defs>');
+  buildMimic(); buildMoulds();
+  const t = table(T); lastCastN = t.n;
+  // what already happened in this cast
+  t.phases.slice(0, t.pi + 1).forEach(p => addAlarm('info', `${t.cast.id} · <b>${p.key}</b> etabı başladı.`, 'phase', p.start));
+  $$('[data-role]').forEach(b => b.addEventListener('click', () => { role = b.dataset.role; $$('[data-role]').forEach(x => x.setAttribute('aria-pressed', x === b)); if (role === 'op' && ov > 0) { ov = 0; } syncOv(); tick(true); }));
+  $$('[data-ov]').forEach(b => b.addEventListener('click', () => { const v = +b.dataset.ov; if (v > 0 && role !== 'mgr') return; ov = v; syncOv(); addAlarm(v > 0 ? 'warn' : 'info', v ? `Hız düzeltmesi <b>%${v > 0 ? '+' : ''}${v}</b> (${role === 'mgr' ? 'yönetici' : 'operatör'}).` : 'Hız reçeteye döndü.', 'ov'); tick(true); }));
+  syncOv();
+  $('#plugBtn').addEventListener('click', () => { const tt = table(SIM.T()); if (!tt.metal || plugged.has(sel)) return; plugged.add(sel); addAlarm('warn', `<b>${mouldName(sel)}</b> operatör tarafından tıkandı.`, 'plug'); if (plugged.size >= 3) doTrip('3 kalıp tıkalı, döküm sonlandırıldı', tt); tick(true); });
+  $('#estop').addEventListener('click', () => {
+    const b = $('#estop'), tt = table(SIM.T());
+    if (trip || !tt.metal) return;
+    if (Date.now() - estopArm < 3000) { estopArm = 0; b.textContent = 'ACİL BİTİŞ'; doTrip('Operatör acil bitiş butonuna bastı.', tt); }
+    else { estopArm = Date.now(); b.textContent = 'Onay için tekrar basın'; setTimeout(() => { if (estopArm) { estopArm = 0; b.textContent = 'ACİL BİTİŞ'; } }, 3000); }
+  });
+  $('#tripReset').addEventListener('click', () => { if (role !== 'mgr') return; trip = null; for (const k in scn) delete scn[k]; plugged.clear(); alarms.forEach(a => a.active = false); addAlarm('ok', 'Kilit yönetici tarafından kaldırıldı. Demo döküm modeline döndü.', 'trip'); tick(true); });
+  $('#jumpCast').addEventListener('click', () => { const tt = table(SIM.T()); const target = tt.pi <= 3 && tt.pi >= 2 ? null : (tt.pi < 2 ? tt.phases[3].start : tt.phases[3].start + PLANT.CYCLE); if (target != null) simJump(target + 3); });
+  renderFeed();
+};
+</script>

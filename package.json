@@ -1,0 +1,8 @@
+{
+  "name": "billet-dokum",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Alüminyum billet dökümhanesi otomasyon panelleri — created by GOTONOM",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}

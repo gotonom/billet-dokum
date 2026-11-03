@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Hot-top DC döküm: 64 kalıp, hız ve su reçetesi, metal seviyesi, bleed-out algılama, PLC kilitleri ve alarm senaryoları. Created by GOTONOM.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="Billet Dökümhanesi · Döküm Masası">
+<meta property="og:description" content="Hot-top DC döküm: 64 kalıp, hız ve su reçetesi, metal seviyesi, bleed-out algılama, PLC kilitleri ve alarm senaryoları. Created by GOTONOM.">
+<meta name="theme-color" content="#0a2463">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a2463'/%3E%3Crect x='11' y='5' width='10' height='22' rx='2' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Cpath d='M11 10h10' stroke='%23f97316' stroke-width='3'/%3E%3C/svg%3E">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Döküm Masası · Billet Dökümhanesi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Shared look for every casthouse panel: the MAKOM control-room language (Barlow + Plex Mono,
+   blueprint grid, light by default, dark on request) plus molten-metal and cooling-water colours. */
+:root{
+  --bg:#eef3fa; --bg-2:#e4ecf7; --panel:#ffffff; --panel-2:#f4f8fe; --line:#c9d8ee; --line-2:#dde8f6;
+  --ink:#0a2463; --ink-2:#34507f; --muted:#6a7fa4; --accent:#0b6fd9; --accent-2:#6d28d9; --on-accent:#ffffff;
+  --ok:#15803d; --warn:#b45309; --crit:#dc2626; --grid:rgba(11,111,217,.05);
+  --melt:#f97316; --melt-2:#fbbf24; --melt-dk:#c2410c; --water:#0ea5e9; --water-2:#7dd3fc;
+  --steel:#94a3b8; --steel-2:#cbd5e1; --steel-3:#64748b; --refr:#a8a29e; --refr-2:#d6d3d1;
+  --billet-1:#f1f5f9; --billet-2:#b6c2cf; --hot:#ef4444;
+  --a6063:#0b6fd9; --a6060:#0d9488; --a6082:#7c3aed;
+  --shadow:0 8px 24px rgba(10,36,99,.10);
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-ui:"Barlow Semi Condensed","Segoe UI",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#050d1c; --bg-2:#08142a; --panel:#0c1a33; --panel-2:#10223f; --line:#1c3256; --line-2:#152a4a;
+  --ink:#e7efff; --ink-2:#a8bbdc; --muted:#6f86ae; --accent:#38bdf8; --accent-2:#a78bfa; --on-accent:#04101f;
+  --ok:#34d399; --warn:#fbbf24; --crit:#fb7185; --grid:rgba(56,189,248,.06);
+  --steel:#64748b; --steel-2:#334155; --steel-3:#94a3b8; --refr:#57534e; --refr-2:#44403c;
+  --billet-1:#cbd5e1; --billet-2:#64748b;
+  --a6063:#38bdf8; --a6060:#2dd4bf; --a6082:#a78bfa;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{background:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;color:var(--ink);font-family:var(--f-ui);font-size:15px}
+.wrap{max-width:1600px;margin:0 auto;padding-block:12px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+.num,.mono{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--f-mono)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+
+/* site nav */
+.sitenav{display:flex;align-items:center;gap:4px 6px;flex-wrap:wrap;font:600 14px var(--f-ui)}
+.sitenav a{color:var(--ink-2);text-decoration:none;padding:6px 12px;border-radius:6px;border:1px solid transparent}
+.sitenav a:hover{border-color:var(--line)}
+.sitenav a[aria-current="page"]{background:var(--accent);color:var(--on-accent)}
+.sitenav .sn-brand{font:800 16px var(--f-display);color:var(--ink);letter-spacing:.08em;margin-right:6px;display:inline-flex;align-items:center;gap:8px}
+.sitenav .sn-brand svg{width:20px;height:20px}
+
+/* header */
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px 24px;flex-wrap:wrap}
+.title{display:flex;flex-direction:column;gap:6px;min-width:0}
+.eyebrow{font:600 12.5px var(--f-mono);letter-spacing:.14em;color:var(--accent);text-transform:uppercase;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.live{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:live 2s infinite}
+@keyframes live{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+h1{margin:0;font:800 clamp(30px,4.4vw,56px)/.95 var(--f-display);letter-spacing:.01em;text-wrap:balance}
+h1 span{color:var(--melt)}
+.sum{margin:0;color:var(--ink-2);font-size:16px;max-width:76ch}
+.sum b{color:var(--ink)}
+.credit{font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.credit b{color:var(--ink);letter-spacing:.14em}
+.hctl{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.clock{display:flex;flex-direction:column;justify-content:center;padding:6px 14px;border:1px solid var(--line);border-radius:8px;background:var(--panel);line-height:1.1;min-width:112px}
+.clock small{font:600 11px var(--f-mono);letter-spacing:.1em;color:var(--muted)}
+.clock b{font:600 20px var(--f-mono)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:transparent;padding:0 11px;min-height:40px;font:600 13.5px var(--f-mono);color:var(--ink-2);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.ibtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 12px;min-height:40px;border:1px solid var(--line);border-radius:8px;background:var(--panel);cursor:pointer;font-weight:700;font-size:14px;text-decoration:none;color:var(--ink)}
+.ibtn svg{width:18px;height:18px;flex:none}
+.ibtn:hover{border-color:var(--accent)}
+.ibtn:disabled{opacity:.45;cursor:not-allowed;border-color:var(--line)}
+.ibtn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ibtn.danger{background:var(--crit);border-color:var(--crit);color:#fff}
+.ibtn.warnb{background:var(--warn);border-color:var(--warn);color:#1a1200}
+.bell.on{background:var(--crit);border-color:var(--crit);color:#fff}
+.bell.warn{background:var(--warn);border-color:var(--warn);color:#1a1200}
+.demo{font:600 11px var(--f-mono);letter-spacing:.1em;color:#1a1200;background:var(--warn);border-radius:4px;padding:3px 7px;align-self:center}
+.assume{font:600 10.5px var(--f-mono);letter-spacing:.08em;color:var(--warn);border:1px dashed var(--warn);border-radius:4px;padding:1px 6px;white-space:nowrap}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:0}
+.ch{display:flex;align-items:baseline;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;padding:14px 16px 0}
+.ch h2{margin:0;font:800 22px var(--f-display);letter-spacing:.02em;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ch h2 small{font:600 12px var(--f-mono);letter-spacing:.08em;color:var(--muted)}
+.ch .aside{font-size:13px;color:var(--muted)}
+.cb{padding:12px 16px 16px}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.kpi{padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0;position:relative;overflow:hidden}
+.kpi .l{font:600 11.5px var(--f-mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.kpi .v{font:700 34px/1 var(--f-display);display:flex;align-items:baseline;gap:5px;white-space:nowrap}
+.kpi .v small{font-size:16px;color:var(--ink-2);font-weight:600}
+.kpi .s{font-size:13px;color:var(--ink-2);line-height:1.3}
+.kpi.crit .v{color:var(--crit)} .kpi.warn .v{color:var(--warn)} .kpi.ok .v{color:var(--ok)}
+.kpi .bar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:4px;background:var(--line-2)}
+.kpi .bar i{display:block;height:100%}
+.kpi .spark{position:absolute;inset:auto 0 0 0;height:28px;opacity:.5;pointer-events:none}
+
+/* measurement tiles */
+.meas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.m{border:1px solid var(--line-2);background:var(--panel-2);border-radius:10px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-width:0;position:relative}
+.m .l{font:600 10.5px var(--f-mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m .v{font:700 26px/1.05 var(--f-display);white-space:nowrap}
+.m .v small{font-size:14px;color:var(--ink-2);font-weight:600;margin-left:3px}
+.m .t{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m.warn{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 9%,var(--panel-2))}
+.m.warn .v{color:var(--warn)}
+.m.crit{border-color:var(--crit);background:color-mix(in srgb,var(--crit) 10%,var(--panel-2))}
+.m.crit .v{color:var(--crit)}
+.m .dot{position:absolute;top:10px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.m.warn .dot{background:var(--warn)} .m.crit .dot{background:var(--crit)} .m.idle .dot{background:var(--line)}
+
+/* phase stepper */
+.steps{display:flex;gap:4px;padding:0;margin:0;list-style:none;overflow-x:auto;scrollbar-width:thin}
+.steps li{flex:1 1 0;min-width:96px;display:flex;flex-direction:column;gap:3px;padding:8px 10px 9px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line-2);position:relative;overflow:hidden}
+.steps li b{font:800 15px var(--f-display);letter-spacing:.04em;white-space:nowrap}
+.steps li span{font:500 11.5px var(--f-mono);color:var(--muted);white-space:nowrap}
+.steps li i{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);width:0}
+.steps li.done{opacity:.62}
+.steps li.done i{width:100%;background:var(--ok)}
+.steps li.now{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--panel))}
+.steps li.now b{color:var(--accent)}
+.steps button{all:unset;cursor:pointer;display:contents}
+
+/* tags, chips, pills */
+.pill{display:inline-flex;align-items:center;gap:6px;font:700 11.5px var(--f-mono);letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,transparent)}
+.pill.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.pill.crit{color:var(--crit);border-color:color-mix(in srgb,var(--crit) 45%,transparent)}
+.pill.run{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+.pill.idle{color:var(--muted)}
+.alloy{display:inline-block;font:700 11px var(--f-mono);padding:2px 6px;border-radius:4px;color:#fff;letter-spacing:.04em}
+:root[data-theme="dark"] .alloy{color:#04101f}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font:600 11px var(--f-mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+.tbl td.r,.tbl th.r{text-align:right}
+.tbl tr.now td{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.tscroll{overflow-x:auto}
+
+/* alarm feed */
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.feed li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:8px 10px;border-radius:8px;background:var(--panel-2);border-left:4px solid var(--line);font-size:13.5px;line-height:1.3}
+.feed li time{font:600 11.5px var(--f-mono);color:var(--muted);padding-top:2px}
+.feed li.crit{border-left-color:var(--crit)} .feed li.warn{border-left-color:var(--warn)} .feed li.ok{border-left-color:var(--ok)} .feed li.info{border-left-color:var(--accent)}
+.feed li b{font-weight:700}
+.empty{color:var(--muted);font-size:13.5px;padding:8px 2px}
+
+/* tabs */
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 12px;min-height:38px;cursor:pointer;font:700 14px var(--f-ui);color:var(--ink-2);display:inline-flex;gap:8px;align-items:center}
+.tabs button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+
+/* mimic scroller (wide SVG schematics) */
+.mimic-scroll{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+.mimic-hint{display:none;font:600 11px var(--f-mono);letter-spacing:.08em;color:var(--muted);padding:8px 16px 0}
+svg text{font-family:var(--f-ui)}
+.flow{fill:none;stroke-dasharray:7 9;animation:dash 1.1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-32}}
+.spin{animation:spin 1.2s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.flick{animation:flick .35s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 0}
+@keyframes flick{from{transform:scaleY(.82);opacity:.8}to{transform:scaleY(1.08);opacity:1}}
+.blink{animation:blink 1s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+
+.foot{display:flex;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);padding:4px 2px}
+.foot a{color:var(--ink-2)}
+
+@media (max-width:1180px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:720px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi .v{font-size:28px}
+  .mimic-hint{display:block}
+  .hctl{width:100%}
+  .clock{flex:1}
+  .meas{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .m .v{font-size:23px}
+  .ch h2{font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* Layout: the pit cross-section is the hero, the cast's numbers sit right under it, then the mould
+   table (top view), the recipe curve, operator controls, alarm scenarios and PLC interlocks. */
+.kpi .v.id{font-size:28px}
+#mimic{display:block;width:100%;min-width:980px;height:auto}
+.tagbox{fill:var(--panel);stroke:var(--line)}
+.tagl{font:600 10.5px var(--f-mono);fill:var(--muted);letter-spacing:.06em}
+.tagv{font:700 19px var(--f-display);fill:var(--ink)}
+.tag.warn .tagbox{stroke:var(--warn);stroke-width:2}.tag.warn .tagv{fill:var(--warn)}
+.tag.crit .tagbox{stroke:var(--crit);stroke-width:2}.tag.crit .tagv{fill:var(--crit)}
+.lead{stroke:var(--line);stroke-dasharray:3 4;fill:none}
+.spray{stroke:var(--water);stroke-width:2;stroke-linecap:round;stroke-dasharray:3 4;animation:dash .5s linear infinite}
+.bub{fill:#fff;opacity:.85;animation:bub 1.4s linear infinite}
+@keyframes bub{from{transform:translateY(0);opacity:.9}to{transform:translateY(-26px);opacity:0}}
+.grid2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px}
+.grid3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.mtable{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px;align-items:start}
+#moulds{display:block;width:100%;max-width:470px;height:auto;margin:0 auto}
+#moulds .mo{cursor:pointer}
+#moulds .mo:focus{outline:none}
+#moulds .mo:hover circle.ring,#moulds .mo:focus-visible circle.ring{stroke:var(--accent);stroke-width:3}
+.mdet{display:flex;flex-direction:column;gap:8px}
+.mdet h3{margin:0;font:800 26px var(--f-display);display:flex;align-items:center;gap:10px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:5px 10px;font-size:14px}
+.kv span{color:var(--ink-2)} .kv b{font-family:var(--f-mono);font-weight:600;font-size:13.5px;text-align:right}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);padding-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.ctl{display:flex;flex-direction:column;gap:12px}
+.ctl .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ctl .lbl{font:600 11.5px var(--f-mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;width:100%}
+.note{font-size:13px;color:var(--ink-2);line-height:1.4;margin:0}
+.note b{color:var(--ink)}
+.trip{display:none;gap:10px;align-items:center;padding:12px 14px;border-radius:10px;background:var(--crit);color:#fff;font-weight:700}
+.trip.on{display:flex;flex-wrap:wrap}
+.trip svg{width:26px;height:26px;flex:none}
+.trip .ibtn{margin-left:auto;background:#fff;color:var(--crit);border-color:#fff}
+.scn{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.scn button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;border:1px solid var(--line);background:var(--panel-2);border-radius:10px;padding:10px 12px;cursor:pointer;min-height:64px}
+.scn button b{font:800 16px var(--f-display);letter-spacing:.03em;display:flex;gap:7px;align-items:center}
+.scn button span{font-size:12.5px;color:var(--ink-2);line-height:1.3}
+.scn button:hover:not(:disabled){border-color:var(--accent)}
+.scn button:disabled{opacity:.5;cursor:not-allowed}
+.scn button[aria-pressed="true"]{border-color:var(--crit);background:color-mix(in srgb,var(--crit) 8%,var(--panel))}
+.scn button i{width:9px;height:9px;border-radius:50%;background:var(--warn)}
+.scn button.c i{background:var(--crit)}
+.rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rules li{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:4px 10px;align-items:start;padding:8px 10px;border-radius:8px;background:var(--panel-2);font-size:13.5px;line-height:1.3}
+.rules li > i{width:10px;height:10px;border-radius:50%;background:var(--ok);margin-top:4px}
+.rules li.warn > i{background:var(--warn)} .rules li.crit > i{background:var(--crit)} .rules li.idle > i{background:var(--line)}
+.rules li small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.rules li b.mono{font-size:12.5px;white-space:nowrap}
+.feedwrap{max-height:340px;overflow:auto}
+@media (max-width:1100px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.mtable{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="sitenav" aria-label="Dökümhane modülleri"><a class="sn-brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#0a2463"/><rect x="11" y="5" width="10" height="22" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M11 10h10" stroke="#f97316" stroke-width="3"/></svg>DÖKÜMHANE</a><a href="firin.html">Fırınlar</a><a href="dokum.html" aria-current="page">Döküm Masası</a><a href="homojen.html">Homojenizasyon ve Testere</a></nav>
+
+  <header class="head">
+    <div class="title">
+      <div class="eyebrow"><span class="live"></span>D1 · HOT-TOP DC DÖKÜM · 64 × Ø178 mm · 7.000 mm</div>
+      <h1>DÖKÜM <span>MASASI</span></h1>
+      <p class="sum">Döküm fırınından gelen metal gaz giderme, tane inceltme ve filtreden geçip 64 kalıba dağılıyor. Platform reçetedeki hızla iniyor, kalıp altındaki su jetleri billeti dondururken <b>her kalıp ayrı ayrı izleniyor</b>.</p>
+      <span class="credit">created by <b>GOTONOM</b></span>
+    </div>
+    <div class="hctl">
+      <span class="demo" id="demoTag">CANLI SAAT · DEMO VERİ</span>
+      <div class="seg" role="group" aria-label="Simülasyon hızı"><button type="button" data-speed="1" title="Gerçek saat">×1</button><button type="button" data-speed="10">×10</button><button type="button" data-speed="60">×60</button></div>
+      <div class="clock"><small id="clockLbl">TESİS SAATİ</small><b class="num" id="clock">00:00:00</b></div>
+      <a class="ibtn bell" id="bell" href="#alarmlar" title="Aktif alarmlar"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 22a2.5 2.5 0 0 0 2.4-2h-4.8a2.5 2.5 0 0 0 2.4 2zm7-6V11a7 7 0 0 0-5.5-6.8V3a1.5 1.5 0 0 0-3 0v1.2A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg><span class="num" id="bellN">0</span></a>
+      <button type="button" class="ibtn" id="themeBtn" aria-pressed="false" title="Koyu / açık tema"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+  </header>
+
+  <div class="trip" id="trip" role="alert"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M1 21h22L12 2zm12-3h-2v-2h2zm0-4h-2v-4h2z"/></svg><span id="tripTxt">ACİL BİTİŞ</span><button type="button" class="ibtn" id="tripReset">Kilidi kaldır</button></div>
+
+  <section class="kpis" aria-label="Döküm özeti">
+    <div class="card kpi"><span class="l">Döküm</span><span class="v id num" id="kId">—</span><span class="s" id="kAlloy">—</span></div>
+    <div class="card kpi"><span class="l">Etap</span><span class="v" id="kPhase">—</span><span class="s" id="kPhaseS">—</span></div>
+    <div class="card kpi"><span class="l">Döküm hızı</span><span class="v num"><span id="kV">0</span><small>mm/dk</small></span><span class="s" id="kVs">hedef —</span></div>
+    <div class="card kpi"><span class="l">Döküm boyu</span><span class="v num"><span id="kL">0</span><small>mm</small></span><span class="bar"><i id="kLbar" style="background:var(--melt);width:0"></i></span></div>
+    <div class="card kpi"><span class="l">Dökülen metal</span><span class="v num"><span id="kT">0</span><small>t</small></span><span class="s" id="kTs">—</span></div>
+    <div class="card kpi"><span class="l">Soğutma suyu</span><span class="v num"><span id="kW">0</span><small>m³/h</small></span><span class="s" id="kWs">—</span></div>
+  </section>
+
+  <ol class="steps" id="steps" aria-label="Döküm etapları"></ol>
+
+  <section class="card" aria-label="Döküm hattı proses şeması">
+    <div class="ch"><h2>Döküm hattı <small>FIRIN → DEGAZÖR → TANE İNCELTİCİ → FİLTRE → MASA → PİT</small></h2><span class="aside" id="mimicNote"></span></div>
+    <div class="mimic-hint">Şemayı yana kaydırın</div>
+    <div class="mimic-scroll"><svg id="mimic" viewBox="0 0 1400 600" role="img" aria-label="Döküm fırını, oluk, degazör, tane inceltici, filtre, döküm masası ve pit kesiti"></svg></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card" aria-label="Kalıp masası">
+      <div class="ch"><h2>Kalıp masası <small>ÜSTTEN · 8 × 8</small></h2><span class="aside">Bir kalıba dokunun</span></div>
+      <div class="cb mtable">
+        <div>
+          <svg id="moulds" viewBox="0 0 440 440" role="group" aria-label="64 kalıp"></svg>
+          <div class="legend"><span><i style="background:var(--melt)"></i>Döküyor</span><span><i style="background:var(--steel)"></i>Hazır</span><span><i style="background:var(--warn)"></i>Sapma</span><span><i style="background:var(--crit)"></i>Tıkalı</span><span><i style="background:repeating-linear-gradient(45deg,var(--line) 0 3px,transparent 3px 6px);border:1px solid var(--line)"></i>Bakımda</span></div>
+        </div>
+        <div class="mdet" id="mdet"></div>
+      </div>
+    </section>
+    <section class="card" aria-label="Anlık ölçümler">
+      <div class="ch"><h2>Anlık ölçümler</h2><span class="aside">Hat ve masa sensörleri</span></div>
+      <div class="cb"><div class="meas" id="meas"></div></div>
+    </section>
+  </div>
+
+  <div class="grid3">
+    <section class="card" aria-label="Döküm reçetesi">
+      <div class="ch"><h2>Reçete <small id="recipeName">—</small></h2><span class="aside"><span style="color:var(--melt)">━</span> hız mm/dk &nbsp; <span style="color:var(--water)">━</span> su l/dk·kalıp &nbsp; kesikli: hedef</span></div>
+      <div class="cb" id="recipe"></div>
+    </section>
+    <section class="card" aria-label="Manuel müdahale">
+      <div class="ch"><h2>Manuel müdahale</h2><span class="aside">Her işlem kayda geçer</span></div>
+      <div class="cb ctl">
+        <div class="row"><span class="lbl">Yetki</span><div class="seg" role="group" aria-label="Yetki"><button type="button" data-role="op" aria-pressed="true">Operatör</button><button type="button" data-role="mgr" aria-pressed="false">Yönetici</button></div></div>
+        <div class="row"><span class="lbl">Hız düzeltmesi · <span id="ovTxt">reçete</span></span>
+          <div class="seg" role="group" aria-label="Hız düzeltmesi"><button type="button" data-ov="-10">−%10</button><button type="button" data-ov="-5">−%5</button><button type="button" data-ov="0" aria-pressed="true">Reçete</button><button type="button" data-ov="5">+%5</button></div>
+        </div>
+        <p class="note">Operatör hızı en fazla <b>%10 düşürebilir</b> (merkez çatlağı riskinde ilk müdahale). Hızı artırmak ve reçeteyi değiştirmek <b>yönetici yetkisi</b> ister.</p>
+        <div class="row"><span class="lbl">Seçili kalıp</span><button type="button" class="ibtn warnb" id="plugBtn">Kalıbı tıka</button><span class="note" id="plugNote"></span></div>
+        <div class="row"><span class="lbl">Acil</span><button type="button" class="ibtn danger" id="estop"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 2h8l6 6v8l-6 6H8l-6-6V8z"/></svg>ACİL BİTİŞ</button><span class="note">İki kez basın: metal kesilir, platform durur, su devam eder.</span></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid3" id="alarmlar">
+    <section class="card" aria-label="Alarm senaryoları">
+      <div class="ch"><h2>Alarm senaryoları <small>DEMO</small></h2><button type="button" class="ibtn" id="jumpCast" title="Bir sonraki dökümün kararlı etabına atla">Döküme atla</button></div>
+      <div class="cb" style="display:flex;flex-direction:column;gap:12px">
+        <div class="scn" id="scn"></div>
+        <div class="feedwrap"><ul class="feed" id="feed"></ul></div>
+      </div>
+    </section>
+    <section class="card" aria-label="PLC kilitleri">
+      <div class="ch"><h2>PLC kilitleri <span class="assume">VARSAYIM</span></h2><span class="aside">Canlı değerle</span></div>
+      <div class="cb"><ul class="rules" id="rules"></ul></div>
+    </section>
+  </div>
+
+  <section class="card" aria-label="Döküm kayıtları">
+    <div class="ch"><h2>Döküm kayıtları <small>SON 24 SAAT</small></h2><span class="aside">H₂ çıkış ml/100 g · tane µm</span></div>
+    <div class="cb tscroll"><table class="tbl" id="log"></table></div>
+  </section>
+
+  <footer class="foot"><span>Değerler PLC bağlantısı kurulana kadar örnek veriyle çalışan simülasyondur. Varsayımlar README'de.</span><span>created by <b>GOTONOM</b></span></footer>
+</div>
+
+<script>
+/* Plant model shared by every panel. Each unit's state is a pure function of plant time T
+   (minutes since today's 00:00), so the control centre and the detail pages always agree.
+   Numbers marked VARSAYIM in the README are assumptions until the plant confirms them. */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const mod = (a, n) => ((a % n) + n) % n;
+const smooth = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
+const NF = [0, 1, 2, 3].map(d => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+const fmt = (x, d = 0) => (x == null || isNaN(x)) ? '—' : NF[d].format(x);
+const pad = (x, n = 2) => String(x).padStart(n, '0');
+const hhmm = T => { const m = mod(Math.floor(T), 1440); return pad(Math.floor(m / 60)) + ':' + pad(m % 60); };
+const dur = m => { m = Math.max(0, Math.round(m)); const h = Math.floor(m / 60); return h ? `${h} sa ${pad(m % 60)} dk` : `${m} dk`; };
+// write markup only when it changed, so hover, focus and CSS animations survive the 4 Hz tick
+const setHTML = (e, html) => { if (e._h !== html) { e._h = html; e.innerHTML = html; } };
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+// stable pseudo-random per (cast, salt) so every page draws the same cast the same way
+const rnd = (n, s) => { const x = Math.sin(n * 127.1 + s * 311.7) * 43758.5453; return x - Math.floor(x); };
+// small live wobble for readings: slow plant drift + a little real-time jitter
+const wob = (T, seed) => { const r = Date.now() / 1000; return Math.sin(T * .7 + seed) * .5 + Math.sin(r / 1.7 + seed * 3) * .35 + Math.sin(r / .6 + seed * 7) * .15; };
+
+const PLANT = {
+  CYCLE: 144,            // one cast every 144 min → 10 casts a day
+  PER_DAY: 10,
+  MOULDS: 64, ROWS: 8,   // 7" hot-top table, 8 × 8
+  DIA: 178, LEN: 7000, CROP_HEAD: 300, CROP_TAIL: 200,
+  T_PER_M: Math.PI * 0.089 * 0.089 * 2.70,   // t per metre of Ø178 billet
+  E_CYCLE: 288, H_CYCLE: 720, H_COUNT: 5,
+  PREP_END: 15, CAST_START: 40, UNLOAD_END: 125, FILL_END: 18,
+  COOL_AT: 765, COOL_MIN: 60, SAW_AT: 825, SAW_MIN: 100,
+  SLOTS: ['6063', '6063', '6060', '6063', '6082', '6063', '6063', '6060', '6063', '6063'],
+  ALLOYS: {
+    '6063': { v: 123, color: '--a6063', temp: 695, spec: { Si: [.20, .60, .43], Fe: [0, .35, .20], Cu: [0, .10, .02], Mn: [0, .10, .03], Mg: [.45, .90, .50], Cr: [0, .10, .01], Zn: [0, .10, .02], Ti: [0, .10, .02] } },
+    '6060': { v: 128, color: '--a6060', temp: 692, spec: { Si: [.30, .60, .42], Fe: [.10, .30, .19], Cu: [0, .10, .02], Mn: [0, .10, .03], Mg: [.35, .60, .46], Cr: [0, .05, .01], Zn: [0, .15, .02], Ti: [0, .10, .02] } },
+    '6082': { v: 105, color: '--a6082', temp: 700, spec: { Si: [.70, 1.30, 1.00], Fe: [0, .50, .24], Cu: [0, .10, .04], Mn: [.40, 1.00, .55], Mg: [.60, 1.20, .78], Cr: [0, .25, .04], Zn: [0, .20, .02], Ti: [0, .10, .02] } },
+  },
+};
+PLANT.LOG_T = PLANT.T_PER_M * PLANT.LEN / 1000;
+PLANT.NET_M = (PLANT.LEN - PLANT.CROP_HEAD - PLANT.CROP_TAIL) / 1000;
+const alloyColor = a => `var(${PLANT.ALLOYS[a].color})`;
+const mouldName = i => 'K-' + pad(i + 1);
+
+/* ---------- casting recipe: speed by cast length, integrated once per alloy ---------- */
+function vTarget(L, vs) {
+  if (L < 20) return 50;
+  if (L < 450) return 50 + (vs - 50) * (L - 20) / 430;
+  if (L < 6850) return vs;
+  return vs - (vs - 80) * clamp((L - 6850) / 150, 0, 1);
+}
+function wTarget(v, vs) { return 45 + 65 * clamp((v - 50) / (vs - 50), 0, 1); }  // l/min per mould
+const PROFILES = {};
+function profile(alloy) {
+  if (PROFILES[alloy]) return PROFILES[alloy];
+  const vs = PLANT.ALLOYS[alloy].v, Ls = [0], dt = 1 / 60;   // 1 s steps
+  const FILL = .5;                                              // metal fills, platen waits 30 s
+  let L = 0, t = 0, tRamp = 0, tSteady = 0;
+  for (let i = 0; i < 30; i++) Ls.push(0);
+  t = FILL;
+  while (L < PLANT.LEN) {
+    L = Math.min(PLANT.LEN, L + vTarget(L, vs) * dt); t += dt; Ls.push(L);
+    if (!tRamp && L >= 450) tRamp = t;
+    if (!tSteady && L >= 6850) tSteady = t;
+  }
+  return PROFILES[alloy] = { vs, Ls, FILL, tRamp, tSteady, tEnd: t, tTaper: t + 2.5 };
+}
+function lengthAt(p, tc) { if (tc <= 0) return 0; const i = tc * 60; if (i >= p.Ls.length - 1) return PLANT.LEN; const a = Math.floor(i); return lerp(p.Ls[a], p.Ls[a + 1], i - a); }
+
+/* ---------- per-cast facts (memoised) ---------- */
+const DAY0 = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); })();
+const CASTS = new Map();
+function castInfo(n) {
+  if (CASTS.has(n)) return CASTS.get(n);
+  const slot = mod(n, PLANT.PER_DAY), date = new Date(DAY0 + n * PLANT.CYCLE * 60000);
+  const alloy = PLANT.SLOTS[slot], a = PLANT.ALLOYS[alloy];
+  const closed = [];
+  if (rnd(n, 1) < .45) closed.push(Math.floor(rnd(n, 2) * PLANT.MOULDS));
+  if (rnd(n, 3) < .15) { const j = Math.floor(rnd(n, 4) * PLANT.MOULDS); if (!closed.includes(j)) closed.push(j); }
+  const logs = PLANT.MOULDS - closed.length;
+  const utRej = rnd(n, 5) < .18 ? 1 : 0;
+  const dross = 15 + rnd(n, 6) * 8;                         // kg/t
+  const gross = logs * PLANT.LOG_T * (1 + (rnd(n, 7) - .5) * .004);
+  const net = (logs - utRej) * PLANT.T_PER_M * PLANT.NET_M;
+  const charged = gross * (1 + dross / 1000 + .004);
+  const corr = rnd(n, 8) < .3;                               // first sample Mg low → correction
+  const chem = {}, chem1 = {};
+  for (const [el, [lo, hi, tg]] of Object.entries(a.spec)) {
+    const span = Math.max(.01, (hi - lo) * .06);
+    chem[el] = +(tg + (rnd(n, 20 + el.charCodeAt(0) + el.charCodeAt(1)) - .5) * span).toFixed(3);
+    chem1[el] = chem[el];
+  }
+  if (corr) chem1.Mg = +(a.spec.Mg[0] - .01 - rnd(n, 9) * .03).toFixed(3);
+  const primer = 34 + rnd(n, 10) * 16, ic = 20 + rnd(n, 11) * 8;
+  const info = {
+    n, slot, id: `D-${pad(date.getDate())}${pad(date.getMonth() + 1)}-${pad(slot + 1)}`, date, alloy, prof: profile(alloy),
+    closed, logs, utRej, dross, gross, net, charged, recovery: net / charged * 100,
+    h2In: .24 + rnd(n, 12) * .08, h2Out: .10 + rnd(n, 13) * .04, grain: 105 + rnd(n, 14) * 35,
+    corr, chem, chem1, mgAdd: corr ? Math.round(10 + rnd(n, 15) * 14) : 0,
+    mix: { primer, ic, dis: 100 - primer - ic },
+    gas: 72 + rnd(n, 16) * 14, kwh: 88 + rnd(n, 17) * 16,     // per net tonne
+    start: n * PLANT.CYCLE + PLANT.CAST_START,
+  };
+  info.end = info.start + info.prof.tTaper;
+  CASTS.set(n, info);
+  return info;
+}
+
+/* ---------- phase helper ---------- */
+function phaseOf(list, x) { for (let i = 0; i < list.length; i++) if (x < list[i][1]) return i; return list.length - 1; }
+function mkPhases(defs, T0) { return defs.map(([key, a, b]) => ({ key, start: T0 + a, end: T0 + b })); }
+
+/* ---------- casting table + launder ---------- */
+const TABLE_PHASES = ['HAZIRLIK', 'HAZIR', 'BAŞLANGIÇ', 'DÖKÜM', 'BİTİŞ', 'BOŞALTMA'];
+function table(T) {
+  const C = PLANT.CYCLE, n = Math.floor((T - PLANT.UNLOAD_END) / C) + 1, c = T - n * C;
+  const cast = castInfo(n), p = cast.prof, a = PLANT.ALLOYS[cast.alloy], cs = PLANT.CAST_START;
+  const bounds = [['HAZIRLIK', PLANT.UNLOAD_END - C, PLANT.PREP_END], ['HAZIR', PLANT.PREP_END, cs], ['BAŞLANGIÇ', cs, cs + p.tRamp],
+    ['DÖKÜM', cs + p.tRamp, cs + p.tSteady], ['BİTİŞ', cs + p.tSteady, cs + p.tTaper], ['BOŞALTMA', cs + p.tTaper, PLANT.UNLOAD_END]];
+  const phases = mkPhases(bounds, n * C), pi = phaseOf(bounds.map(b => [b[1], b[2]]), c);
+  const tc = c - cs, casting = pi >= 2 && tc < p.tEnd, metal = casting;
+  const L = pi < 2 ? 0 : lengthAt(p, tc);
+  const vT = casting && tc > p.FILL ? vTarget(L, p.vs) : 0;
+  const v = vT ? vT * (1 + wob(T, 1) * .012) : 0;
+  let wT = 0;
+  if (pi >= 2 && tc < p.tEnd) wT = tc < p.FILL ? 45 : wTarget(vT, p.vs);
+  else if (pi === 4) wT = wTarget(80, p.vs) * clamp(1 - (tc - p.tEnd) / 2.5, 0, 1);
+  const w = wT ? wT * (1 + wob(T, 2) * .015) : 0;
+  const logs = cast.logs;
+  const unload = pi === 5 ? clamp((c - (cs + p.tTaper) - 6) / 14, 0, 1) : 0;   // tilt 6 min, then crane 14 min
+  return {
+    n, cast, c, phase: TABLE_PHASES[pi], pi, phases, L, v, vT, w, wT, logs, metal, unload,
+    progress: L / PLANT.LEN,
+    tons: L / 1000 * PLANT.T_PER_M * logs,
+    water: w * logs * 60 / 1000,                              // m³/h
+    waterIn: 24 + wob(T, 3) * .6, waterOut: w ? 24 + 6.5 * (v / p.vs) + wob(T, 4) * .5 : null,
+    launder: metal ? a.temp + wob(T, 5) * 2.2 : null,
+    level: metal ? 75 + wob(T, 6) * 1.6 : 0,                  // mm metal head in the hot-top
+    h2Out: metal ? cast.h2Out + wob(T, 7) * .004 : null, h2In: metal ? cast.h2In + wob(T, 8) * .006 : null,
+    rotor: metal ? 380 + wob(T, 9) * 6 : (pi === 1 ? 120 : 0), argon: metal ? 42 + wob(T, 10) * 1.5 : 0,
+    rod: metal ? 1.0 + wob(T, 11) * .03 : 0,                  // kg/t AlTi5B1
+    filterDp: metal ? 14 + 10 * clamp(tc / p.tEnd, 0, 1) + wob(T, 12) * .8 : 0,   // mm metal head across the CFF
+    air: metal ? 1.6 + wob(T, 13) * .05 : 0,                  // Nl/min per mould
+    oil: metal ? .5 + wob(T, 14) * .02 : 0,                   // ml/min per mould
+    pit: 1.15 + wob(T, 15) * .01,                             // m standing water
+    hyd: 18 + (pi === 5 && unload > 0 ? 6 : 0) + wob(T, 16) * .3,
+  };
+}
+
+/* ---------- melting furnaces E1, E2 ---------- */
+const MELT_DEFS = [['ŞARJ', 0, 30], ['ERGİTME', 30, 190], ['ALAŞIM', 190, 222], ['NUMUNE', 222, 250], ['HAZIR', 250, 270], ['TRANSFER', 270, 288]];
+function melter(k, T) {
+  const L = mod(T + (k === 0 ? 270 : 126), PLANT.E_CYCLE), n = Math.round((T - L + 270) / PLANT.CYCLE), cast = castInfo(n);
+  const pi = phaseOf(MELT_DEFS.map(d => [d[1], d[2]]), L), phases = mkPhases(MELT_DEFS, T - L);
+  const heel = 4, charge = 32, s = clamp((L - 30) / 160, 0, 1);
+  let temp, mass, liq, burn;
+  if (pi === 0) { temp = lerp(718, 682, L / 30); mass = heel + charge * smooth(L / 30); liq = heel / mass; burn = 20; }
+  else if (pi === 1) { temp = 672 + 83 * Math.pow(s, 2.2); mass = heel + charge; liq = (heel + charge * smooth(s * 1.08)) / mass; burn = L < 150 ? 100 : 70; }
+  else if (pi === 2) { temp = lerp(755, 748, (L - 190) / 32); mass = 36; liq = 1; burn = 35; }
+  else if (pi === 3) { temp = lerp(748, 742, (L - 222) / 28); mass = 36; liq = 1; burn = 25; }
+  else if (pi === 4) { temp = lerp(742, 738, (L - 250) / 20); mass = 36; liq = 1; burn = 20; }
+  else { temp = lerp(738, 732, (L - 270) / 18); mass = 36 - charge * (L - 270) / 18; liq = 1; burn = 10; }
+  temp += wob(T, 30 + k) * 1.4;
+  const sample1 = phases[3].start + 10, corrAt = sample1 + 3, sample2 = corrAt + 12;
+  const chemOk = cast.corr ? T >= sample2 : T >= sample1;
+  return {
+    k, name: 'E' + (k + 1), L, n, cast, phase: MELT_DEFS[pi][0], pi, phases, temp, mass, liq, burn,
+    gas: burn * 6 * (1 + wob(T, 32 + k) * .02),             // Nm³/h, 600 at full fire
+    roof: pi === 1 ? 1060 + 80 * (burn / 100) + wob(T, 34 + k) * 8 : 880 + burn * 2 + wob(T, 34 + k) * 6,
+    stir: pi === 2, door: pi === 0, skimmed: pi >= 3, sample1, corrAt, sample2, chemOk,
+    pressure: pi === 0 ? 0 : 8 + wob(T, 36 + k) * 1.5,       // Pa
+  };
+}
+
+/* ---------- holding / casting furnace B1 ---------- */
+const HOLD_DEFS = [['DOLUM', 0, 18], ['ARITMA', 18, 40], ['DÖKÜM', 40, null], ['BEKLEME', null, 144]];
+function holder(T) {
+  const n = Math.floor(T / PLANT.CYCLE), c = T - n * PLANT.CYCLE, cast = castInfo(n), p = cast.prof;
+  const castEnd = PLANT.CAST_START + p.tEnd;
+  const defs = HOLD_DEFS.map(d => [d[0], d[1] ?? castEnd, d[2] ?? castEnd]);
+  const pi = phaseOf(defs.map(d => [d[1], d[2]]), c), phases = mkPhases(defs, n * PLANT.CYCLE);
+  const poured = pi === 2 ? lengthAt(p, c - PLANT.CAST_START) / PLANT.LEN * cast.gross : (pi === 3 ? cast.gross : 0);
+  const heel = 3, full = heel + 32;
+  const mass = pi === 0 ? heel + 32 * smooth(c / 18) : full - poured;
+  const temp = (pi === 0 ? lerp(722, 730, c / 18) : pi === 1 ? lerp(730, 736, (c - 18) / 22) : pi === 2 ? lerp(736, 731, (c - 40) / p.tEnd) : 722) + wob(T, 40) * 1.2;
+  return {
+    name: 'B1', n, cast, c, phase: defs[pi][0], pi, phases, mass, temp, poured,
+    tilt: pi === 2 ? 2 + 22 * (poured / cast.gross) : 0,
+    burn: pi === 1 ? 45 : pi === 2 ? 30 : pi === 0 ? 25 : 15, lance: pi === 1,
+  };
+}
+
+/* ---------- homogenising furnaces H1–H5, cooling chamber, saw ---------- */
+const HOMO_DEFS = [['YÜKLEME', 0, 20], ['ISITMA', 20, 260], ['BEKLETME', 260, 620], ['BOŞALTMA', 620, 640], ['BOŞ', 640, 720]];
+function homoTemp(L) {   // [air, metal] °C at local time L
+  if (L < 20) return [lerp(520, 470, L / 20), 60];
+  if (L < 260) { const x = L - 20; return [615 - 145 * Math.exp(-x / 22) - 30 * smooth((x - 120) / 120), 580 - 520 * Math.exp(-x / 48)]; }
+  if (L < 620) return [585, 580];
+  if (L < 640) return [lerp(584, 525, (L - 620) / 20), 579];
+  return [520, null];
+}
+function homog(k, T) {
+  const L = mod(T - PLANT.UNLOAD_END - k * PLANT.CYCLE, PLANT.H_CYCLE), n = Math.round((T - L - PLANT.UNLOAD_END) / PLANT.CYCLE);
+  const pi = phaseOf(HOMO_DEFS.map(d => [d[1], d[2]]), L), phases = mkPhases(HOMO_DEFS, T - L);
+  let [air, metal] = homoTemp(L);
+  air += wob(T, 50 + k) * 1.5; if (metal != null) metal += wob(T, 55 + k) * (L > 260 ? .8 : 1.2);
+  const soakFrom = 20 + 48 * Math.log(520 / 5);              // metal reaches 575 °C
+  const soak = clamp(L - soakFrom, 0, 640 - soakFrom);
+  const burn = pi === 1 ? 100 - 60 * smooth((L - 20) / 240) : pi === 2 ? 22 : pi === 4 ? 8 : 0;
+  return { k, name: 'H' + (k + 1), L, n: pi === 4 ? null : n, cast: pi === 4 ? null : castInfo(n), phase: HOMO_DEFS[pi][0], pi, phases, air, metal, soak, soakNeed: 360, burn, gas: burn * 1.2 };
+}
+function homoCurve(L) { return homoTemp(L); }
+function cooler(T) {
+  const n = Math.floor((T - PLANT.COOL_AT) / PLANT.CYCLE), t = T - (n * PLANT.CYCLE + PLANT.COOL_AT);
+  if (t >= PLANT.COOL_MIN) return { active: false, n, next: (n + 1) * PLANT.CYCLE + PLANT.COOL_AT, cast: castInfo(n) };
+  const temp = 25 + 555 * Math.exp(-t / 55) + wob(T, 60) * .8;
+  return { active: true, n, cast: castInfo(n), t, temp, rate: 555 / 55 * Math.exp(-t / 55) * 60, avgRate: 330 / (55 * Math.log(555 / 225)) * 60, fans: 100 };
+}
+function saw(T) {
+  const n = Math.floor((T - PLANT.SAW_AT) / PLANT.CYCLE), t = T - (n * PLANT.CYCLE + PLANT.SAW_AT), cast = castInfo(n);
+  if (t >= PLANT.SAW_MIN) return { active: false, n, cast, next: (n + 1) * PLANT.CYCLE + PLANT.SAW_AT, done: cast.logs };
+  const done = Math.floor(t / PLANT.SAW_MIN * cast.logs);
+  return { active: true, n, cast, t, done, cur: Math.min(cast.logs, done + 1), rejIdx: cast.utRej ? Math.floor(cast.logs * rnd(n, 18)) : -1 };
+}
+
+/* ---------- where each cast is on the plant floor ---------- */
+const STAGES = [
+  { key: 'firin', label: 'Ergitme', from: -270, to: 18 },
+  { key: 'dokum', label: 'Döküm', from: 18, to: PLANT.UNLOAD_END },
+  { key: 'homo', label: 'Homojenizasyon', from: PLANT.UNLOAD_END, to: PLANT.COOL_AT },
+  { key: 'sogut', label: 'Soğutma', from: PLANT.COOL_AT, to: PLANT.SAW_AT },
+  { key: 'testere', label: 'Testere ve UT', from: PLANT.SAW_AT, to: PLANT.SAW_AT + PLANT.SAW_MIN },
+];
+function castStage(n, T) {
+  const r = T - n * PLANT.CYCLE;
+  for (let i = 0; i < STAGES.length; i++) if (r >= STAGES[i].from && r < STAGES[i].to) return { i, ...STAGES[i], p: (r - STAGES[i].from) / (STAGES[i].to - STAGES[i].from) };
+  return r >= STAGES[STAGES.length - 1].to ? { i: 5, key: 'stok', label: 'Stok', p: 1 } : null;
+}
+// casts whose casting has finished, newest first
+function doneCasts(T, count = 10) {
+  const out = []; let n = Math.floor((T - PLANT.CAST_START) / PLANT.CYCLE);
+  while (out.length < count) { const c = castInfo(n); if (c.end <= T) out.push(c); n--; }
+  return out;
+}
+function avg(list, f) { return list.reduce((s, x) => s + f(x), 0) / list.length; }
+
+/* ---------- simulated clock (live by default; ×10 / ×60 demo continues across pages) ---------- */
+const SIM = { T0: (Date.now() - DAY0) / 60000, t0: Date.now(), speed: 1 };
+try { const s = JSON.parse(sessionStorage.getItem('bd-sim') || 'null'); if (s && s.speed > 1) Object.assign(SIM, s); } catch (e) {}
+SIM.T = () => SIM.T0 + (Date.now() - SIM.t0) / 60000 * SIM.speed;
+function simSave() { try { sessionStorage.setItem('bd-sim', JSON.stringify({ T0: SIM.T0, t0: SIM.t0, speed: SIM.speed })); } catch (e) {} }
+function simSet(speed, T) {
+  if (speed === 1 && T == null) { SIM.T0 = (Date.now() - DAY0) / 60000; } else SIM.T0 = T ?? SIM.T();
+  SIM.t0 = Date.now(); SIM.speed = speed; simSave(); syncChrome(); tick(true);
+}
+function simJump(T) { simSet(SIM.speed === 1 ? 10 : SIM.speed, T); }
+
+/* ---------- page chrome: theme, clock, speed buttons ---------- */
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('bd-theme', t); } catch (e) {}
+  const b = $('#themeBtn'); if (b) b.setAttribute('aria-pressed', t === 'dark');
+  if (window.onTheme) window.onTheme(t);
+}
+try { const t = localStorage.getItem('bd-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+function syncChrome() {
+  $$('[data-speed]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.speed === SIM.speed));
+  const d = $('#demoTag'); if (d) d.textContent = SIM.speed === 1 ? 'CANLI SAAT · DEMO VERİ' : `HIZLI DEMO ×${SIM.speed}`;
+  const l = $('#clockLbl'); if (l) l.textContent = SIM.speed === 1 ? 'TESİS SAATİ' : `DEMO SAATİ ×${SIM.speed}`;
+}
+let lastTick = 0;
+function tick(force) {
+  const T = SIM.T();
+  const c = $('#clock');
+  if (c) { const m = mod(T, 1440); c.textContent = `${pad(Math.floor(m / 60))}:${pad(Math.floor(m % 60))}:${pad(Math.floor((m * 60) % 60))}`; }
+  if (window.onTick) window.onTick(T, force === true);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  $$('[data-speed]').forEach(b => b.addEventListener('click', () => simSet(+b.dataset.speed)));
+  const tb = $('#themeBtn');
+  if (tb) tb.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+  syncChrome();
+  if (window.onInit) window.onInit(SIM.T());
+  tick(true);
+  setInterval(tick, 250);
+});
+
+/* ---------- tiny SVG line chart (string out, sized by viewBox) ---------- */
+function lineChart(o) {
+  const W = o.w || 640, H = o.h || 220, m = { l: 44, r: o.y2 ? 44 : 14, t: 14, b: 26, ...(o.m || {}) };
+  const X = x => m.l + (x - o.x[0]) / (o.x[1] - o.x[0]) * (W - m.l - m.r);
+  const Y = (y, ax) => { const r = ax === 2 ? o.y2 : o.y; return H - m.b - (y - r[0]) / (r[1] - r[0]) * (H - m.t - m.b); };
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.label || ''}" style="display:block;width:100%;height:auto">`;
+  for (const z of o.zones || []) s += `<rect x="${X(z.x0)}" y="${m.t}" width="${Math.max(0, X(z.x1) - X(z.x0))}" height="${H - m.t - m.b}" fill="${z.fill || 'var(--panel-2)'}"/>` + (z.label ? `<text x="${(X(z.x0) + X(z.x1)) / 2}" y="${m.t + 12}" text-anchor="middle" font-size="11" fill="var(--muted)" font-weight="600">${z.label}</text>` : '');
+  for (const b of o.bands || []) s += `<rect x="${m.l}" y="${Y(b.y1, b.ax)}" width="${W - m.l - m.r}" height="${Y(b.y0, b.ax) - Y(b.y1, b.ax)}" fill="${b.fill}" opacity="${b.op ?? .14}"/>`;
+  for (const t of o.yTicks || []) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line-2)"/><text x="${m.l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
+  for (const t of o.y2Ticks || []) s += `<text x="${W - m.r + 6}" y="${Y(t, 2) + 4}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
+  for (const t of o.xTicks || []) s += `<text x="${X(t.x ?? t)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t.l ?? t}</text>`;
+  s += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="var(--line)"/>`;
+  for (const se of o.series) {
+    if (!se.pts.length) continue;
+    const d = se.pts.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1], se.ax).toFixed(1)).join('');
+    if (se.area) s += `<path d="${d}L${X(se.pts[se.pts.length - 1][0])} ${H - m.b}L${X(se.pts[0][0])} ${H - m.b}Z" fill="${se.color}" opacity=".12"/>`;
+    s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="${se.width || 2}" ${se.dash ? `stroke-dasharray="${se.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  if (o.marker != null) s += `<line x1="${X(o.marker)}" x2="${X(o.marker)}" y1="${m.t}" y2="${H - m.b}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  for (const d of o.dots || []) s += `<circle cx="${X(d[0])}" cy="${Y(d[1], d.ax)}" r="5" fill="${d.color || 'var(--accent)'}" stroke="var(--panel)" stroke-width="2"/>`;
+  return s + '</svg>';
+}
+
+const SV = 'http://www.w3.org/2000/svg';
+const MX = i => 900 + i * 58;                   // side-view mould x (one row of 8)
+const PXMM = 0.047;                             // px per mm of billet in the pit
+let sel = 36, role = 'op', ov = 0, lastCastN = null, estopArm = 0;
+const scn = {};                                 // active scenarios: key → {at: ms, ...}
+const plugged = new Set(), alarms = [];         // per cast; alarms = {sev, txt, T, key, active}
+let trip = null;                                // {reason, L, T}
+
+function el(tag, attrs = {}, parent) { const e = document.createElementNS(SV, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function tagBox(p, id, x, y, w, label) {
+  const g = el('g', { class: 'tag', id }, p);
+  el('rect', { class: 'tagbox', x, y, width: w, height: 46, rx: 7 }, g);
+  el('text', { class: 'tagl', x: x + 10, y: y + 16 }, g).textContent = label;
+  el('text', { class: 'tagv', x: x + 10, y: y + 37 }, g);
+  return g;
+}
+
+function buildMimic() {
+  const s = $('#mimic');
+  s.innerHTML = `<defs>
+    <linearGradient id="gMelt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset=".35" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
+    <linearGradient id="gSump" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset=".6" stop-color="#fb923c" stop-opacity=".45"/><stop offset="1" stop-color="#fb923c" stop-opacity="0"/></linearGradient>
+    <linearGradient id="gBil" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="var(--billet-2)"/><stop offset=".45" stop-color="var(--billet-1)"/><stop offset="1" stop-color="var(--billet-2)"/></linearGradient>
+    <linearGradient id="gConc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--refr-2)"/><stop offset="1" stop-color="var(--refr)"/></linearGradient>
+    <pattern id="pFoam" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#fef3c7"/><circle cx="3" cy="3" r="1.6" fill="#d6a35c"/></pattern>
+    <pattern id="pWater" width="8" height="16" patternUnits="userSpaceOnUse"><rect width="8" height="16" fill="var(--water)" opacity=".22"/><path d="M2 0v7M6 8v7" stroke="var(--water)" stroke-width="1.2" opacity=".6"/></pattern>
+  </defs>`;
+  // floor and pit
+  el('rect', { x: 0, y: 200, width: 846, height: 22, fill: 'url(#gConc)' }, s);
+  el('rect', { x: 1354, y: 200, width: 46, height: 22, fill: 'url(#gConc)' }, s);
+  el('rect', { x: 846, y: 200, width: 14, height: 396, fill: 'url(#gConc)' }, s);
+  el('rect', { x: 1340, y: 200, width: 14, height: 396, fill: 'url(#gConc)' }, s);
+  el('rect', { x: 846, y: 584, width: 508, height: 14, fill: 'url(#gConc)' }, s);
+  el('rect', { id: 'pitW', x: 860, y: 556, width: 480, height: 28, fill: 'var(--water)', opacity: .45 }, s);
+  el('text', { x: 872, y: 575, 'font-size': 12, 'font-weight': 700, fill: '#fff', id: 'pitTxt' }, s);
+
+  // B1 tilting furnace
+  const b1 = el('g', { id: 'b1' }, s);
+  el('rect', { x: 36, y: 56, width: 268, height: 140, rx: 18, fill: 'var(--steel-3)' }, b1);
+  el('rect', { x: 50, y: 70, width: 240, height: 112, rx: 10, fill: 'var(--refr)' }, b1);
+  el('rect', { x: 58, y: 78, width: 224, height: 98, rx: 6, fill: '#3b2a20' }, b1);
+  el('rect', { id: 'b1bath', x: 58, y: 120, width: 224, height: 56, rx: 4, fill: 'url(#gMelt)' }, b1);
+  el('path', { id: 'b1fl', class: 'flick', d: 'M84 84 q34 -2 64 10 q-32 10 -64 6z', fill: '#fbbf24', opacity: .9 }, b1);
+  el('rect', { x: 70, y: 44, width: 26, height: 14, rx: 2, fill: 'var(--steel)' }, b1);
+  el('path', { d: 'M296 104 l30 10 v8 l-30 -4z', fill: 'var(--refr)' }, b1);
+  el('text', { x: 170, y: 140, 'text-anchor': 'middle', 'font-size': 22, 'font-weight': 800, fill: '#fff', 'font-family': 'var(--f-display)', opacity: .9 }, b1).textContent = 'B1';
+  el('path', { d: 'M300 196 l-14 4 h28z', fill: 'var(--steel-3)' }, s);
+
+  // launder
+  el('rect', { x: 318, y: 112, width: 560, height: 20, rx: 3, fill: 'var(--refr)' }, s);
+  el('rect', { x: 318, y: 112, width: 560, height: 5, fill: 'var(--refr-2)' }, s);
+  el('line', { id: 'lMetal0', x1: 322, y1: 122, x2: 876, y2: 122, stroke: '#c2410c', 'stroke-width': 8, opacity: .55 }, s);
+  el('line', { id: 'lMetal', class: 'flow', x1: 322, y1: 122, x2: 876, y2: 122, stroke: '#fbbf24', 'stroke-width': 4 }, s);
+  el('line', { x1: 380, y1: 132, x2: 380, y2: 200, stroke: 'var(--steel-3)', 'stroke-width': 4 }, s);
+  el('line', { x1: 810, y1: 132, x2: 810, y2: 200, stroke: 'var(--steel-3)', 'stroke-width': 4 }, s);
+
+  // degasser
+  el('rect', { x: 396, y: 22, width: 34, height: 22, rx: 3, fill: 'var(--steel-3)' }, s);
+  el('rect', { x: 372, y: 46, width: 118, height: 90, rx: 8, fill: 'var(--steel-2)', stroke: 'var(--steel-3)', 'stroke-width': 2 }, s);
+  el('rect', { id: 'dgBath', x: 382, y: 92, width: 98, height: 36, rx: 3, fill: 'url(#gMelt)' }, s);
+  el('line', { x1: 413, y1: 44, x2: 413, y2: 114, stroke: 'var(--steel-3)', 'stroke-width': 5 }, s);
+  const rot = el('g', { id: 'rotor', class: 'spin' }, s);
+  el('rect', { x: 401, y: 111, width: 24, height: 6, rx: 2, fill: 'var(--steel-3)' }, rot);
+  el('rect', { x: 410, y: 102, width: 6, height: 24, rx: 2, fill: 'var(--steel-3)' }, rot);
+  const bubs = el('g', { id: 'bubs' }, s);
+  [[396, 0], [430, .4], [452, .8], [468, .2], [440, 1.1]].forEach(([x, d]) => el('circle', { class: 'bub', cx: x, cy: 124, r: 2.6, style: `animation-delay:${d}s` }, bubs));
+  el('text', { x: 431, y: 64, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: 'var(--ink-2)' }, s).textContent = 'SNIF';
+
+  // grain refiner rod feeder
+  el('circle', { id: 'coil', class: 'spin', cx: 560, cy: 62, r: 24, fill: 'none', stroke: 'var(--steel-3)', 'stroke-width': 7, 'stroke-dasharray': '10 5' }, s);
+  el('circle', { cx: 560, cy: 62, r: 6, fill: 'var(--steel-3)' }, s);
+  el('path', { d: 'M576 80 Q590 98 592 120', fill: 'none', stroke: 'var(--steel-3)', 'stroke-width': 3 }, s);
+
+  // ceramic foam filter box
+  el('rect', { x: 640, y: 82, width: 108, height: 56, rx: 5, fill: 'var(--refr-2)', stroke: 'var(--refr)', 'stroke-width': 3 }, s);
+  el('rect', { id: 'fBath', x: 646, y: 104, width: 96, height: 30, fill: 'url(#gMelt)' }, s);
+  el('rect', { x: 688, y: 88, width: 12, height: 46, fill: 'url(#pFoam)', stroke: '#b45309', 'stroke-width': 1 }, s);
+
+  // casting table (tilts away when unloading)
+  const tb = el('g', { id: 'tbl' }, s);
+  el('rect', { x: 866, y: 146, width: 470, height: 18, rx: 3, fill: 'var(--refr)' }, tb);
+  el('rect', { id: 'hMetal', x: 870, y: 150, width: 462, height: 9, fill: 'url(#gMelt)' }, tb);
+  el('rect', { x: 860, y: 164, width: 480, height: 18, fill: 'var(--steel-3)' }, tb);
+  for (let i = 0; i < 8; i++) {
+    const x = MX(i);
+    el('rect', { x: x - 21, y: 158, width: 42, height: 44, rx: 4, fill: 'var(--steel-2)', stroke: 'var(--steel-3)', 'stroke-width': 1.5 }, tb);
+    el('rect', { x: x - 19, y: 166, width: 5, height: 30, fill: 'var(--water)', opacity: .8 }, tb);
+    el('rect', { x: x + 14, y: 166, width: 5, height: 30, fill: 'var(--water)', opacity: .8 }, tb);
+  }
+  // billets, platen, cylinder
+  const bg = el('g', { id: 'bil' }, s);
+  for (let i = 0; i < 8; i++) {
+    const x = MX(i);
+    el('rect', { class: 'bil', x: x - 14, y: 186, width: 28, height: 14, fill: 'url(#gBil)', stroke: 'var(--steel)', 'stroke-width': .8 }, bg);
+    el('rect', { class: 'film', x: x - 14, y: 202, width: 28, height: 0, fill: 'url(#pWater)' }, bg);
+    el('rect', { class: 'sump', x: x - 14, y: 172, width: 28, height: 40, fill: 'url(#gSump)' }, bg);
+    el('path', { class: 'spr', d: `M${x - 18} 202 L${x - 13} 214 M${x + 18} 202 L${x + 13} 214`, }, bg).setAttribute('class', 'spr spray');
+  }
+  el('rect', { id: 'platen', x: 870, y: 200, width: 460, height: 14, rx: 2, fill: 'var(--steel-3)' }, s);
+  el('rect', { id: 'rod', x: 1092, y: 214, width: 16, height: 370, fill: 'var(--steel-2)', stroke: 'var(--steel)' }, s);
+
+  // length ruler
+  const r = el('g', {}, s);
+  el('line', { x1: 1376, y1: 200, x2: 1376, y2: 200 + 7000 * PXMM, stroke: 'var(--muted)', 'stroke-width': 1.5 }, r);
+  for (let m = 0; m <= 7; m++) {
+    const y = 200 + m * 1000 * PXMM;
+    el('line', { x1: 1370, y1: y, x2: 1382, y2: y, stroke: 'var(--muted)' }, r);
+    el('text', { x: 1386, y: y + 4, 'font-size': 11, fill: 'var(--muted)', 'font-family': 'var(--f-mono)' }, r).textContent = m;
+  }
+  el('text', { x: 1360, y: 192, 'font-size': 11, fill: 'var(--muted)', 'font-family': 'var(--f-mono)' }, r).textContent = 'm';
+  el('path', { id: 'rmark', d: 'M1362 200 l12 -6 v12z', fill: 'var(--melt)' }, s);
+
+  // live tags + leader lines
+  [['M150 236 V196', 1], ['M431 236 V136', 1], ['M560 236 V90', 1], ['M694 236 V138', 1]].forEach(([d]) => el('path', { class: 'lead', d }, s));
+  tagBox(s, 'tB1', 60, 236, 180, 'B1 DÖKÜM FIRINI');
+  tagBox(s, 'tDg', 352, 236, 158, 'DEGAZÖR · H₂ ÇIKIŞ');
+  tagBox(s, 'tRod', 520, 236, 112, 'AlTi5B1');
+  tagBox(s, 'tF', 642, 236, 118, 'FİLTRE ΔP');
+  tagBox(s, 'tLa', 870, 18, 108, 'OLUK METALİ');
+  tagBox(s, 'tV', 988, 18, 108, 'DÖKÜM HIZI');
+  tagBox(s, 'tL', 1106, 18, 108, 'DÖKÜM BOYU');
+  tagBox(s, 'tW', 1224, 18, 112, 'SU');
+  el('path', { class: 'lead', d: 'M924 64 V112' }, s);
+
+  // status board (empty ground left of the pit)
+  const sb = el('g', {}, s);
+  el('text', { id: 'sbPh', x: 60, y: 360, 'font-size': 52, 'font-weight': 800, 'font-family': 'var(--f-display)', fill: 'var(--ink)' }, sb);
+  el('text', { id: 'sbMsg', x: 62, y: 392, 'font-size': 17, fill: 'var(--ink-2)' }, sb);
+  el('rect', { x: 62, y: 410, width: 720, height: 12, rx: 6, fill: 'var(--line-2)' }, sb);
+  el('rect', { id: 'sbBar', x: 62, y: 410, width: 0, height: 12, rx: 6, fill: 'var(--melt)' }, sb);
+  el('text', { id: 'sbL', x: 62, y: 446, 'font-size': 13, fill: 'var(--muted)', 'font-family': 'var(--f-mono)' }, sb);
+  el('text', { id: 'sbR', x: 782, y: 446, 'text-anchor': 'end', 'font-size': 13, fill: 'var(--muted)', 'font-family': 'var(--f-mono)' }, sb);
+  el('text', { id: 'sbX', x: 62, y: 500, 'font-size': 14, fill: 'var(--ink-2)' }, sb);
+  el('text', { id: 'sbX2', x: 62, y: 524, 'font-size': 14, fill: 'var(--ink-2)' }, sb);
+}
+function setTag(id, v, st) { const g = $('#' + id); g.querySelector('.tagv').textContent = v; g.setAttribute('class', 'tag ' + (st || '')); }
+
+function buildMoulds() {
+  const s = $('#moulds');
+  el('rect', { x: 6, y: 6, width: 428, height: 428, rx: 16, fill: 'var(--panel-2)', stroke: 'var(--line)', 'stroke-width': 2 }, s);
+  for (let r = 0; r < 8; r++) el('rect', { x: 22, y: 44 + r * 50 - 4, width: 396, height: 8, rx: 4, fill: 'var(--refr-2)', class: 'chan' }, s);
+  for (let i = 0; i < PLANT.MOULDS; i++) {
+    const cx = 45 + (i % 8) * 50, cy = 44 + Math.floor(i / 8) * 50;
+    const g = el('g', { class: 'mo', tabindex: 0, role: 'button', 'data-i': i, 'aria-label': mouldName(i) }, s);
+    el('circle', { class: 'ring', cx, cy, r: 20, fill: 'var(--steel-2)', stroke: 'var(--steel-3)', 'stroke-width': 2 }, g);
+    el('circle', { class: 'core', cx, cy, r: 14, fill: 'var(--steel)' }, g);
+    el('path', { class: 'x', d: `M${cx - 9} ${cy - 9}L${cx + 9} ${cy + 9}M${cx + 9} ${cy - 9}L${cx - 9} ${cy + 9}`, stroke: 'var(--ink-2)', 'stroke-width': 2.5, opacity: 0 }, g);
+    el('text', { x: cx, cy, y: cy + 4, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, 'font-family': 'var(--f-mono)', fill: 'var(--ink)' }, g).textContent = pad(i + 1);
+    g.addEventListener('click', () => { sel = i; tick(true); });
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sel = i; tick(true); } });
+  }
+}
+
+/* ---------- scenarios ---------- */
+const SCN = [
+  { key: 'bleed', c: 1, name: 'Bleed-out', desc: 'Seçili kalıpta kabuk yırtılır, metal kaçar' },
+  { key: 'water', c: 1, name: 'Su pompası arızası', desc: 'Debi düşer, %70 altında döküm kesilir' },
+  { key: 'level', name: 'Metal seviyesi yüksek', desc: 'Hot-top seviyesi 85 mm üstüne çıkar' },
+  { key: 'temp', name: 'Oluk metali soğuk', desc: 'Metal 680 °C altına iner' },
+  { key: 'h2', name: 'Yüksek hidrojen', desc: 'Degazör çıkışında H₂ 0,15 üstü' },
+  { key: 'filter', name: 'Filtre tıkanıyor', desc: 'ΔP 35 mm sınırını geçer' },
+];
+function addAlarm(sev, txt, key, T) { alarms.unshift({ sev, txt, key, T: T ?? SIM.T(), active: sev === 'crit' || sev === 'warn' }); renderFeed(); }
+function resolve(key, txt) { alarms.forEach(a => { if (a.key === key) a.active = false; }); if (txt) addAlarm('ok', txt, key); }
+function startScn(k, t) {
+  if (scn[k] || !t.metal || trip) return;
+  const now = Date.now();
+  if (k === 'bleed') {
+    const i = t.cast.closed.includes(sel) || plugged.has(sel) ? 36 : sel;
+    scn.bleed = { at: now, i }; plugged.add(i);
+    addAlarm('crit', `<b>${mouldName(i)} bleed-out algılandı.</b> Kalıp otomatik tıkandı, soğutma suyu açık tutuldu.`, 'bleed');
+    setTimeout(() => { addAlarm('info', `Döküm ${t.logs - plugged.size} kalıpla devam ediyor. ${mouldName(i)} döküm sonrası bakıma alınacak.`, 'bleed'); resolve('bleed'); }, 5000);
+    if (plugged.size >= 3) doTrip('3 kalıpta bleed-out, döküm sonlandırıldı', t);
+  } else scn[k] = { at: now };
+  if (k === 'water') addAlarm('warn', '<b>P2 soğutma suyu pompası devreden çıktı.</b> Yedek pompa devreye alınıyor, debi düşüyor.', 'water');
+  if (k === 'level') addAlarm('warn', '<b>Hot-top metal seviyesi yükseliyor.</b> Seviye lazeri 85 mm üstü.', 'level');
+  if (k === 'temp') addAlarm('warn', '<b>Oluk metali soğuyor.</b> 680 °C altında donma ve soğuk birleşme riski.', 'temp');
+  if (k === 'h2') addAlarm('warn', '<b>Degazör çıkışında H₂ yüksek.</b> Profilde kabarcık riski.', 'h2');
+  if (k === 'filter') addAlarm('warn', '<b>Filtre ΔP artıyor.</b> Seramik köpük filtre tıkanıyor.', 'filter');
+  tick(true);
+}
+// scenario effects on the live readings; returns the adjusted copy
+function applyScn(t) {
+  const now = Date.now(), r = { ...t };
+  const f = (k, a, b) => clamp((now - scn[k].at) / 1000 - a, 0, b) / b;
+  if (scn.water) {
+    const drop = f('water', 0, 7); r.water *= 1 - .38 * drop; r.w *= 1 - .38 * drop; r.wDrop = 1 - .38 * drop;
+    if (r.wDrop < .70 && !trip) doTrip(`Soğutma suyu %${Math.round(r.wDrop * 100)} — %70 sınırının altında. Metal kesildi, platform durdu.`, t);
+  }
+  if (scn.level) { const up = f('level', 0, 4), down = f('level', 7, 9); r.level += 14 * up * (1 - down); if (down >= 1) endScn('level', 'Seviye otomatik dam pimi kontrolüyle 75 mm\'ye döndü.'); else if (down > 0 && !scn.level.act) { scn.level.act = 1; addAlarm('info', 'Dam pimi otomatik kısıldı, seviye düşüyor.', 'level'); } }
+  if (scn.temp) { const dn = f('temp', 0, 5), up = f('temp', 8, 16); r.launder -= 19 * dn * (1 - up); if (up >= 1) endScn('temp', 'Oluk metali 695 °C\'ye döndü.'); else if (up > 0 && !scn.temp.act) { scn.temp.act = 1; addAlarm('info', 'B1 brülörü %30 → %60, oluk ısıtıcıları açıldı.', 'temp'); } }
+  if (scn.h2) { const up = f('h2', 0, 4), dn = f('h2', 7, 14); r.h2Out += (.17 - t.cast.h2Out) * up * (1 - dn); if (dn > 0) { r.rotor = 450; r.argon = 55; } if (dn >= 1) endScn('h2', 'H₂ çıkışı normale döndü (rotor 450 d/dk, argon 55 l/dk).'); else if (dn > 0 && !scn.h2.act) { scn.h2.act = 1; addAlarm('info', 'Degazör rotoru 380 → 450 d/dk, argon 42 → 55 l/dk.', 'h2'); } }
+  if (scn.filter) { r.filterDp += 20 * f('filter', 0, 6); if (!scn.filter.act && r.filterDp > 35) { scn.filter.act = 1; addAlarm('info', 'Filtre döküm sonunda değiştirilecek. Seviye farkı izleniyor.', 'filter'); } }
+  if (ov) { r.v *= 1 + ov / 100; r.vT *= 1 + ov / 100; }
+  if (trip) { r.v = 0; r.vT = 0; r.metal = false; r.L = trip.L; r.tons = trip.tons; r.level = 0; r.launder = null; r.h2Out = null; r.h2In = null; r.rotor = 120; r.argon = 0; r.rod = 0; r.filterDp = 0; r.air = 0; r.oil = 0; }
+  return r;
+}
+function endScn(k, txt) { delete scn[k]; resolve(k, txt); }
+function doTrip(reason, t) {
+  trip = { reason, L: t.L, tons: t.tons, T: SIM.T() };
+  addAlarm('crit', `<b>ACİL BİTİŞ.</b> ${reason}`, 'trip');
+  tick(true);
+}
+
+/* ---------- static parts ---------- */
+function renderSteps(t) {
+  const ol = $('#steps'), T = SIM.T();
+  if (ol.dataset.n != t.n) {
+    ol.dataset.n = t.n;
+    ol.innerHTML = t.phases.map((p, i) => `<li data-i="${i}"><button type="button" title="Bu etaba atla (demo)" data-t="${p.start}"><b>${p.key}</b><span>${hhmm(p.start)}–${hhmm(p.end)}</span><i></i></button></li>`).join('');
+    $$('button', ol).forEach(b => b.addEventListener('click', () => simJump(+b.dataset.t + .05)));
+  }
+  $$('li', ol).forEach((li, i) => {
+    const p = t.phases[i];
+    li.className = i < t.pi ? 'done' : i === t.pi ? 'now' : '';
+    li.querySelector('i').style.width = i === t.pi ? (clamp((T - p.start) / (p.end - p.start), 0, 1) * 100) + '%' : '';
+  });
+}
+function renderFeed() {
+  $('#feed').innerHTML = alarms.length ? alarms.slice(0, 40).map(a => `<li class="${a.sev}"><time>${hhmm(a.T)}</time><span>${a.txt}</span></li>`).join('') : '<li class="info"><time>—</time><span>Aktif alarm yok. Döküm sırasında bir senaryo seçin.</span></li>';
+}
+function renderScn(t) {
+  const box = $('#scn');
+  if (!box.children.length) {
+    box.innerHTML = SCN.map(s => `<button type="button" data-k="${s.key}" class="${s.c ? 'c' : ''}"><b><i></i>${s.name}</b><span>${s.desc}</span></button>`).join('');
+    $$('button', box).forEach(b => b.addEventListener('click', () => startScn(b.dataset.k, applyScn(table(SIM.T())))));
+  }
+  $$('button', box).forEach(b => {
+    b.disabled = !t.metal || !!trip;
+    b.title = trip ? 'Önce kilidi kaldırın' : t.metal ? '' : 'Döküm sırasında denenebilir';
+    b.setAttribute('aria-pressed', !!scn[b.dataset.k] || (b.dataset.k === 'bleed' && plugged.size > 0));
+  });
+}
+function renderLog(T, cur) {
+  const list = doneCasts(T, 8);
+  const rows = [cur, ...list].filter((c, i, a) => a.findIndex(x => x.n === c.n) === i);
+  $('#log').innerHTML = `<thead><tr><th>Döküm</th><th>Alaşım</th><th>Başlangıç</th><th class="r">Süre</th><th class="r">Log</th><th class="r">Ton</th><th class="r">H₂</th><th class="r">Tane</th><th>Not</th></tr></thead><tbody>` +
+    rows.map(c => {
+      const live = c.end > T;
+      const notes = [];
+      if (c.closed.length) notes.push(c.closed.map(mouldName).join(', ') + ' bakımda');
+      if (c.utRej) notes.push('UT: 1 log merkez çatlağı');
+      if (c.h2Out > .135) notes.push('H₂ sınıra yakın');
+      return `<tr class="${live ? 'now' : ''}"><td class="mono">${c.id}</td><td><span class="alloy" style="background:${alloyColor(c.alloy)}">${c.alloy}</span></td><td class="mono">${hhmm(c.start)}</td><td class="r mono">${live ? (c.start > T ? 'planlı' : 'döküyor') : dur(c.prof.tTaper)}</td><td class="r mono">${c.logs}</td><td class="r mono">${fmt(c.gross, 1)}</td><td class="r mono">${live ? '—' : fmt(c.h2Out, 3)}</td><td class="r mono">${live ? '—' : fmt(c.grain)}</td><td>${notes.join(' · ') || '<span style="color:var(--muted)">—</span>'}</td></tr>`;
+    }).join('') + '</tbody>';
+}
+
+/* ---------- per tick ---------- */
+let lastLog = -1;
+window.onTick = (T, force) => {
+  const base = table(T);
+  if (base.n !== lastCastN) {          // new cast: clear per-cast state
+    if (lastCastN != null) { plugged.clear(); for (const k in scn) delete scn[k]; trip = null; ov = 0; syncOv(); alarms.forEach(a => a.active = false); addAlarm('info', `<b>${base.cast.id}</b> hazırlığı başladı · ${base.cast.alloy} · ${base.cast.logs} kalıp.`, 'cast', T); }
+    lastCastN = base.n;
+  }
+  if (!base.metal && (scn.level || scn.temp || scn.h2 || scn.water)) { for (const k of ['level', 'temp', 'h2', 'water']) if (scn[k]) endScn(k); }
+  const t = applyScn(base), c = t.cast, p = c.prof, a = PLANT.ALLOYS[c.alloy];
+  const logsNow = c.logs - plugged.size;
+  const tons = trip ? trip.tons : t.L / 1000 * PLANT.T_PER_M * logsNow;
+
+  // trip banner
+  $('#trip').classList.toggle('on', !!trip);
+  if (trip) { $('#tripTxt').textContent = 'ACİL BİTİŞ · ' + trip.reason; const rb = $('#tripReset'); rb.disabled = role !== 'mgr'; rb.title = role === 'mgr' ? '' : 'Yönetici yetkisi gerekli'; rb.textContent = role === 'mgr' ? 'Kilidi kaldır' : 'Kilit · yönetici gerekli'; }
+
+  // KPIs
+  $('#kId').textContent = c.id;
+  $('#kAlloy').innerHTML = `<span class="alloy" style="background:${alloyColor(c.alloy)}">${c.alloy}</span> · ${logsNow} / 64 kalıp · Ø178 × 7.000`;
+  const ph = trip ? 'ACİL BİTİŞ' : t.phase, cur = t.phases[t.pi];
+  $('#kPhase').textContent = ph; $('#kPhase').style.color = trip ? 'var(--crit)' : t.metal ? 'var(--melt-dk)' : '';
+  const castEnd = t.phases[4].end;
+  $('#kPhaseS').textContent = trip ? 'Kilit kaldırılana kadar' : t.pi <= 1 ? `Döküm başlangıcı ${hhmm(t.phases[2].start)} · ${dur(t.phases[2].start - T)} sonra` : t.pi <= 4 ? `Bitiş ${hhmm(castEnd)} · kalan ${dur(castEnd - T)}` : `Masa ${hhmm(cur.end)}'de hazırlığa döner`;
+  $('#kV').textContent = fmt(t.v, 1);
+  $('#kVs').textContent = t.vT ? `hedef ${fmt(t.vT, 0)} · reçete ${p.vs} mm/dk${ov ? ` · düzeltme %${ov > 0 ? '+' : ''}${ov}` : ''}` : `kararlı etap hedefi ${p.vs} mm/dk`;
+  $('#kL').textContent = fmt(t.L); $('#kLbar').style.width = (t.L / PLANT.LEN * 100) + '%';
+  $('#kT').textContent = fmt(tons, 1); $('#kTs').textContent = `hedef ${fmt(c.logs * PLANT.LOG_T, 1)} t · ${logsNow} log × ${fmt(PLANT.LOG_T * 1000)} kg`;
+  $('#kW').textContent = fmt(t.water); $('#kWs').textContent = t.w ? `${fmt(t.w, 0)} l/dk·kalıp · giriş ${fmt(t.waterIn, 1)} °C` : 'Su kapalı';
+  $('#kW').parentElement.parentElement.classList.toggle('warn', !!scn.water);
+
+  // mimic
+  const metal = t.metal, s = $('#mimic');
+  const b1 = holder(T);
+  $('#b1').setAttribute('transform', `rotate(${-b1.tilt * .55} 300 196)`);
+  const bathH = 92 * clamp(b1.mass / 36, 0, 1);
+  $('#b1bath').setAttribute('y', 176 - bathH); $('#b1bath').setAttribute('height', bathH);
+  $('#b1fl').style.opacity = b1.burn > 20 ? 1 : .35;
+  ['lMetal', 'lMetal0', 'hMetal', 'dgBath', 'fBath'].forEach(id => $('#' + id).style.opacity = metal ? '' : 0);
+  $('#rotor').style.animationPlayState = t.rotor ? 'running' : 'paused';
+  $('#bubs').style.display = metal ? '' : 'none';
+  $('#coil').style.animationPlayState = metal ? 'running' : 'paused';
+  const tilt = t.pi === 5 ? 58 * smooth((t.c - t.phases[5].start + t.n * PLANT.CYCLE) / 6) : 0;
+  $('#tbl').setAttribute('transform', `rotate(${-tilt} 1340 182)`);
+  const hB = 14 + t.L * PXMM, lift = t.pi === 5 ? -40 * smooth((t.unload) * 3) : 0;
+  const bil = $('#bil'); bil.setAttribute('transform', `translate(0 ${lift})`);
+  bil.style.opacity = t.pi === 5 ? 1 - smooth(t.unload) : 1;
+  const plugSide = new Set([...plugged, ...c.closed].filter(i => i < 8));
+  $$('.bil', bil).forEach((r, i) => { r.setAttribute('height', plugSide.has(i) && t.L > 0 ? Math.min(hB, 40) : hB); r.style.opacity = c.closed.includes(i) ? 0 : 1; });
+  $$('.film', bil).forEach((r, i) => { r.setAttribute('height', Math.max(0, hB - 16)); r.style.opacity = t.w > 0 && !c.closed.includes(i) ? .5 : 0; });
+  $$('.sump', bil).forEach((r, i) => r.style.opacity = metal && !plugSide.has(i) ? 1 : 0);
+  $$('.spray', bil).forEach((r, i) => r.style.opacity = t.w > 0 && !c.closed.includes(i) ? 1 : 0);
+  const yP = 186 + hB + lift;
+  $('#platen').setAttribute('y', yP); $('#rod').setAttribute('y', yP + 14); $('#rod').setAttribute('height', Math.max(0, 584 - yP - 14));
+  $('#rmark').setAttribute('transform', `translate(0 ${t.L * PXMM})`);
+  $('#pitTxt').textContent = `PİT SUYU ${fmt(t.pit, 2)} m · kalıba ${fmt(9.0 - t.pit, 1)} m`;
+  setTag('tB1', `${fmt(b1.temp)} °C · ${fmt(b1.mass, 1)} t`);
+  setTag('tDg', t.h2Out != null ? `${fmt(t.h2Out, 3)} ml/100g` : (t.rotor ? 'bekleme' : 'kapalı'), t.h2Out > .15 ? 'warn' : '');
+  setTag('tRod', t.rod ? `${fmt(t.rod, 2)} kg/t` : '—');
+  setTag('tF', t.filterDp ? `${fmt(t.filterDp)} mm` : '—', t.filterDp > 35 ? 'warn' : '');
+  setTag('tLa', t.launder != null ? `${fmt(t.launder)} °C` : '—', t.launder != null && t.launder < 680 ? 'warn' : '');
+  setTag('tV', `${fmt(t.v, 0)} mm/dk`);
+  setTag('tL', `${fmt(t.L)} mm`);
+  setTag('tW', `${fmt(t.water)} m³/h`, scn.water ? (trip ? 'crit' : 'warn') : '');
+  const msgs = { 'HAZIRLIK': 'Masa servisi: grafit halkalar yağlanıyor, filtre değişiyor, başlangıç kafaları kalıplarda.', 'HAZIR': `Masa hazır. ${c.id} için döküm fırını arıtmada, metal ${hhmm(t.phases[2].start)}'de geliyor.`, 'BAŞLANGIÇ': 'Kalıplar doluyor, platform yavaş iniyor, hız ve su rampada.', 'DÖKÜM': 'Kararlı döküm: hız ve su reçetede sabit.', 'BİTİŞ': 'Metal kesildi, hız ve su kademeli azalıyor.', 'BOŞALTMA': `Masa yatırıldı. Loglar vinçle alınıyor: ${Math.floor(t.unload * logsNow)} / ${logsNow}.` };
+  $('#sbPh').textContent = ph; $('#sbPh').setAttribute('fill', trip ? 'var(--crit)' : metal ? 'var(--melt-dk)' : 'var(--ink)');
+  $('#sbMsg').textContent = trip ? trip.reason : msgs[t.phase];
+  $('#sbBar').setAttribute('width', 720 * t.L / PLANT.LEN);
+  $('#sbL').textContent = `${fmt(t.L)} / 7.000 mm`;
+  $('#sbR').textContent = `${fmt(tons, 1)} t · ${logsNow} log`;
+  $('#sbX').textContent = `Döküm fırını eğimi ${fmt(b1.tilt, 1)}° · B1 ${b1.phase.toLowerCase()} · ${fmt(b1.mass, 1)} t`;
+  $('#sbX2').textContent = `Platform hidroliği ${fmt(t.hyd, 1)} bar · kalıp havası ${fmt(t.air, 2)} Nl/dk · yağ ${fmt(t.oil, 2)} ml/dk`;
+  $('#mimicNote').textContent = metal ? 'Metal akıyor' : t.phase === 'BOŞALTMA' ? 'Masa yatık' : 'Metal yok';
+
+  // moulds
+  $$('#moulds .mo').forEach(g => {
+    const i = +g.dataset.i, closed = c.closed.includes(i), plug = plugged.has(i);
+    const dev = metal && !plug && !closed && (scn.level || (scn.water && i % 3 === 0));
+    const core = g.querySelector('.core'), ring = g.querySelector('.ring');
+    core.setAttribute('fill', closed ? 'var(--panel)' : plug ? 'var(--crit)' : metal ? 'url(#gMeltR)' : t.w > 0 ? 'var(--water-2)' : 'var(--steel)');
+    ring.setAttribute('stroke', i === sel ? 'var(--ink)' : dev ? 'var(--warn)' : 'var(--steel-3)');
+    ring.setAttribute('stroke-width', i === sel ? 4 : dev ? 3.5 : 2);
+    ring.setAttribute('fill', closed ? 'var(--panel-2)' : 'var(--steel-2)');
+    ring.setAttribute('stroke-dasharray', closed ? '4 3' : '');
+    g.querySelector('.x').setAttribute('opacity', closed || plug ? 1 : 0);
+    g.querySelector('text').setAttribute('opacity', closed || plug ? 0 : 1);
+    g.setAttribute('aria-pressed', i === sel);
+  });
+  const i = sel, closed = c.closed.includes(i), plug = plugged.has(i);
+  const mw = closed || plug ? (t.w > 0 && plug ? t.w : 0) : t.w * (1 + Math.sin(i * 1.7) * .012);
+  const mst = closed ? ['idle', 'BAKIMDA'] : plug ? ['crit', 'TIKALI'] : metal ? ['run', 'DÖKÜYOR'] : t.w > 0 ? ['run', 'SU AÇIK'] : ['idle', 'HAZIR'];
+  const casts = 180 + Math.floor(rnd(i, 70) * 1100) + Math.max(0, t.n % 50);
+  $('#mdet').innerHTML = `<h3>${mouldName(i)} <span class="pill ${mst[0]}"><i></i>${mst[1]}</span></h3>
+    <div class="kv"><span>Su debisi</span><b>${mw ? fmt(mw, 1) + ' l/dk' : '—'}</b><span>Hedef</span><b>${t.wT ? fmt(t.wT, 0) + ' l/dk' : '—'}</b>
+    <span>Metal seviyesi</span><b>${metal && !closed && !plug ? fmt(t.level + Math.sin(i) * .6, 1) + ' mm' : '—'}</b>
+    <span>Kalıp havası</span><b>${metal && !closed && !plug ? fmt(t.air + Math.sin(i * 2.3) * .03, 2) + ' Nl/dk' : '—'}</b>
+    <span>Yağ</span><b>${metal && !closed && !plug ? fmt(t.oil, 2) + ' ml/dk' : '—'}</b>
+    <span>Konum</span><b>Sıra ${Math.floor(i / 8) + 1} · ${i % 8 + 1}</b>
+    <span>Grafit halka</span><b>${casts} döküm</b>
+    <span>Halka değişimi</span><b>${casts > 1100 ? '<span style="color:var(--warn)">yaklaşıyor</span>' : 'uygun'}</b></div>
+    <p class="note">${closed ? 'Bu dökümde bakım için kapalı. Başlık delikleri tıpalı.' : plug ? 'Bleed-out ya da operatör kararıyla tıkandı. Döküm bitince bakıma alınır.' : 'Kalıp normal çalışıyor.'}</p>`;
+  const pb = $('#plugBtn'); pb.disabled = !metal || closed || plug || !!trip; pb.textContent = `${mouldName(i)} tıka`;
+  $('#plugNote').textContent = metal ? '' : 'Sadece döküm sırasında';
+
+  // measurements
+  const M = (l, v, u, tx, st) => `<div class="m ${st || ''}"><span class="dot"></span><span class="l">${l}</span><span class="v num">${v}<small>${u}</small></span><span class="t">${tx}</span></div>`;
+  $('#meas').innerHTML = [
+    M('Oluk metali', t.launder != null ? fmt(t.launder) : '—', '°C', `hedef ${a.temp} ±8`, t.launder == null ? 'idle' : t.launder < 680 ? 'warn' : ''),
+    M('Hot-top seviyesi', t.level ? fmt(t.level, 1) : '—', 'mm', 'hedef 75 ±5', !t.level ? 'idle' : t.level > 85 ? 'warn' : ''),
+    M('H₂ çıkış', t.h2Out != null ? fmt(t.h2Out, 3) : '—', 'ml/100g', `giriş ${t.h2In != null ? fmt(t.h2In, 2) : '—'} · sınır 0,15`, t.h2Out == null ? 'idle' : t.h2Out > .15 ? 'warn' : ''),
+    M('Degazör rotoru', fmt(t.rotor), 'd/dk', `argon ${fmt(t.argon)} l/dk`, t.rotor ? '' : 'idle'),
+    M('Tane inceltici', t.rod ? fmt(t.rod, 2) : '—', 'kg/t', 'AlTi5B1 çubuk', t.rod ? '' : 'idle'),
+    M('Filtre ΔP', t.filterDp ? fmt(t.filterDp) : '—', 'mm', 'CFF 40 ppi · sınır 35', !t.filterDp ? 'idle' : t.filterDp > 35 ? 'warn' : ''),
+    M('Su giriş', fmt(t.waterIn, 1), '°C', `çıkış ${t.waterOut ? fmt(t.waterOut, 1) + ' °C' : '—'}`),
+    M('Su debisi', t.wT ? fmt(t.w / t.wT * 100 * (t.wDrop ? 1 : 1)) : '—', '%', 'hedefe oran · kilit %70', !t.wT ? 'idle' : t.wDrop && t.wDrop < .85 ? (t.wDrop < .7 ? 'crit' : 'warn') : ''),
+    M('Pit suyu', fmt(t.pit, 2), 'm', 'en az 0,90 m'),
+    M('Platform hidroliği', fmt(t.hyd, 1), 'bar', 'sistem sınırı 41 bar'),
+  ].join('');
+
+  // recipe chart
+  const pts = [], wts = [], act = [], wact = [];
+  for (let L = 0; L <= PLANT.LEN; L += 50) { const v = vTarget(L, p.vs); pts.push([L, v]); wts.push([L, wTarget(v, p.vs)]); }
+  if (t.L > 0) for (let L = 0; L <= t.L; L += 50) { const v = vTarget(L, p.vs); act.push([L, v * (1 + Math.sin(L / 300 + c.n) * .008) * (L > t.L - 300 ? 1 + ov / 100 * clamp((L - t.L + 300) / 300, 0, 1) : 1)]); wact.push([L, wTarget(v, p.vs) * (1 + Math.cos(L / 260 + c.n) * .01) * (scn.water && L > t.L - 200 ? (t.wDrop || 1) : 1)]); }
+  $('#recipeName').textContent = `${c.alloy} · Ø178 · kararlı ${p.vs} mm/dk`;
+  $('#recipe').innerHTML = lineChart({
+    w: 640, h: 240, x: [0, 7000], y: [0, 140], y2: [0, 130], label: 'Hız ve su reçetesi',
+    zones: [{ x0: 0, x1: 450, label: 'BAŞLANGIÇ' }, { x0: 6850, x1: 7000, label: '' }],
+    yTicks: [0, 40, 80, 120], y2Ticks: [0, 40, 80, 120], xTicks: [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000].map(x => ({ x, l: x / 1000 + ' m' })),
+    series: [{ pts, color: 'var(--melt)', dash: '5 5' }, { pts: wts, color: 'var(--water)', dash: '5 5', ax: 2 }, { pts: act, color: 'var(--melt)', width: 3 }, { pts: wact, color: 'var(--water)', width: 3, ax: 2 }],
+    marker: t.L > 0 ? t.L : null,
+  });
+
+  // rules
+  const R = (st, txt, sub, val) => `<li class="${st}"><i></i><span>${txt}<small>${sub}</small></span><b class="mono">${val}</b></li>`;
+  const wr = t.wT ? t.w / t.wT : null;
+  $('#rules').innerHTML = [
+    R(t.pit >= .9 ? '' : 'crit', 'Pit suyu ≥ 0,90 m', 'Altında döküm başlatılamaz (patlama riski)', fmt(t.pit, 2) + ' m'),
+    R('', 'Su yüzeyi kalıbın ≥ 3 m altında', 'Kalıp ile pit suyu arasındaki mesafe', fmt(9 - t.pit, 1) + ' m'),
+    R(wr == null ? 'idle' : wr < .7 ? 'crit' : wr < .85 ? 'warn' : '', 'Su debisi ≥ %70 hedef', 'Altına düşerse metal kesilir, platform durur', wr == null ? '—' : '%' + fmt(wr * 100)),
+    R(plugged.size >= 3 ? 'crit' : plugged.size ? 'warn' : '', 'Bleed-out: kalıp otomatik tıkanır', 'Aynı dökümde 3 kalıpta acil bitiş', `${plugged.size} kalıp`),
+    R(t.launder == null ? 'idle' : t.launder < 675 ? 'crit' : t.launder < 680 ? 'warn' : '', 'Oluk metali 680–710 °C', '675 °C altında döküm başlatılamaz', t.launder == null ? '—' : fmt(t.launder) + ' °C'),
+    R(t.h2Out == null ? 'idle' : t.h2Out > .2 ? 'crit' : t.h2Out > .15 ? 'warn' : '', 'H₂ ≤ 0,15 ml/100 g', '0,20 üstünde döküm başlatılamaz', t.h2Out == null ? '—' : fmt(t.h2Out, 3)),
+    R(ov > 0 ? 'warn' : '', 'Hız reçeteden en fazla −%10', 'Artırma ve reçete değişikliği yönetici yetkisi', ov ? `%${ov > 0 ? '+' : ''}${ov}` : 'reçete'),
+    R(t.filterDp > 35 ? 'warn' : !t.filterDp ? 'idle' : '', 'Filtre ΔP ≤ 35 mm', 'Üstünde döküm sonunda değişim', t.filterDp ? fmt(t.filterDp) + ' mm' : '—'),
+  ].join('');
+
+  renderSteps(base);
+  renderScn(t);
+  const act2 = alarms.filter(a => a.active), bell = $('#bell');
+  $('#bellN').textContent = act2.length;
+  bell.classList.toggle('on', act2.some(a => a.sev === 'crit')); bell.classList.toggle('warn', !act2.some(a => a.sev === 'crit') && act2.length > 0);
+  const lk = Math.floor(T);
+  if (force || lk !== lastLog) { lastLog = lk; renderLog(T, c); }
+};
+
+function syncOv() { $$('[data-ov]').forEach(b => { b.setAttribute('aria-pressed', +b.dataset.ov === ov); b.disabled = +b.dataset.ov > 0 && role !== 'mgr'; b.title = b.disabled ? 'Yönetici yetkisi gerekli' : ''; }); $('#ovTxt').textContent = ov ? `%${ov > 0 ? '+' : ''}${ov}` : 'reçete'; }
+window.onInit = T => {
+  // radial melt fill for mould cores (top view)
+  $('#moulds').insertAdjacentHTML('afterbegin', '<defs><radialGradient id="gMeltR"><stop offset="0" stop-color="#fde68a"/><stop offset=".55" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></radialGradient></defs>');
+  buildMimic(); buildMoulds();
+  const t = table(T); lastCastN = t.n;
+  // what already happened in this cast
+  t.phases.slice(0, t.pi + 1).forEach(p => addAlarm('info', `${t.cast.id} · <b>${p.key}</b> etabı başladı.`, 'phase', p.start));
+  $$('[data-role]').forEach(b => b.addEventListener('click', () => { role = b.dataset.role; $$('[data-role]').forEach(x => x.setAttribute('aria-pressed', x === b)); if (role === 'op' && ov > 0) { ov = 0; } syncOv(); tick(true); }));
+  $$('[data-ov]').forEach(b => b.addEventListener('click', () => { const v = +b.dataset.ov; if (v > 0 && role !== 'mgr') return; ov = v; syncOv(); addAlarm(v > 0 ? 'warn' : 'info', v ? `Hız düzeltmesi <b>%${v > 0 ? '+' : ''}${v}</b> (${role === 'mgr' ? 'yönetici' : 'operatör'}).` : 'Hız reçeteye döndü.', 'ov'); tick(true); }));
+  syncOv();
+  $('#plugBtn').addEventListener('click', () => { const tt = table(SIM.T()); if (!tt.metal || plugged.has(sel)) return; plugged.add(sel); addAlarm('warn', `<b>${mouldName(sel)}</b> operatör tarafından tıkandı.`, 'plug'); if (plugged.size >= 3) doTrip('3 kalıp tıkalı, döküm sonlandırıldı', tt); tick(true); });
+  $('#estop').addEventListener('click', () => {
+    const b = $('#estop'), tt = table(SIM.T());
+    if (trip || !tt.metal) return;
+    if (Date.now() - estopArm < 3000) { estopArm = 0; b.textContent = 'ACİL BİTİŞ'; doTrip('Operatör acil bitiş butonuna bastı.', tt); }
+    else { estopArm = Date.now(); b.textContent = 'Onay için tekrar basın'; setTimeout(() => { if (estopArm) { estopArm = 0; b.textContent = 'ACİL BİTİŞ'; } }, 3000); }
+  });
+  $('#tripReset').addEventListener('click', () => { if (role !== 'mgr') return; trip = null; for (const k in scn) delete scn[k]; plugged.clear(); alarms.forEach(a => a.active = false); addAlarm('ok', 'Kilit yönetici tarafından kaldırıldı. Demo döküm modeline döndü.', 'trip'); tick(true); });
+  $('#jumpCast').addEventListener('click', () => { const tt = table(SIM.T()); const target = tt.pi <= 3 && tt.pi >= 2 ? null : (tt.pi < 2 ? tt.phases[3].start : tt.phases[3].start + PLANT.CYCLE); if (target != null) simJump(target + 3); });
+  renderFeed();
+};
+</script>
+</body>
+</html>

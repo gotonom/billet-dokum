@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="İki ergitme fırını ve döküm fırını: şarj, ergitme, alaşım, kimya onayı ve döküme hazır kapısı. Created by GOTONOM.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="Billet Dökümhanesi · Fırınlar">
+<meta property="og:description" content="İki ergitme fırını ve döküm fırını: şarj, ergitme, alaşım, kimya onayı ve döküme hazır kapısı. Created by GOTONOM.">
+<meta name="theme-color" content="#0a2463">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a2463'/%3E%3Crect x='11' y='5' width='10' height='22' rx='2' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Cpath d='M11 10h10' stroke='%23f97316' stroke-width='3'/%3E%3C/svg%3E">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Fırınlar · Billet Dökümhanesi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Shared look for every casthouse panel: the MAKOM control-room language (Barlow + Plex Mono,
+   blueprint grid, light by default, dark on request) plus molten-metal and cooling-water colours. */
+:root{
+  --bg:#eef3fa; --bg-2:#e4ecf7; --panel:#ffffff; --panel-2:#f4f8fe; --line:#c9d8ee; --line-2:#dde8f6;
+  --ink:#0a2463; --ink-2:#34507f; --muted:#6a7fa4; --accent:#0b6fd9; --accent-2:#6d28d9; --on-accent:#ffffff;
+  --ok:#15803d; --warn:#b45309; --crit:#dc2626; --grid:rgba(11,111,217,.05);
+  --melt:#f97316; --melt-2:#fbbf24; --melt-dk:#c2410c; --water:#0ea5e9; --water-2:#7dd3fc;
+  --steel:#94a3b8; --steel-2:#cbd5e1; --steel-3:#64748b; --refr:#a8a29e; --refr-2:#d6d3d1;
+  --billet-1:#f1f5f9; --billet-2:#b6c2cf; --hot:#ef4444;
+  --a6063:#0b6fd9; --a6060:#0d9488; --a6082:#7c3aed;
+  --shadow:0 8px 24px rgba(10,36,99,.10);
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-ui:"Barlow Semi Condensed","Segoe UI",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#050d1c; --bg-2:#08142a; --panel:#0c1a33; --panel-2:#10223f; --line:#1c3256; --line-2:#152a4a;
+  --ink:#e7efff; --ink-2:#a8bbdc; --muted:#6f86ae; --accent:#38bdf8; --accent-2:#a78bfa; --on-accent:#04101f;
+  --ok:#34d399; --warn:#fbbf24; --crit:#fb7185; --grid:rgba(56,189,248,.06);
+  --steel:#64748b; --steel-2:#334155; --steel-3:#94a3b8; --refr:#57534e; --refr-2:#44403c;
+  --billet-1:#cbd5e1; --billet-2:#64748b;
+  --a6063:#38bdf8; --a6060:#2dd4bf; --a6082:#a78bfa;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{background:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;color:var(--ink);font-family:var(--f-ui);font-size:15px}
+.wrap{max-width:1600px;margin:0 auto;padding-block:12px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+.num,.mono{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--f-mono)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+
+/* site nav */
+.sitenav{display:flex;align-items:center;gap:4px 6px;flex-wrap:wrap;font:600 14px var(--f-ui)}
+.sitenav a{color:var(--ink-2);text-decoration:none;padding:6px 12px;border-radius:6px;border:1px solid transparent}
+.sitenav a:hover{border-color:var(--line)}
+.sitenav a[aria-current="page"]{background:var(--accent);color:var(--on-accent)}
+.sitenav .sn-brand{font:800 16px var(--f-display);color:var(--ink);letter-spacing:.08em;margin-right:6px;display:inline-flex;align-items:center;gap:8px}
+.sitenav .sn-brand svg{width:20px;height:20px}
+
+/* header */
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px 24px;flex-wrap:wrap}
+.title{display:flex;flex-direction:column;gap:6px;min-width:0}
+.eyebrow{font:600 12.5px var(--f-mono);letter-spacing:.14em;color:var(--accent);text-transform:uppercase;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.live{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:live 2s infinite}
+@keyframes live{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+h1{margin:0;font:800 clamp(30px,4.4vw,56px)/.95 var(--f-display);letter-spacing:.01em;text-wrap:balance}
+h1 span{color:var(--melt)}
+.sum{margin:0;color:var(--ink-2);font-size:16px;max-width:76ch}
+.sum b{color:var(--ink)}
+.credit{font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.credit b{color:var(--ink);letter-spacing:.14em}
+.hctl{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.clock{display:flex;flex-direction:column;justify-content:center;padding:6px 14px;border:1px solid var(--line);border-radius:8px;background:var(--panel);line-height:1.1;min-width:112px}
+.clock small{font:600 11px var(--f-mono);letter-spacing:.1em;color:var(--muted)}
+.clock b{font:600 20px var(--f-mono)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:transparent;padding:0 11px;min-height:40px;font:600 13.5px var(--f-mono);color:var(--ink-2);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.ibtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 12px;min-height:40px;border:1px solid var(--line);border-radius:8px;background:var(--panel);cursor:pointer;font-weight:700;font-size:14px;text-decoration:none;color:var(--ink)}
+.ibtn svg{width:18px;height:18px;flex:none}
+.ibtn:hover{border-color:var(--accent)}
+.ibtn:disabled{opacity:.45;cursor:not-allowed;border-color:var(--line)}
+.ibtn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ibtn.danger{background:var(--crit);border-color:var(--crit);color:#fff}
+.ibtn.warnb{background:var(--warn);border-color:var(--warn);color:#1a1200}
+.bell.on{background:var(--crit);border-color:var(--crit);color:#fff}
+.bell.warn{background:var(--warn);border-color:var(--warn);color:#1a1200}
+.demo{font:600 11px var(--f-mono);letter-spacing:.1em;color:#1a1200;background:var(--warn);border-radius:4px;padding:3px 7px;align-self:center}
+.assume{font:600 10.5px var(--f-mono);letter-spacing:.08em;color:var(--warn);border:1px dashed var(--warn);border-radius:4px;padding:1px 6px;white-space:nowrap}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:0}
+.ch{display:flex;align-items:baseline;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;padding:14px 16px 0}
+.ch h2{margin:0;font:800 22px var(--f-display);letter-spacing:.02em;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ch h2 small{font:600 12px var(--f-mono);letter-spacing:.08em;color:var(--muted)}
+.ch .aside{font-size:13px;color:var(--muted)}
+.cb{padding:12px 16px 16px}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.kpi{padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0;position:relative;overflow:hidden}
+.kpi .l{font:600 11.5px var(--f-mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.kpi .v{font:700 34px/1 var(--f-display);display:flex;align-items:baseline;gap:5px;white-space:nowrap}
+.kpi .v small{font-size:16px;color:var(--ink-2);font-weight:600}
+.kpi .s{font-size:13px;color:var(--ink-2);line-height:1.3}
+.kpi.crit .v{color:var(--crit)} .kpi.warn .v{color:var(--warn)} .kpi.ok .v{color:var(--ok)}
+.kpi .bar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:4px;background:var(--line-2)}
+.kpi .bar i{display:block;height:100%}
+.kpi .spark{position:absolute;inset:auto 0 0 0;height:28px;opacity:.5;pointer-events:none}
+
+/* measurement tiles */
+.meas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.m{border:1px solid var(--line-2);background:var(--panel-2);border-radius:10px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-width:0;position:relative}
+.m .l{font:600 10.5px var(--f-mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m .v{font:700 26px/1.05 var(--f-display);white-space:nowrap}
+.m .v small{font-size:14px;color:var(--ink-2);font-weight:600;margin-left:3px}
+.m .t{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m.warn{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 9%,var(--panel-2))}
+.m.warn .v{color:var(--warn)}
+.m.crit{border-color:var(--crit);background:color-mix(in srgb,var(--crit) 10%,var(--panel-2))}
+.m.crit .v{color:var(--crit)}
+.m .dot{position:absolute;top:10px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.m.warn .dot{background:var(--warn)} .m.crit .dot{background:var(--crit)} .m.idle .dot{background:var(--line)}
+
+/* phase stepper */
+.steps{display:flex;gap:4px;padding:0;margin:0;list-style:none;overflow-x:auto;scrollbar-width:thin}
+.steps li{flex:1 1 0;min-width:96px;display:flex;flex-direction:column;gap:3px;padding:8px 10px 9px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line-2);position:relative;overflow:hidden}
+.steps li b{font:800 15px var(--f-display);letter-spacing:.04em;white-space:nowrap}
+.steps li span{font:500 11.5px var(--f-mono);color:var(--muted);white-space:nowrap}
+.steps li i{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);width:0}
+.steps li.done{opacity:.62}
+.steps li.done i{width:100%;background:var(--ok)}
+.steps li.now{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--panel))}
+.steps li.now b{color:var(--accent)}
+.steps button{all:unset;cursor:pointer;display:contents}
+
+/* tags, chips, pills */
+.pill{display:inline-flex;align-items:center;gap:6px;font:700 11.5px var(--f-mono);letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,transparent)}
+.pill.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.pill.crit{color:var(--crit);border-color:color-mix(in srgb,var(--crit) 45%,transparent)}
+.pill.run{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+.pill.idle{color:var(--muted)}
+.alloy{display:inline-block;font:700 11px var(--f-mono);padding:2px 6px;border-radius:4px;color:#fff;letter-spacing:.04em}
+:root[data-theme="dark"] .alloy{color:#04101f}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font:600 11px var(--f-mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+.tbl td.r,.tbl th.r{text-align:right}
+.tbl tr.now td{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.tscroll{overflow-x:auto}
+
+/* alarm feed */
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.feed li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:8px 10px;border-radius:8px;background:var(--panel-2);border-left:4px solid var(--line);font-size:13.5px;line-height:1.3}
+.feed li time{font:600 11.5px var(--f-mono);color:var(--muted);padding-top:2px}
+.feed li.crit{border-left-color:var(--crit)} .feed li.warn{border-left-color:var(--warn)} .feed li.ok{border-left-color:var(--ok)} .feed li.info{border-left-color:var(--accent)}
+.feed li b{font-weight:700}
+.empty{color:var(--muted);font-size:13.5px;padding:8px 2px}
+
+/* tabs */
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 12px;min-height:38px;cursor:pointer;font:700 14px var(--f-ui);color:var(--ink-2);display:inline-flex;gap:8px;align-items:center}
+.tabs button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+
+/* mimic scroller (wide SVG schematics) */
+.mimic-scroll{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+.mimic-hint{display:none;font:600 11px var(--f-mono);letter-spacing:.08em;color:var(--muted);padding:8px 16px 0}
+svg text{font-family:var(--f-ui)}
+.flow{fill:none;stroke-dasharray:7 9;animation:dash 1.1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-32}}
+.spin{animation:spin 1.2s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.flick{animation:flick .35s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 0}
+@keyframes flick{from{transform:scaleY(.82);opacity:.8}to{transform:scaleY(1.08);opacity:1}}
+.blink{animation:blink 1s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+
+.foot{display:flex;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);padding:4px 2px}
+.foot a{color:var(--ink-2)}
+
+@media (max-width:1180px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:720px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi .v{font-size:28px}
+  .mimic-hint{display:block}
+  .hctl{width:100%}
+  .clock{flex:1}
+  .meas{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .m .v{font-size:23px}
+  .ch h2{font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* Layout: three furnace cards act as tabs; the selected furnace opens below with its cross-section,
+   live readings, temperature curve, charge mix, chemistry and the "ready to cast" gate. */
+.fcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fcard{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:center;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.fcard:hover{border-color:var(--accent)}
+.fcard[aria-selected="true"]{border:2px solid var(--accent);padding:11px 13px}
+.fcard:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fcard svg{width:120px;height:auto;display:block}
+.fcard .nm{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fcard .nm b{font:800 26px var(--f-display)}
+.fcard .big{font:700 30px/1 var(--f-display);margin-top:4px}
+.fcard .big small{font-size:15px;color:var(--ink-2);margin-left:3px}
+.fcard .sub{font-size:13px;color:var(--ink-2);margin-top:3px}
+.fcard .pb{height:6px;border-radius:3px;background:var(--line-2);margin-top:8px;overflow:hidden}
+.fcard .pb i{display:block;height:100%;background:var(--melt)}
+.grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px}
+.grid3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+#fx{display:block;width:100%;height:auto}
+.gate{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.gate li{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 11px;border-radius:8px;background:var(--panel-2);font-size:14px}
+.gate li svg{width:22px;height:22px}
+.gate li.ok svg{color:var(--ok)} .gate li.no svg{color:var(--muted)}
+.gate li b{font:600 12.5px var(--f-mono);white-space:nowrap}
+.verdict{margin-top:10px;padding:12px 14px;border-radius:10px;font:800 22px var(--f-display);letter-spacing:.04em;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.verdict.ok{background:color-mix(in srgb,var(--ok) 14%,var(--panel));color:var(--ok);border:1px solid var(--ok)}
+.verdict.no{background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line)}
+.verdict small{font:600 12.5px var(--f-ui);letter-spacing:0;color:var(--ink-2)}
+.stack{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.stack i{display:flex;align-items:center;justify-content:center;font:700 12.5px var(--f-mono);color:#fff;font-style:normal;white-space:nowrap;overflow:hidden}
+.mix{display:grid;grid-template-columns:auto 1fr auto auto;gap:6px 12px;margin-top:12px;font-size:14px;align-items:center}
+.mix i{width:12px;height:12px;border-radius:3px}
+.mix b{font-family:var(--f-mono);font-weight:600;font-size:13.5px;text-align:right}
+.chem td.ok{color:var(--ok)} .chem td.bad{color:var(--crit);font-weight:700}
+.chem td.wait{color:var(--muted)}
+.energy{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:1100px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}.fcards{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.fcard{grid-template-columns:84px minmax(0,1fr)}.fcard svg{width:84px}.energy{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="sitenav" aria-label="Dökümhane modülleri"><a class="sn-brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#0a2463"/><rect x="11" y="5" width="10" height="22" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M11 10h10" stroke="#f97316" stroke-width="3"/></svg>DÖKÜMHANE</a><a href="firin.html" aria-current="page">Fırınlar</a><a href="dokum.html">Döküm Masası</a><a href="homojen.html">Homojenizasyon ve Testere</a></nav>
+
+  <header class="head">
+    <div class="title">
+      <div class="eyebrow"><span class="live"></span>E1 · E2 ERGİTME 36 t · B1 DÖKÜM FIRINI 35 t · DOĞALGAZ</div>
+      <h1>ERGİTME VE <span>DÖKÜM FIRINLARI</span></h1>
+      <p class="sum">İki ergitme fırını sırayla 288 dakikalık çevrimde çalışır: şarj, ergitme, alaşım, numune. Kimya onaylanınca metal <b>B1 döküm fırınına</b> aktarılır, orada arıtılır ve masaya dökülür. <b>Her 144 dakikada bir döküm.</b></p>
+      <span class="credit">created by <b>GOTONOM</b></span>
+    </div>
+    <div class="hctl">
+      <span class="demo" id="demoTag">CANLI SAAT · DEMO VERİ</span>
+      <div class="seg" role="group" aria-label="Simülasyon hızı"><button type="button" data-speed="1" title="Gerçek saat">×1</button><button type="button" data-speed="10">×10</button><button type="button" data-speed="60">×60</button></div>
+      <div class="clock"><small id="clockLbl">TESİS SAATİ</small><b class="num" id="clock">00:00:00</b></div>
+      <button type="button" class="ibtn" id="themeBtn" aria-pressed="false" title="Koyu / açık tema"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+  </header>
+
+  <div class="fcards" role="tablist" aria-label="Fırınlar" id="fcards"></div>
+
+  <ol class="steps" id="steps" aria-label="Fırın etapları"></ol>
+
+  <div class="grid2">
+    <section class="card" aria-label="Fırın kesiti">
+      <div class="ch"><h2 id="fxT">—</h2><span class="aside" id="fxA"></span></div>
+      <div class="cb"><svg id="fx" viewBox="0 0 700 330" role="img" aria-label="Fırın kesiti"></svg></div>
+    </section>
+    <section class="card" aria-label="Anlık ölçümler">
+      <div class="ch"><h2>Anlık ölçümler</h2><span class="aside" id="measA"></span></div>
+      <div class="cb"><div class="meas" id="meas"></div></div>
+    </section>
+  </div>
+
+  <div class="grid3">
+    <section class="card" aria-label="Sıcaklık eğrisi">
+      <div class="ch"><h2>Metal sıcaklığı <small id="chartS">ÇEVRİM</small></h2><span class="aside"><span style="color:var(--melt)">━</span> ölçülen &nbsp; <span style="color:var(--ok)">▮</span> döküm aralığı</span></div>
+      <div class="cb" id="chart"></div>
+    </section>
+    <section class="card" aria-label="Şarj">
+      <div class="ch"><h2 id="mixT">Şarj</h2><span class="aside" id="mixA"></span></div>
+      <div class="cb" id="mix"></div>
+    </section>
+  </div>
+
+  <div class="grid3">
+    <section class="card" aria-label="Kimyasal analiz">
+      <div class="ch"><h2>Kimya <small id="chemS">OES</small></h2><span class="aside" id="chemA">ağırlık %</span></div>
+      <div class="cb tscroll"><table class="tbl chem" id="chem"></table></div>
+    </section>
+    <section class="card" aria-label="Döküme hazır kapısı">
+      <div class="ch"><h2 id="gateT">Döküme hazır kapısı</h2><span class="aside">Hepsi ✓ olmadan transfer yok</span></div>
+      <div class="cb"><ul class="gate" id="gate"></ul><div class="verdict no" id="verdict"></div></div>
+    </section>
+  </div>
+
+  <section class="card" aria-label="Enerji">
+    <div class="ch"><h2>Doğalgaz <small>BUGÜN 00:00'DAN BERİ</small></h2><span class="aside">Nm³ · ton başına döküm metali</span></div>
+    <div class="cb energy" id="energy"></div>
+  </section>
+
+  <footer class="foot"><span>Değerler PLC bağlantısı kurulana kadar örnek veriyle çalışan simülasyondur. Varsayımlar README'de.</span><span>created by <b>GOTONOM</b></span></footer>
+</div>
+
+<script>
+/* Plant model shared by every panel. Each unit's state is a pure function of plant time T
+   (minutes since today's 00:00), so the control centre and the detail pages always agree.
+   Numbers marked VARSAYIM in the README are assumptions until the plant confirms them. */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const mod = (a, n) => ((a % n) + n) % n;
+const smooth = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
+const NF = [0, 1, 2, 3].map(d => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+const fmt = (x, d = 0) => (x == null || isNaN(x)) ? '—' : NF[d].format(x);
+const pad = (x, n = 2) => String(x).padStart(n, '0');
+const hhmm = T => { const m = mod(Math.floor(T), 1440); return pad(Math.floor(m / 60)) + ':' + pad(m % 60); };
+const dur = m => { m = Math.max(0, Math.round(m)); const h = Math.floor(m / 60); return h ? `${h} sa ${pad(m % 60)} dk` : `${m} dk`; };
+// write markup only when it changed, so hover, focus and CSS animations survive the 4 Hz tick
+const setHTML = (e, html) => { if (e._h !== html) { e._h = html; e.innerHTML = html; } };
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+// stable pseudo-random per (cast, salt) so every page draws the same cast the same way
+const rnd = (n, s) => { const x = Math.sin(n * 127.1 + s * 311.7) * 43758.5453; return x - Math.floor(x); };
+// small live wobble for readings: slow plant drift + a little real-time jitter
+const wob = (T, seed) => { const r = Date.now() / 1000; return Math.sin(T * .7 + seed) * .5 + Math.sin(r / 1.7 + seed * 3) * .35 + Math.sin(r / .6 + seed * 7) * .15; };
+
+const PLANT = {
+  CYCLE: 144,            // one cast every 144 min → 10 casts a day
+  PER_DAY: 10,
+  MOULDS: 64, ROWS: 8,   // 7" hot-top table, 8 × 8
+  DIA: 178, LEN: 7000, CROP_HEAD: 300, CROP_TAIL: 200,
+  T_PER_M: Math.PI * 0.089 * 0.089 * 2.70,   // t per metre of Ø178 billet
+  E_CYCLE: 288, H_CYCLE: 720, H_COUNT: 5,
+  PREP_END: 15, CAST_START: 40, UNLOAD_END: 125, FILL_END: 18,
+  COOL_AT: 765, COOL_MIN: 60, SAW_AT: 825, SAW_MIN: 100,
+  SLOTS: ['6063', '6063', '6060', '6063', '6082', '6063', '6063', '6060', '6063', '6063'],
+  ALLOYS: {
+    '6063': { v: 123, color: '--a6063', temp: 695, spec: { Si: [.20, .60, .43], Fe: [0, .35, .20], Cu: [0, .10, .02], Mn: [0, .10, .03], Mg: [.45, .90, .50], Cr: [0, .10, .01], Zn: [0, .10, .02], Ti: [0, .10, .02] } },
+    '6060': { v: 128, color: '--a6060', temp: 692, spec: { Si: [.30, .60, .42], Fe: [.10, .30, .19], Cu: [0, .10, .02], Mn: [0, .10, .03], Mg: [.35, .60, .46], Cr: [0, .05, .01], Zn: [0, .15, .02], Ti: [0, .10, .02] } },
+    '6082': { v: 105, color: '--a6082', temp: 700, spec: { Si: [.70, 1.30, 1.00], Fe: [0, .50, .24], Cu: [0, .10, .04], Mn: [.40, 1.00, .55], Mg: [.60, 1.20, .78], Cr: [0, .25, .04], Zn: [0, .20, .02], Ti: [0, .10, .02] } },
+  },
+};
+PLANT.LOG_T = PLANT.T_PER_M * PLANT.LEN / 1000;
+PLANT.NET_M = (PLANT.LEN - PLANT.CROP_HEAD - PLANT.CROP_TAIL) / 1000;
+const alloyColor = a => `var(${PLANT.ALLOYS[a].color})`;
+const mouldName = i => 'K-' + pad(i + 1);
+
+/* ---------- casting recipe: speed by cast length, integrated once per alloy ---------- */
+function vTarget(L, vs) {
+  if (L < 20) return 50;
+  if (L < 450) return 50 + (vs - 50) * (L - 20) / 430;
+  if (L < 6850) return vs;
+  return vs - (vs - 80) * clamp((L - 6850) / 150, 0, 1);
+}
+function wTarget(v, vs) { return 45 + 65 * clamp((v - 50) / (vs - 50), 0, 1); }  // l/min per mould
+const PROFILES = {};
+function profile(alloy) {
+  if (PROFILES[alloy]) return PROFILES[alloy];
+  const vs = PLANT.ALLOYS[alloy].v, Ls = [0], dt = 1 / 60;   // 1 s steps
+  const FILL = .5;                                              // metal fills, platen waits 30 s
+  let L = 0, t = 0, tRamp = 0, tSteady = 0;
+  for (let i = 0; i < 30; i++) Ls.push(0);
+  t = FILL;
+  while (L < PLANT.LEN) {
+    L = Math.min(PLANT.LEN, L + vTarget(L, vs) * dt); t += dt; Ls.push(L);
+    if (!tRamp && L >= 450) tRamp = t;
+    if (!tSteady && L >= 6850) tSteady = t;
+  }
+  return PROFILES[alloy] = { vs, Ls, FILL, tRamp, tSteady, tEnd: t, tTaper: t + 2.5 };
+}
+function lengthAt(p, tc) { if (tc <= 0) return 0; const i = tc * 60; if (i >= p.Ls.length - 1) return PLANT.LEN; const a = Math.floor(i); return lerp(p.Ls[a], p.Ls[a + 1], i - a); }
+
+/* ---------- per-cast facts (memoised) ---------- */
+const DAY0 = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); })();
+const CASTS = new Map();
+function castInfo(n) {
+  if (CASTS.has(n)) return CASTS.get(n);
+  const slot = mod(n, PLANT.PER_DAY), date = new Date(DAY0 + n * PLANT.CYCLE * 60000);
+  const alloy = PLANT.SLOTS[slot], a = PLANT.ALLOYS[alloy];
+  const closed = [];
+  if (rnd(n, 1) < .45) closed.push(Math.floor(rnd(n, 2) * PLANT.MOULDS));
+  if (rnd(n, 3) < .15) { const j = Math.floor(rnd(n, 4) * PLANT.MOULDS); if (!closed.includes(j)) closed.push(j); }
+  const logs = PLANT.MOULDS - closed.length;
+  const utRej = rnd(n, 5) < .18 ? 1 : 0;
+  const dross = 15 + rnd(n, 6) * 8;                         // kg/t
+  const gross = logs * PLANT.LOG_T * (1 + (rnd(n, 7) - .5) * .004);
+  const net = (logs - utRej) * PLANT.T_PER_M * PLANT.NET_M;
+  const charged = gross * (1 + dross / 1000 + .004);
+  const corr = rnd(n, 8) < .3;                               // first sample Mg low → correction
+  const chem = {}, chem1 = {};
+  for (const [el, [lo, hi, tg]] of Object.entries(a.spec)) {
+    const span = Math.max(.01, (hi - lo) * .06);
+    chem[el] = +(tg + (rnd(n, 20 + el.charCodeAt(0) + el.charCodeAt(1)) - .5) * span).toFixed(3);
+    chem1[el] = chem[el];
+  }
+  if (corr) chem1.Mg = +(a.spec.Mg[0] - .01 - rnd(n, 9) * .03).toFixed(3);
+  const primer = 34 + rnd(n, 10) * 16, ic = 20 + rnd(n, 11) * 8;
+  const info = {
+    n, slot, id: `D-${pad(date.getDate())}${pad(date.getMonth() + 1)}-${pad(slot + 1)}`, date, alloy, prof: profile(alloy),
+    closed, logs, utRej, dross, gross, net, charged, recovery: net / charged * 100,
+    h2In: .24 + rnd(n, 12) * .08, h2Out: .10 + rnd(n, 13) * .04, grain: 105 + rnd(n, 14) * 35,
+    corr, chem, chem1, mgAdd: corr ? Math.round(10 + rnd(n, 15) * 14) : 0,
+    mix: { primer, ic, dis: 100 - primer - ic },
+    gas: 72 + rnd(n, 16) * 14, kwh: 88 + rnd(n, 17) * 16,     // per net tonne
+    start: n * PLANT.CYCLE + PLANT.CAST_START,
+  };
+  info.end = info.start + info.prof.tTaper;
+  CASTS.set(n, info);
+  return info;
+}
+
+/* ---------- phase helper ---------- */
+function phaseOf(list, x) { for (let i = 0; i < list.length; i++) if (x < list[i][1]) return i; return list.length - 1; }
+function mkPhases(defs, T0) { return defs.map(([key, a, b]) => ({ key, start: T0 + a, end: T0 + b })); }
+
+/* ---------- casting table + launder ---------- */
+const TABLE_PHASES = ['HAZIRLIK', 'HAZIR', 'BAŞLANGIÇ', 'DÖKÜM', 'BİTİŞ', 'BOŞALTMA'];
+function table(T) {
+  const C = PLANT.CYCLE, n = Math.floor((T - PLANT.UNLOAD_END) / C) + 1, c = T - n * C;
+  const cast = castInfo(n), p = cast.prof, a = PLANT.ALLOYS[cast.alloy], cs = PLANT.CAST_START;
+  const bounds = [['HAZIRLIK', PLANT.UNLOAD_END - C, PLANT.PREP_END], ['HAZIR', PLANT.PREP_END, cs], ['BAŞLANGIÇ', cs, cs + p.tRamp],
+    ['DÖKÜM', cs + p.tRamp, cs + p.tSteady], ['BİTİŞ', cs + p.tSteady, cs + p.tTaper], ['BOŞALTMA', cs + p.tTaper, PLANT.UNLOAD_END]];
+  const phases = mkPhases(bounds, n * C), pi = phaseOf(bounds.map(b => [b[1], b[2]]), c);
+  const tc = c - cs, casting = pi >= 2 && tc < p.tEnd, metal = casting;
+  const L = pi < 2 ? 0 : lengthAt(p, tc);
+  const vT = casting && tc > p.FILL ? vTarget(L, p.vs) : 0;
+  const v = vT ? vT * (1 + wob(T, 1) * .012) : 0;
+  let wT = 0;
+  if (pi >= 2 && tc < p.tEnd) wT = tc < p.FILL ? 45 : wTarget(vT, p.vs);
+  else if (pi === 4) wT = wTarget(80, p.vs) * clamp(1 - (tc - p.tEnd) / 2.5, 0, 1);
+  const w = wT ? wT * (1 + wob(T, 2) * .015) : 0;
+  const logs = cast.logs;
+  const unload = pi === 5 ? clamp((c - (cs + p.tTaper) - 6) / 14, 0, 1) : 0;   // tilt 6 min, then crane 14 min
+  return {
+    n, cast, c, phase: TABLE_PHASES[pi], pi, phases, L, v, vT, w, wT, logs, metal, unload,
+    progress: L / PLANT.LEN,
+    tons: L / 1000 * PLANT.T_PER_M * logs,
+    water: w * logs * 60 / 1000,                              // m³/h
+    waterIn: 24 + wob(T, 3) * .6, waterOut: w ? 24 + 6.5 * (v / p.vs) + wob(T, 4) * .5 : null,
+    launder: metal ? a.temp + wob(T, 5) * 2.2 : null,
+    level: metal ? 75 + wob(T, 6) * 1.6 : 0,                  // mm metal head in the hot-top
+    h2Out: metal ? cast.h2Out + wob(T, 7) * .004 : null, h2In: metal ? cast.h2In + wob(T, 8) * .006 : null,
+    rotor: metal ? 380 + wob(T, 9) * 6 : (pi === 1 ? 120 : 0), argon: metal ? 42 + wob(T, 10) * 1.5 : 0,
+    rod: metal ? 1.0 + wob(T, 11) * .03 : 0,                  // kg/t AlTi5B1
+    filterDp: metal ? 14 + 10 * clamp(tc / p.tEnd, 0, 1) + wob(T, 12) * .8 : 0,   // mm metal head across the CFF
+    air: metal ? 1.6 + wob(T, 13) * .05 : 0,                  // Nl/min per mould
+    oil: metal ? .5 + wob(T, 14) * .02 : 0,                   // ml/min per mould
+    pit: 1.15 + wob(T, 15) * .01,                             // m standing water
+    hyd: 18 + (pi === 5 && unload > 0 ? 6 : 0) + wob(T, 16) * .3,
+  };
+}
+
+/* ---------- melting furnaces E1, E2 ---------- */
+const MELT_DEFS = [['ŞARJ', 0, 30], ['ERGİTME', 30, 190], ['ALAŞIM', 190, 222], ['NUMUNE', 222, 250], ['HAZIR', 250, 270], ['TRANSFER', 270, 288]];
+function melter(k, T) {
+  const L = mod(T + (k === 0 ? 270 : 126), PLANT.E_CYCLE), n = Math.round((T - L + 270) / PLANT.CYCLE), cast = castInfo(n);
+  const pi = phaseOf(MELT_DEFS.map(d => [d[1], d[2]]), L), phases = mkPhases(MELT_DEFS, T - L);
+  const heel = 4, charge = 32, s = clamp((L - 30) / 160, 0, 1);
+  let temp, mass, liq, burn;
+  if (pi === 0) { temp = lerp(718, 682, L / 30); mass = heel + charge * smooth(L / 30); liq = heel / mass; burn = 20; }
+  else if (pi === 1) { temp = 672 + 83 * Math.pow(s, 2.2); mass = heel + charge; liq = (heel + charge * smooth(s * 1.08)) / mass; burn = L < 150 ? 100 : 70; }
+  else if (pi === 2) { temp = lerp(755, 748, (L - 190) / 32); mass = 36; liq = 1; burn = 35; }
+  else if (pi === 3) { temp = lerp(748, 742, (L - 222) / 28); mass = 36; liq = 1; burn = 25; }
+  else if (pi === 4) { temp = lerp(742, 738, (L - 250) / 20); mass = 36; liq = 1; burn = 20; }
+  else { temp = lerp(738, 732, (L - 270) / 18); mass = 36 - charge * (L - 270) / 18; liq = 1; burn = 10; }
+  temp += wob(T, 30 + k) * 1.4;
+  const sample1 = phases[3].start + 10, corrAt = sample1 + 3, sample2 = corrAt + 12;
+  const chemOk = cast.corr ? T >= sample2 : T >= sample1;
+  return {
+    k, name: 'E' + (k + 1), L, n, cast, phase: MELT_DEFS[pi][0], pi, phases, temp, mass, liq, burn,
+    gas: burn * 6 * (1 + wob(T, 32 + k) * .02),             // Nm³/h, 600 at full fire
+    roof: pi === 1 ? 1060 + 80 * (burn / 100) + wob(T, 34 + k) * 8 : 880 + burn * 2 + wob(T, 34 + k) * 6,
+    stir: pi === 2, door: pi === 0, skimmed: pi >= 3, sample1, corrAt, sample2, chemOk,
+    pressure: pi === 0 ? 0 : 8 + wob(T, 36 + k) * 1.5,       // Pa
+  };
+}
+
+/* ---------- holding / casting furnace B1 ---------- */
+const HOLD_DEFS = [['DOLUM', 0, 18], ['ARITMA', 18, 40], ['DÖKÜM', 40, null], ['BEKLEME', null, 144]];
+function holder(T) {
+  const n = Math.floor(T / PLANT.CYCLE), c = T - n * PLANT.CYCLE, cast = castInfo(n), p = cast.prof;
+  const castEnd = PLANT.CAST_START + p.tEnd;
+  const defs = HOLD_DEFS.map(d => [d[0], d[1] ?? castEnd, d[2] ?? castEnd]);
+  const pi = phaseOf(defs.map(d => [d[1], d[2]]), c), phases = mkPhases(defs, n * PLANT.CYCLE);
+  const poured = pi === 2 ? lengthAt(p, c - PLANT.CAST_START) / PLANT.LEN * cast.gross : (pi === 3 ? cast.gross : 0);
+  const heel = 3, full = heel + 32;
+  const mass = pi === 0 ? heel + 32 * smooth(c / 18) : full - poured;
+  const temp = (pi === 0 ? lerp(722, 730, c / 18) : pi === 1 ? lerp(730, 736, (c - 18) / 22) : pi === 2 ? lerp(736, 731, (c - 40) / p.tEnd) : 722) + wob(T, 40) * 1.2;
+  return {
+    name: 'B1', n, cast, c, phase: defs[pi][0], pi, phases, mass, temp, poured,
+    tilt: pi === 2 ? 2 + 22 * (poured / cast.gross) : 0,
+    burn: pi === 1 ? 45 : pi === 2 ? 30 : pi === 0 ? 25 : 15, lance: pi === 1,
+  };
+}
+
+/* ---------- homogenising furnaces H1–H5, cooling chamber, saw ---------- */
+const HOMO_DEFS = [['YÜKLEME', 0, 20], ['ISITMA', 20, 260], ['BEKLETME', 260, 620], ['BOŞALTMA', 620, 640], ['BOŞ', 640, 720]];
+function homoTemp(L) {   // [air, metal] °C at local time L
+  if (L < 20) return [lerp(520, 470, L / 20), 60];
+  if (L < 260) { const x = L - 20; return [615 - 145 * Math.exp(-x / 22) - 30 * smooth((x - 120) / 120), 580 - 520 * Math.exp(-x / 48)]; }
+  if (L < 620) return [585, 580];
+  if (L < 640) return [lerp(584, 525, (L - 620) / 20), 579];
+  return [520, null];
+}
+function homog(k, T) {
+  const L = mod(T - PLANT.UNLOAD_END - k * PLANT.CYCLE, PLANT.H_CYCLE), n = Math.round((T - L - PLANT.UNLOAD_END) / PLANT.CYCLE);
+  const pi = phaseOf(HOMO_DEFS.map(d => [d[1], d[2]]), L), phases = mkPhases(HOMO_DEFS, T - L);
+  let [air, metal] = homoTemp(L);
+  air += wob(T, 50 + k) * 1.5; if (metal != null) metal += wob(T, 55 + k) * (L > 260 ? .8 : 1.2);
+  const soakFrom = 20 + 48 * Math.log(520 / 5);              // metal reaches 575 °C
+  const soak = clamp(L - soakFrom, 0, 640 - soakFrom);
+  const burn = pi === 1 ? 100 - 60 * smooth((L - 20) / 240) : pi === 2 ? 22 : pi === 4 ? 8 : 0;
+  return { k, name: 'H' + (k + 1), L, n: pi === 4 ? null : n, cast: pi === 4 ? null : castInfo(n), phase: HOMO_DEFS[pi][0], pi, phases, air, metal, soak, soakNeed: 360, burn, gas: burn * 1.2 };
+}
+function homoCurve(L) { return homoTemp(L); }
+function cooler(T) {
+  const n = Math.floor((T - PLANT.COOL_AT) / PLANT.CYCLE), t = T - (n * PLANT.CYCLE + PLANT.COOL_AT);
+  if (t >= PLANT.COOL_MIN) return { active: false, n, next: (n + 1) * PLANT.CYCLE + PLANT.COOL_AT, cast: castInfo(n) };
+  const temp = 25 + 555 * Math.exp(-t / 55) + wob(T, 60) * .8;
+  return { active: true, n, cast: castInfo(n), t, temp, rate: 555 / 55 * Math.exp(-t / 55) * 60, avgRate: 330 / (55 * Math.log(555 / 225)) * 60, fans: 100 };
+}
+function saw(T) {
+  const n = Math.floor((T - PLANT.SAW_AT) / PLANT.CYCLE), t = T - (n * PLANT.CYCLE + PLANT.SAW_AT), cast = castInfo(n);
+  if (t >= PLANT.SAW_MIN) return { active: false, n, cast, next: (n + 1) * PLANT.CYCLE + PLANT.SAW_AT, done: cast.logs };
+  const done = Math.floor(t / PLANT.SAW_MIN * cast.logs);
+  return { active: true, n, cast, t, done, cur: Math.min(cast.logs, done + 1), rejIdx: cast.utRej ? Math.floor(cast.logs * rnd(n, 18)) : -1 };
+}
+
+/* ---------- where each cast is on the plant floor ---------- */
+const STAGES = [
+  { key: 'firin', label: 'Ergitme', from: -270, to: 18 },
+  { key: 'dokum', label: 'Döküm', from: 18, to: PLANT.UNLOAD_END },
+  { key: 'homo', label: 'Homojenizasyon', from: PLANT.UNLOAD_END, to: PLANT.COOL_AT },
+  { key: 'sogut', label: 'Soğutma', from: PLANT.COOL_AT, to: PLANT.SAW_AT },
+  { key: 'testere', label: 'Testere ve UT', from: PLANT.SAW_AT, to: PLANT.SAW_AT + PLANT.SAW_MIN },
+];
+function castStage(n, T) {
+  const r = T - n * PLANT.CYCLE;
+  for (let i = 0; i < STAGES.length; i++) if (r >= STAGES[i].from && r < STAGES[i].to) return { i, ...STAGES[i], p: (r - STAGES[i].from) / (STAGES[i].to - STAGES[i].from) };
+  return r >= STAGES[STAGES.length - 1].to ? { i: 5, key: 'stok', label: 'Stok', p: 1 } : null;
+}
+// casts whose casting has finished, newest first
+function doneCasts(T, count = 10) {
+  const out = []; let n = Math.floor((T - PLANT.CAST_START) / PLANT.CYCLE);
+  while (out.length < count) { const c = castInfo(n); if (c.end <= T) out.push(c); n--; }
+  return out;
+}
+function avg(list, f) { return list.reduce((s, x) => s + f(x), 0) / list.length; }
+
+/* ---------- simulated clock (live by default; ×10 / ×60 demo continues across pages) ---------- */
+const SIM = { T0: (Date.now() - DAY0) / 60000, t0: Date.now(), speed: 1 };
+try { const s = JSON.parse(sessionStorage.getItem('bd-sim') || 'null'); if (s && s.speed > 1) Object.assign(SIM, s); } catch (e) {}
+SIM.T = () => SIM.T0 + (Date.now() - SIM.t0) / 60000 * SIM.speed;
+function simSave() { try { sessionStorage.setItem('bd-sim', JSON.stringify({ T0: SIM.T0, t0: SIM.t0, speed: SIM.speed })); } catch (e) {} }
+function simSet(speed, T) {
+  if (speed === 1 && T == null) { SIM.T0 = (Date.now() - DAY0) / 60000; } else SIM.T0 = T ?? SIM.T();
+  SIM.t0 = Date.now(); SIM.speed = speed; simSave(); syncChrome(); tick(true);
+}
+function simJump(T) { simSet(SIM.speed === 1 ? 10 : SIM.speed, T); }
+
+/* ---------- page chrome: theme, clock, speed buttons ---------- */
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('bd-theme', t); } catch (e) {}
+  const b = $('#themeBtn'); if (b) b.setAttribute('aria-pressed', t === 'dark');
+  if (window.onTheme) window.onTheme(t);
+}
+try { const t = localStorage.getItem('bd-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+function syncChrome() {
+  $$('[data-speed]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.speed === SIM.speed));
+  const d = $('#demoTag'); if (d) d.textContent = SIM.speed === 1 ? 'CANLI SAAT · DEMO VERİ' : `HIZLI DEMO ×${SIM.speed}`;
+  const l = $('#clockLbl'); if (l) l.textContent = SIM.speed === 1 ? 'TESİS SAATİ' : `DEMO SAATİ ×${SIM.speed}`;
+}
+let lastTick = 0;
+function tick(force) {
+  const T = SIM.T();
+  const c = $('#clock');
+  if (c) { const m = mod(T, 1440); c.textContent = `${pad(Math.floor(m / 60))}:${pad(Math.floor(m % 60))}:${pad(Math.floor((m * 60) % 60))}`; }
+  if (window.onTick) window.onTick(T, force === true);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  $$('[data-speed]').forEach(b => b.addEventListener('click', () => simSet(+b.dataset.speed)));
+  const tb = $('#themeBtn');
+  if (tb) tb.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+  syncChrome();
+  if (window.onInit) window.onInit(SIM.T());
+  tick(true);
+  setInterval(tick, 250);
+});
+
+/* ---------- tiny SVG line chart (string out, sized by viewBox) ---------- */
+function lineChart(o) {
+  const W = o.w || 640, H = o.h || 220, m = { l: 44, r: o.y2 ? 44 : 14, t: 14, b: 26, ...(o.m || {}) };
+  const X = x => m.l + (x - o.x[0]) / (o.x[1] - o.x[0]) * (W - m.l - m.r);
+  const Y = (y, ax) => { const r = ax === 2 ? o.y2 : o.y; return H - m.b - (y - r[0]) / (r[1] - r[0]) * (H - m.t - m.b); };
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.label || ''}" style="display:block;width:100%;height:auto">`;
+  for (const z of o.zones || []) s += `<rect x="${X(z.x0)}" y="${m.t}" width="${Math.max(0, X(z.x1) - X(z.x0))}" height="${H - m.t - m.b}" fill="${z.fill || 'var(--panel-2)'}"/>` + (z.label ? `<text x="${(X(z.x0) + X(z.x1)) / 2}" y="${m.t + 12}" text-anchor="middle" font-size="11" fill="var(--muted)" font-weight="600">${z.label}</text>` : '');
+  for (const b of o.bands || []) s += `<rect x="${m.l}" y="${Y(b.y1, b.ax)}" width="${W - m.l - m.r}" height="${Y(b.y0, b.ax) - Y(b.y1, b.ax)}" fill="${b.fill}" opacity="${b.op ?? .14}"/>`;
+  for (const t of o.yTicks || []) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line-2)"/><text x="${m.l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
+  for (const t of o.y2Ticks || []) s += `<text x="${W - m.r + 6}" y="${Y(t, 2) + 4}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
+  for (const t of o.xTicks || []) s += `<text x="${X(t.x ?? t)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t.l ?? t}</text>`;
+  s += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="var(--line)"/>`;
+  for (const se of o.series) {
+    if (!se.pts.length) continue;
+    const d = se.pts.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1], se.ax).toFixed(1)).join('');
+    if (se.area) s += `<path d="${d}L${X(se.pts[se.pts.length - 1][0])} ${H - m.b}L${X(se.pts[0][0])} ${H - m.b}Z" fill="${se.color}" opacity=".12"/>`;
+    s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="${se.width || 2}" ${se.dash ? `stroke-dasharray="${se.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  if (o.marker != null) s += `<line x1="${X(o.marker)}" x2="${X(o.marker)}" y1="${m.t}" y2="${H - m.b}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  for (const d of o.dots || []) s += `<circle cx="${X(d[0])}" cy="${Y(d[1], d.ax)}" r="5" fill="${d.color || 'var(--accent)'}" stroke="var(--panel)" stroke-width="2"/>`;
+  return s + '</svg>';
+}
+
+const UNITS = ['e1', 'e2', 'b1'];
+let cur = UNITS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'e1';
+const unit = (u, T) => u === 'b1' ? holder(T) : melter(u === 'e1' ? 0 : 1, T);
+const CHECK = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1.4 14.2-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4z"/></svg>';
+const WAIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+
+// furnace cross-section: big (detail) or small (cards); returns SVG markup
+function furnaceSVG(f, big) {
+  const isB = f.name === 'B1';
+  const W = 700, H = 330, x0 = 70, y0 = 70, w = 520, h = 200;
+  const fill = clamp(f.mass / 36, 0, 1), bathTop = y0 + h - 22 - (h - 112) * fill;
+  const liq = isB ? 1 : f.liq;
+  const tilt = isB ? -f.tilt * .5 : 0;
+  let s = `<g transform="rotate(${tilt} ${x0 + w} ${y0 + h + 10})">`;
+  s += `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" rx="26" fill="var(--steel-3)"/>`;
+  s += `<rect x="${x0 + 16}" y="${y0 + 14}" width="${w - 32}" height="${h - 30}" rx="16" fill="var(--refr)"/>`;
+  s += `<rect x="${x0 + 30}" y="${y0 + 28}" width="${w - 60}" height="${h - 50}" rx="10" fill="#2a1d16"/>`;
+  // flames from roof burners
+  if (f.burn > 0) {
+    const sc = .45 + f.burn / 100 * .8;
+    s += `<g opacity="${.35 + f.burn / 140}"><path class="flick" d="M${x0 + 60} ${y0 + 44} q${90 * sc} -6 ${170 * sc} 14 q-${80 * sc} 16 -${170 * sc} 8z" fill="#fbbf24"/><path class="flick" style="animation-delay:.15s" d="M${x0 + w - 60} ${y0 + 44} q-${90 * sc} -6 -${170 * sc} 14 q${80 * sc} 16 ${170 * sc} 8z" fill="#fb923c"/></g>`;
+  }
+  // bath + unmelted scrap
+  s += `<rect x="${x0 + 32}" y="${bathTop}" width="${w - 64}" height="${y0 + h - 24 - bathTop}" rx="6" fill="url(#gM${big ? 'b' : 's'})"/>`;
+  if (liq < .98) {
+    const n = Math.round((1 - liq) * 14);
+    for (let i = 0; i < n; i++) { const bx = x0 + 50 + (i * 37) % (w - 120), by = bathTop - 10 - (i % 3) * 18; s += `<rect x="${bx}" y="${by}" width="${34 - (i % 4) * 4}" height="${16 + (i % 2) * 8}" rx="2" fill="var(--steel)" stroke="var(--steel-3)" transform="rotate(${(i * 23) % 30 - 15} ${bx} ${by})"/>`; }
+  }
+  if (!isB && !f.skimmed && liq > .9) s += `<rect x="${x0 + 32}" y="${bathTop - 4}" width="${w - 64}" height="6" fill="#78716c" opacity=".85"/>`;
+  if (big && f.stir) s += `<g><path d="M${x0 + 120} ${y0 + h - 40} q60 -26 120 0 t120 0" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="5 6" class="flow"/></g>`;
+  if (isB && f.lance) { s += `<line x1="${x0 + 300}" y1="${y0 - 20}" x2="${x0 + 300}" y2="${y0 + h - 40}" stroke="var(--steel-2)" stroke-width="6"/>`; for (let i = 0; i < 6; i++) s += `<circle class="bub" style="animation-delay:${i * .22}s" cx="${x0 + 284 + i * 7}" cy="${y0 + h - 44}" r="3"/>`; }
+  // roof burners + door + tap
+  s += `<rect x="${x0 + 40}" y="${y0 - 14}" width="40" height="18" rx="3" fill="var(--steel)"/><rect x="${x0 + w - 80}" y="${y0 - 14}" width="40" height="18" rx="3" fill="var(--steel)"/>`;
+  if (!isB) s += `<rect x="${x0 + 180}" y="${f.door ? y0 - 54 : y0 - 6}" width="160" height="${f.door ? 40 : 14}" rx="3" fill="var(--steel-2)" stroke="var(--steel-3)"/>`;
+  s += `<path d="M${x0 + w} ${y0 + h - 60} h40 l14 8 v8 h-54z" fill="var(--refr)"/>`;
+  s += `</g>`;
+  const pour = isB ? f.phase === 'DÖKÜM' : f.phase === 'TRANSFER';
+  if (pour) s += `<path d="M${x0 + w + 52} ${y0 + h - 44} q12 30 18 ${H - y0 - h + 30}" fill="none" stroke="#fb923c" stroke-width="7" class="flow" stroke-dasharray="10 6"/>`;
+  s += `<rect x="0" y="${y0 + h + 10}" width="${W}" height="${H - y0 - h - 10}" fill="url(#gC${big ? 'b' : 's'})"/>`;
+  const defs = `<defs><linearGradient id="gM${big ? 'b' : 's'}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset=".3" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient><linearGradient id="gC${big ? 'b' : 's'}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--refr-2)"/><stop offset="1" stop-color="var(--refr)"/></linearGradient></defs>`;
+  if (big) {
+    s += `<g font-family="var(--f-mono)" font-size="13" font-weight="600"><text x="${x0 + 40}" y="${y0 + h + 40}" fill="var(--ink)">${f.name} · ${fmt(f.mass, 1)} t</text><text x="${x0 + w}" y="${y0 + h + 40}" text-anchor="end" fill="var(--ink-2)">${isB ? (f.tilt ? 'eğim ' + fmt(f.tilt, 1) + '°' : 'yatay') : 'sıvı %' + fmt(f.liq * 100)}</text></g>`;
+    s += `<text x="${x0 + w / 2}" y="${y0 + 22}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" opacity=".8">${f.burn ? 'BRÜLÖR %' + Math.round(f.burn) : 'BRÜLÖR KAPALI'}</text>`;
+  }
+  return defs + s;
+}
+
+// replace SVG content only when it changed, so flame/flow animations keep running
+function setSVG(svg, html) { if (svg._h !== html) { svg._h = html; svg.innerHTML = html; } }
+
+function renderCards(T) {
+  const box = $('#fcards');
+  if (!box.children.length) {
+    box.innerHTML = UNITS.map(u => `<button class="fcard" role="tab" data-u="${u}" aria-controls="steps"><svg viewBox="40 40 640 290" aria-hidden="true"></svg><div><div class="nm"><b>${u.toUpperCase()}</b><span class="pill"></span></div><div class="big num"></div><div class="sub"></div><div class="pb"><i></i></div></div></button>`).join('');
+    $$('.fcard', box).forEach(b => b.addEventListener('click', () => { cur = b.dataset.u; history.replaceState(null, '', '#' + cur); tick(true); }));
+  }
+  $$('.fcard', box).forEach(b => {
+    const f = unit(b.dataset.u, T), ph = f.phases[f.pi];
+    b.setAttribute('aria-selected', b.dataset.u === cur);
+    setSVG(b.querySelector('svg'), furnaceSVG(f, false));
+    const pill = b.querySelector('.pill');
+    const busy = ['ERGİTME', 'TRANSFER', 'DÖKÜM', 'DOLUM', 'ARITMA', 'ALAŞIM'].includes(f.phase);
+    pill.className = 'pill ' + (f.phase === 'HAZIR' ? 'ok' : busy ? 'run' : 'idle'); pill.innerHTML = '<i></i>' + f.phase;
+    b.querySelector('.big').innerHTML = `${fmt(f.temp)}<small>°C</small> · ${fmt(f.mass, 1)}<small>t</small>`;
+    const nextT = b.dataset.u === 'b1' ? f.phases[2].start + (f.pi >= 2 ? PLANT.CYCLE : 0) : f.phases[5].start;
+    b.querySelector('.sub').textContent = b.dataset.u === 'b1' ? `${f.cast.id} · sonraki döküm ${hhmm(nextT)}` : `${f.cast.id} için · transfer ${hhmm(nextT)}`;
+    const total = b.dataset.u === 'b1' ? PLANT.CYCLE : PLANT.E_CYCLE;
+    b.querySelector('.pb i').style.width = ((b.dataset.u === 'b1' ? f.c : f.L) / total * 100) + '%';
+  });
+}
+
+let stepsKey = '';
+function renderSteps(f, T) {
+  const ol = $('#steps'), key = cur + f.phases[0].start;
+  if (key !== stepsKey) {
+    stepsKey = key;
+    ol.innerHTML = f.phases.map(p => `<li><button type="button" title="Bu etaba atla (demo)" data-t="${p.start}"><b>${p.key}</b><span>${hhmm(p.start)}–${hhmm(p.end)}</span><i></i></button></li>`).join('');
+    $$('button', ol).forEach(b => b.addEventListener('click', () => simJump(+b.dataset.t + .05)));
+  }
+  $$('li', ol).forEach((li, i) => { const p = f.phases[i]; li.className = i < f.pi ? 'done' : i === f.pi ? 'now' : ''; li.querySelector('i').style.width = i === f.pi ? clamp((T - p.start) / (p.end - p.start), 0, 1) * 100 + '%' : ''; });
+}
+
+let lastSlow = -1;
+window.onTick = (T, force) => {
+  renderCards(T);
+  const f = unit(cur, T), isB = cur === 'b1', c = f.cast, a = PLANT.ALLOYS[c.alloy];
+  renderSteps(f, T);
+  $('#fxT').innerHTML = `${f.name} ${isB ? 'döküm fırını' : 'ergitme fırını'} <small>${c.id} · ${c.alloy}</small>`;
+  $('#fxA').innerHTML = `<span class="pill run"><i></i>${f.phase}</span>`;
+  setSVG($('#fx'), furnaceSVG(f, true));
+  const M = (l, v, u, tx, st) => `<div class="m ${st || ''}"><span class="dot"></span><span class="l">${l}</span><span class="v num">${v}<small>${u}</small></span><span class="t">${tx}</span></div>`;
+  if (!isB) {
+    $('#measA').textContent = `Çevrimin ${dur(f.L)}'sı geçti`;
+    $('#meas').innerHTML = [
+      M('Metal sıcaklığı', fmt(f.temp), '°C', 'transfer 730–750', f.pi >= 4 && (f.temp < 730 || f.temp > 750) ? 'warn' : ''),
+      M('Çatı sıcaklığı', fmt(f.roof), '°C', 'sınır 1.200'),
+      M('Brülör', fmt(f.burn), '%', 'rejeneratif çift brülör', f.burn ? '' : 'idle'),
+      M('Doğalgaz', fmt(f.gas), 'Nm³/h', 'tam güç 600'),
+      M('Metal', fmt(f.mass, 1), 't', 'kapasite 36 t'),
+      M('Sıvı oranı', fmt(f.liq * 100), '%', f.liq < .99 ? 'katı şarj eriyor' : 'tamamen sıvı'),
+      M('Fırın basıncı', fmt(f.pressure, 1), 'Pa', f.door ? 'kapı açık' : 'hedef 5–12'),
+      M('Karıştırıcı', f.stir ? 'AÇIK' : 'KAPALI', '', 'elektromanyetik (EMS)', f.stir ? '' : 'idle'),
+    ].join('');
+  } else {
+    $('#measA').textContent = f.phase === 'DÖKÜM' ? 'Masaya döküyor' : '';
+    $('#meas').innerHTML = [
+      M('Metal sıcaklığı', fmt(f.temp), '°C', 'döküm 728–740', f.pi === 2 && f.temp < 726 ? 'warn' : ''),
+      M('Metal', fmt(f.mass, 1), 't', 'kapasite 35 t'),
+      M('Eğim', fmt(f.tilt, 1), '°', 'hidrolik devirme', f.tilt ? '' : 'idle'),
+      M('Dökülen', fmt(f.poured, 1), 't', `hedef ${fmt(c.gross, 1)} t`, f.poured ? '' : 'idle'),
+      M('Brülör', fmt(f.burn), '%', 'sıcaklık tutma'),
+      M('Argon lansı', f.lance ? 'AÇIK' : 'KAPALI', '', 'fırın içi arıtma', f.lance ? '' : 'idle'),
+      M('Sonraki döküm', hhmm(f.phases[2].start + (f.pi >= 2 ? PLANT.CYCLE : 0)), '', c.alloy + ' · 64 kalıp'),
+      M('Kaynak fırın', c.n % 2 ? 'E2' : 'E1', '', 'bu dökümün metali'),
+    ].join('');
+  }
+
+  // temperature curve over the furnace cycle (actual so far)
+  const span = isB ? PLANT.CYCLE : PLANT.E_CYCLE, T0 = f.phases[0].start, x = T - T0, pts = [];
+  for (let t = 0; t <= x; t += 2) pts.push([t, unit(cur, T0 + t).temp]);
+  pts.push([x, f.temp]);
+  $('#chartS').textContent = isB ? 'DÖKÜM ÇEVRİMİ · 144 DK' : 'ERGİTME ÇEVRİMİ · 288 DK';
+  $('#chart').innerHTML = lineChart({
+    w: 640, h: 230, x: [0, span], y: isB ? [700, 760] : [640, 780], label: 'Metal sıcaklığı',
+    zones: f.phases.map((p, i) => ({ x0: p.start - T0, x1: p.end - T0, fill: i % 2 ? 'var(--panel-2)' : 'transparent', label: p.key.length > 8 ? p.key.slice(0, 6) + '.' : p.key })),
+    bands: [{ y0: isB ? 728 : 730, y1: isB ? 740 : 750, fill: 'var(--ok)' }],
+    yTicks: isB ? [700, 720, 740, 760] : [640, 680, 720, 760], xTicks: [0, span / 4, span / 2, span * 3 / 4, span].map(v => ({ x: v, l: Math.round(v) + ' dk' })),
+    series: [{ pts, color: 'var(--melt)', width: 3, area: false }], dots: [[x, f.temp]], marker: x,
+  });
+
+  // charge mix
+  if (!isB) {
+    const m = c.mix, t = 32;
+    $('#mixT').textContent = 'Şarj';
+    $('#mixA').textContent = `${fmt(t)} t katı + 4 t sıvı dip`;
+    const parts = [['Primer külçe', m.primer, 'var(--accent)'], ['İç hurda (baş, kuyruk, testere)', m.ic, 'var(--a6060)'], ['Dış hurda (6xxx profil)', m.dis, 'var(--accent-2)']];
+    $('#mix').innerHTML = `<div class="stack">${parts.map(p => `<i style="width:${p[1]}%;background:${p[2]}">%${fmt(p[1])}</i>`).join('')}</div>
+      <div class="mix">${parts.map(p => `<i style="background:${p[2]}"></i><span>${p[0]}</span><b>%${fmt(p[1])}</b><b>${fmt(t * p[1] / 100, 1)} t</b>`).join('')}
+      <i style="background:var(--melt)"></i><span>Alaşım ilavesi (Mg, Si)</span><b></b><b>${fmt(c.corr ? 60 + c.mgAdd : 60)} kg</b>
+      <i style="background:var(--steel)"></i><span>Cüruf (dross)</span><b>${fmt(c.dross, 1)} kg/t</b><b>${f.skimmed ? fmt(c.dross * 32 / 1000, 2) + ' t' : 'alınmadı'}</b></div>
+      <p class="note" style="font-size:13px;color:var(--ink-2);margin:12px 0 0">Kirli ve yağlı hurda cürufu artırır: talaş üzerindeki her %1 kesme yağı yaklaşık %2 ek cüruf demektir.</p>`;
+  } else {
+    $('#mixT').textContent = 'Arıtma';
+    $('#mixA').textContent = 'Fırın içi';
+    $('#mix').innerHTML = `<div class="kv" style="display:grid;grid-template-columns:1fr auto;gap:8px 12px;font-size:14px">
+      <span>Dolum</span><b class="mono">${hhmm(f.phases[0].start)}–${hhmm(f.phases[0].end)} · ${c.n % 2 ? 'E2' : 'E1'}'den 32 t</b>
+      <span>Argon lansı + flaks</span><b class="mono">${hhmm(f.phases[1].start)}–${hhmm(f.phases[1].start + 12)}</b>
+      <span>Cüruf alma</span><b class="mono">${hhmm(f.phases[1].start + 13)}</b>
+      <span>Dinlendirme</span><b class="mono">${hhmm(f.phases[1].start + 14)}–${hhmm(f.phases[1].end)}</b>
+      <span>H₂ (fırın)</span><b class="mono">${fmt(c.h2In, 2)} ml/100 g</b>
+      <span>H₂ (degazör sonrası)</span><b class="mono">${fmt(c.h2Out, 3)} ml/100 g</b></div>
+      <p class="note" style="font-size:13px;color:var(--ink-2);margin:12px 0 0">Fırın içi arıtma inklüzyonları yüzdürür. Asıl hidrojen giderme döküm hattındaki SNIF degazöründe yapılır.</p>`;
+  }
+
+  // chemistry (one sample per furnace cycle; B1 shows the approved result)
+  const spec = a.spec, s1 = isB ? T0 : f.sample1, s2 = isB ? T0 : f.sample2;
+  const got1 = isB || T >= s1 + 8, got2 = isB || (c.corr && T >= s2 + 8);
+  $('#chemS').textContent = `OES · ${c.alloy}`;
+  $('#chemA').textContent = isB ? 'Onaylı analiz' : got1 ? `Numune 1 ${hhmm(s1)}${c.corr ? ` · Numune 2 ${hhmm(s2)}` : ''}` : `Numune ${hhmm(s1)}'de`;
+  const cell = (v, lo, hi, ok) => ok ? `<td class="r mono ${v < lo || v > hi ? 'bad' : 'ok'}">${fmt(v, 3)}</td>` : '<td class="r mono wait">—</td>';
+  $('#chem').innerHTML = `<thead><tr><th>Element</th><th class="r">Min</th><th class="r">Maks</th><th class="r">Hedef</th><th class="r">Numune 1</th>${c.corr && !isB ? '<th class="r">Numune 2</th>' : ''}</tr></thead><tbody>` +
+    Object.entries(spec).map(([el, [lo, hi, tg]]) => `<tr><td><b>${el}</b></td><td class="r mono">${lo ? fmt(lo, 2) : '—'}</td><td class="r mono">${fmt(hi, 2)}</td><td class="r mono">${fmt(tg, 2)}</td>${cell(isB ? c.chem[el] : c.chem1[el], lo, hi, got1)}${c.corr && !isB ? cell(c.chem[el], lo, hi, got2) : ''}</tr>`).join('') +
+    `</tbody>` + (c.corr && !isB && got1 ? `<caption style="caption-side:bottom;text-align:left;padding-top:10px;font-size:13px;color:var(--ink-2)">Numune 1'de Mg alt sınırın altında: <b>${c.mgAdd} kg Mg</b> eklendi (${hhmm(f.corrAt)}), karıştırıldı, numune 2 alındı.</caption>` : '');
+
+  // ready gate
+  const G = (ok, txt, val) => `<li class="${ok ? 'ok' : 'no'}">${ok ? CHECK : WAIT}<span>${txt}</span><b>${val}</b></li>`;
+  let checks;
+  if (!isB) {
+    const b = holder(T);
+    checks = [
+      [f.pi >= 2, 'Şarj tamamen eridi', `sıvı %${fmt(f.liq * 100)}`],
+      [f.skimmed, 'Cüruf alındı', f.skimmed ? fmt(c.dross * 32 / 1000, 2) + ' t' : '—'],
+      [f.chemOk, 'Kimya spesifikasyonda', f.chemOk ? 'onaylı' : got1 ? 'düzeltme' : 'bekleniyor'],
+      [f.pi >= 3 && f.temp >= 728 && f.temp <= 752, 'Sıcaklık 730–750 °C', fmt(f.temp) + ' °C'],
+      [b.phase === 'BEKLEME' || f.phase === 'TRANSFER', 'B1 boş ve hazır', `B1 ${b.phase.toLowerCase()} · ${fmt(b.mass, 1)} t`],
+    ];
+    $('#gateT').textContent = 'Transfere hazır kapısı';
+  } else {
+    const tb = table(T);
+    checks = [
+      [f.pi >= 1, 'Dolum tamamlandı', fmt(f.mass, 1) + ' t'],
+      [f.pi >= 2 || f.c > 31, 'Argon + flaks arıtması', f.pi >= 2 || f.c > 31 ? 'tamam' : 'sürüyor'],
+      [f.temp >= 728 && f.temp <= 742, 'Sıcaklık 728–740 °C', fmt(f.temp) + ' °C'],
+      [c.h2In <= .35, 'Fırın H₂ ≤ 0,35', fmt(c.h2In, 2)],
+      [tb.pi >= 1 && tb.n === c.n, 'Döküm masası hazır', tb.n === c.n ? tb.phase.toLowerCase() : 'önceki döküm'],
+    ];
+    $('#gateT').textContent = 'Dökmeye hazır kapısı';
+  }
+  $('#gate').innerHTML = checks.map(x => G(...x)).join('');
+  const all = checks.every(x => x[0]), v = $('#verdict');
+  v.className = 'verdict ' + (all ? 'ok' : 'no');
+  v.innerHTML = all ? `${isB ? 'DÖKMEYE HAZIR' : 'TRANSFERE HAZIR'}<small>${isB ? (f.phase === 'DÖKÜM' ? 'Masaya döküyor' : 'Masa bekleniyor') : `Transfer ${hhmm(f.phases[5].start)}`}</small>` : `BEKLENİYOR<small>${checks.filter(x => !x[0]).length} koşul eksik</small>`;
+
+  // gas today (integrated every 2 min, refreshed once a plant-minute)
+  const lk = Math.floor(T);
+  if (force || lk !== lastSlow) {
+    lastSlow = lk;
+    const day0 = Math.floor(T / 1440) * 1440, sums = [0, 0, 0];
+    for (let t = day0; t < T; t += 2) { sums[0] += melter(0, t).burn * 6 / 30; sums[1] += melter(1, t).burn * 6 / 30; sums[2] += holder(t).burn * 1.6 / 30; }
+    const tons = doneCasts(T, 12).filter(x => x.end >= day0).reduce((s, x) => s + x.gross, 0);
+    const card = (n, v, st) => `<div class="m"><span class="l">${n}</span><span class="v num">${fmt(v)}<small>Nm³</small></span><span class="t">${st}</span></div>`;
+    $('#energy').innerHTML = card('E1 ergitme', sums[0], `şu an ${fmt(melter(0, T).gas)} Nm³/h`) + card('E2 ergitme', sums[1], `şu an ${fmt(melter(1, T).gas)} Nm³/h`) +
+      card('B1 + toplam', sums[0] + sums[1] + sums[2], tons ? `${fmt((sums[0] + sums[1] + sums[2]) / tons, 1)} Nm³/t · ${fmt(tons, 1)} t döküldü` : 'bugün henüz döküm yok');
+  }
+};
+window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (UNITS.includes(h)) { cur = h; tick(true); } });
+</script>
+</body>
+</html>
