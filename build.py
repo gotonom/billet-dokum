@@ -11,7 +11,7 @@ ROOT = Path(__file__).parent
 SRC = ROOT / "src"
 # Share links resolve against the Railway domain (GitHub Pages copies point there too).
 BASE = "https://billet-dokum-production.up.railway.app"
-OG_VERSION = 2          # bump when the cards change, so apps that cached the old image fetch the new one
+OG_VERSION = 3          # bump when the cards change, so apps that cached the old image fetch the new one
 # source fragment -> (published file, share title, meta description); share card is docs/og/<file stem>.png
 PAGES = {
     "index.html":   ("index.html",   "Billet Dökümhanesi · Kontrol Merkezi",
@@ -22,6 +22,8 @@ PAGES = {
                      "Hot-top DC döküm: 64 kalıp, hız ve su reçetesi, metal seviyesi, bleed-out algılama, PLC kilitleri ve alarm senaryoları. Created by GOTONOM."),
     "homojen.html": ("homojen.html", "Billet Dökümhanesi · Homojenizasyon ve Testere",
                      "5 homojenizasyon fırını, soğutma odası, testere ve ultrasonik muayene: 580 °C bekletme, soğuma hızı, fire. Created by GOTONOM."),
+    "lab.html":     ("lab.html",     "Billet Dökümhanesi · Laboratuvar",
+                     "Homojenizasyon laboratuvarı: mikroskop görüntüsünden β → α dönüşümü, şekil tabanlı otomatik sınıflama, elle düzeltme, teknisyen incelemesi ve dört göz onayı. Created by GOTONOM."),
 }
 FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
            "%3Crect width='32' height='32' rx='6' fill='%230a2463'/%3E%3Crect x='11' y='5' width='10' height='22' rx='2' "

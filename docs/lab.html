@@ -1,0 +1,1280 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Homojenizasyon laboratuvarı: mikroskop görüntüsünden β → α dönüşümü, şekil tabanlı otomatik sınıflama, elle düzeltme, teknisyen incelemesi ve dört göz onayı. Created by GOTONOM.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Dökümhane">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="Billet Dökümhanesi · Laboratuvar">
+<meta property="og:description" content="Homojenizasyon laboratuvarı: mikroskop görüntüsünden β → α dönüşümü, şekil tabanlı otomatik sınıflama, elle düzeltme, teknisyen incelemesi ve dört göz onayı. Created by GOTONOM.">
+<meta property="og:url" content="https://billet-dokum-production.up.railway.app/lab.html">
+<meta property="og:image" content="https://billet-dokum-production.up.railway.app/og/lab.png?v=3">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Billet Dökümhanesi · Laboratuvar">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Billet Dökümhanesi · Laboratuvar">
+<meta name="twitter:description" content="Homojenizasyon laboratuvarı: mikroskop görüntüsünden β → α dönüşümü, şekil tabanlı otomatik sınıflama, elle düzeltme, teknisyen incelemesi ve dört göz onayı. Created by GOTONOM.">
+<meta name="twitter:image" content="https://billet-dokum-production.up.railway.app/og/lab.png?v=3">
+<meta name="theme-color" content="#0a2463">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a2463'/%3E%3Crect x='11' y='5' width='10' height='22' rx='2' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Cpath d='M11 10h10' stroke='%23f97316' stroke-width='3'/%3E%3C/svg%3E">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Laboratuvar · Billet Dökümhanesi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Shared look for every casthouse panel: the MAKOM control-room language (Barlow + Plex Mono,
+   blueprint grid, light by default, dark on request) plus molten-metal and cooling-water colours. */
+:root{
+  --bg:#eef3fa; --bg-2:#e4ecf7; --panel:#ffffff; --panel-2:#f4f8fe; --line:#c9d8ee; --line-2:#dde8f6;
+  --ink:#0a2463; --ink-2:#34507f; --muted:#6a7fa4; --accent:#0b6fd9; --accent-2:#6d28d9; --on-accent:#ffffff;
+  --ok:#15803d; --warn:#b45309; --crit:#dc2626; --grid:rgba(11,111,217,.05);
+  --melt:#f97316; --melt-2:#fbbf24; --melt-dk:#c2410c; --water:#0ea5e9; --water-2:#7dd3fc;
+  --steel:#94a3b8; --steel-2:#cbd5e1; --steel-3:#64748b; --refr:#a8a29e; --refr-2:#d6d3d1;
+  --billet-1:#f1f5f9; --billet-2:#b6c2cf; --hot:#ef4444;
+  --a6063:#0b6fd9; --a6060:#0d9488; --a6082:#7c3aed;
+  --shadow:0 8px 24px rgba(10,36,99,.10);
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-ui:"Barlow Semi Condensed","Segoe UI",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#050d1c; --bg-2:#08142a; --panel:#0c1a33; --panel-2:#10223f; --line:#1c3256; --line-2:#152a4a;
+  --ink:#e7efff; --ink-2:#a8bbdc; --muted:#6f86ae; --accent:#38bdf8; --accent-2:#a78bfa; --on-accent:#04101f;
+  --ok:#34d399; --warn:#fbbf24; --crit:#fb7185; --grid:rgba(56,189,248,.06);
+  --steel:#64748b; --steel-2:#334155; --steel-3:#94a3b8; --refr:#57534e; --refr-2:#44403c;
+  --billet-1:#cbd5e1; --billet-2:#64748b;
+  --a6063:#38bdf8; --a6060:#2dd4bf; --a6082:#a78bfa;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{background:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:32px 32px;color:var(--ink);font-family:var(--f-ui);font-size:15px}
+.wrap{max-width:1600px;margin:0 auto;padding-block:12px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+.num,.mono{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--f-mono)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+
+/* site nav */
+.sitenav{display:flex;align-items:center;gap:4px 6px;flex-wrap:wrap;font:600 14px var(--f-ui)}
+.sitenav a{color:var(--ink-2);text-decoration:none;padding:6px 12px;border-radius:6px;border:1px solid transparent}
+.sitenav a:hover{border-color:var(--line)}
+.sitenav a[aria-current="page"]{background:var(--accent);color:var(--on-accent)}
+.sitenav .sn-brand{font:800 16px var(--f-display);color:var(--ink);letter-spacing:.08em;margin-right:6px;display:inline-flex;align-items:center;gap:8px}
+.sitenav .sn-brand svg{width:20px;height:20px}
+
+/* header */
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px 24px;flex-wrap:wrap}
+.title{display:flex;flex-direction:column;gap:6px;min-width:0}
+.eyebrow{font:600 12.5px var(--f-mono);letter-spacing:.14em;color:var(--accent);text-transform:uppercase;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.live{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:live 2s infinite}
+@keyframes live{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+h1{margin:0;font:800 clamp(30px,4.4vw,56px)/.95 var(--f-display);letter-spacing:.01em;text-wrap:balance}
+h1 span{color:var(--melt)}
+.sum{margin:0;color:var(--ink-2);font-size:16px;max-width:76ch}
+.sum b{color:var(--ink)}
+.credit{font-size:12.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.credit b{color:var(--ink);letter-spacing:.14em}
+.hctl{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.clock{display:flex;flex-direction:column;justify-content:center;padding:6px 14px;border:1px solid var(--line);border-radius:8px;background:var(--panel);line-height:1.1;min-width:112px}
+.clock small{font:600 11px var(--f-mono);letter-spacing:.1em;color:var(--muted)}
+.clock b{font:600 20px var(--f-mono)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:transparent;padding:0 11px;min-height:40px;font:600 13.5px var(--f-mono);color:var(--ink-2);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.ibtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 12px;min-height:40px;border:1px solid var(--line);border-radius:8px;background:var(--panel);cursor:pointer;font-weight:700;font-size:14px;text-decoration:none;color:var(--ink)}
+.ibtn svg{width:18px;height:18px;flex:none}
+.ibtn:hover{border-color:var(--accent)}
+.ibtn:disabled{opacity:.45;cursor:not-allowed;border-color:var(--line)}
+.ibtn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ibtn.danger{background:var(--crit);border-color:var(--crit);color:#fff}
+.ibtn.warnb{background:var(--warn);border-color:var(--warn);color:#1a1200}
+.bell.on{background:var(--crit);border-color:var(--crit);color:#fff}
+.bell.warn{background:var(--warn);border-color:var(--warn);color:#1a1200}
+.demo{font:600 11px var(--f-mono);letter-spacing:.1em;color:#1a1200;background:var(--warn);border-radius:4px;padding:3px 7px;align-self:center}
+.assume{font:600 10.5px var(--f-mono);letter-spacing:.08em;color:var(--warn);border:1px dashed var(--warn);border-radius:4px;padding:1px 6px;white-space:nowrap}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:0}
+.ch{display:flex;align-items:baseline;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;padding:14px 16px 0}
+.ch h2{margin:0;font:800 22px var(--f-display);letter-spacing:.02em;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ch h2 small{font:600 12px var(--f-mono);letter-spacing:.08em;color:var(--muted)}
+.ch .aside{font-size:13px;color:var(--muted)}
+.cb{padding:12px 16px 16px}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.kpi{padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0;position:relative;overflow:hidden}
+.kpi .l{font:600 11.5px var(--f-mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.kpi .v{font:700 34px/1 var(--f-display);display:flex;align-items:baseline;gap:5px;white-space:nowrap}
+.kpi .v small{font-size:16px;color:var(--ink-2);font-weight:600}
+.kpi .s{font-size:13px;color:var(--ink-2);line-height:1.3}
+.kpi.crit .v{color:var(--crit)} .kpi.warn .v{color:var(--warn)} .kpi.ok .v{color:var(--ok)}
+.kpi .bar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:4px;background:var(--line-2)}
+.kpi .bar i{display:block;height:100%}
+.kpi .spark{position:absolute;inset:auto 0 0 0;height:28px;opacity:.5;pointer-events:none}
+
+/* measurement tiles */
+.meas{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.m{border:1px solid var(--line-2);background:var(--panel-2);border-radius:10px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;min-width:0;position:relative}
+.m .l{font:600 10.5px var(--f-mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m .v{font:700 26px/1.05 var(--f-display);white-space:nowrap}
+.m .v small{font-size:14px;color:var(--ink-2);font-weight:600;margin-left:3px}
+.m .t{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m .t a{color:var(--accent);font-weight:700;text-decoration:none}
+.m.warn{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 9%,var(--panel-2))}
+.m.warn .v{color:var(--warn)}
+.m.crit{border-color:var(--crit);background:color-mix(in srgb,var(--crit) 10%,var(--panel-2))}
+.m.crit .v{color:var(--crit)}
+.m .dot{position:absolute;top:10px;right:10px;width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.m.warn .dot{background:var(--warn)} .m.crit .dot{background:var(--crit)} .m.idle .dot{background:var(--line)}
+
+/* phase stepper */
+.steps{display:flex;gap:4px;padding:0;margin:0;list-style:none;overflow-x:auto;scrollbar-width:thin}
+.steps li{flex:1 1 0;min-width:96px;display:flex;flex-direction:column;gap:3px;padding:8px 10px 9px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line-2);position:relative;overflow:hidden}
+.steps li b{font:800 15px var(--f-display);letter-spacing:.04em;white-space:nowrap}
+.steps li span{font:500 11.5px var(--f-mono);color:var(--muted);white-space:nowrap}
+.steps li i{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);width:0}
+.steps li.done{opacity:.62}
+.steps li.done i{width:100%;background:var(--ok)}
+.steps li.now{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--panel))}
+.steps li.now b{color:var(--accent)}
+.steps button{all:unset;cursor:pointer;display:contents}
+
+/* tags, chips, pills */
+.pill{display:inline-flex;align-items:center;gap:6px;font:700 11.5px var(--f-mono);letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,transparent)}
+.pill.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.pill.crit{color:var(--crit);border-color:color-mix(in srgb,var(--crit) 45%,transparent)}
+.pill.run{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+.pill.idle{color:var(--muted)}
+.alloy{display:inline-block;font:700 11px var(--f-mono);padding:2px 6px;border-radius:4px;color:#fff;letter-spacing:.04em}
+:root[data-theme="dark"] .alloy{color:#04101f}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font:600 11px var(--f-mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+.tbl td.r,.tbl th.r{text-align:right}
+.tbl tr.now td{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.tscroll{overflow-x:auto}
+
+/* alarm feed */
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.feed li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:8px 10px;border-radius:8px;background:var(--panel-2);border-left:4px solid var(--line);font-size:13.5px;line-height:1.3}
+.feed li time{font:600 11.5px var(--f-mono);color:var(--muted);padding-top:2px}
+.feed li.crit{border-left-color:var(--crit)} .feed li.warn{border-left-color:var(--warn)} .feed li.ok{border-left-color:var(--ok)} .feed li.info{border-left-color:var(--accent)}
+.feed li b{font-weight:700}
+.empty{color:var(--muted);font-size:13.5px;padding:8px 2px}
+
+/* tabs */
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 12px;min-height:38px;cursor:pointer;font:700 14px var(--f-ui);color:var(--ink-2);display:inline-flex;gap:8px;align-items:center}
+.tabs button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+
+/* mimic scroller (wide SVG schematics) */
+.mimic-scroll{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+.mimic-hint{display:none;font:600 11px var(--f-mono);letter-spacing:.08em;color:var(--muted);padding:8px 16px 0}
+svg text{font-family:var(--f-ui)}
+.flow{fill:none;stroke-dasharray:7 9;animation:dash 1.1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-32}}
+.spin{animation:spin 1.2s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.flick{animation:flick .35s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 0}
+@keyframes flick{from{transform:scaleY(.82);opacity:.8}to{transform:scaleY(1.08);opacity:1}}
+.blink{animation:blink 1s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+
+/* phone-only and wide-only blocks, and text that must keep its case (Si, µm, β → α) */
+.nc{text-transform:none}
+.tbl td.wrap{white-space:normal;min-width:180px}
+.tbl small.rng{display:none;font:500 11px var(--f-mono);color:var(--muted)}
+
+/* compact unit tiles: the phone stand-in for wide plant schematics */
+.ugrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 16px 16px}
+.ut{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:76px;padding:8px 9px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);position:relative;overflow:hidden;min-width:0}
+.ut:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ut[aria-pressed="true"]{border:2px solid var(--ink);padding:7px 8px}
+.ut b{font:800 17px var(--f-display);letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.ut .v{font:700 15px var(--f-display);position:relative;white-space:nowrap}
+.ut small{font:600 9.5px var(--f-mono);letter-spacing:.04em;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.ut .fill{position:absolute;inset:0;opacity:.85}
+.ut .pg{position:absolute;left:0;bottom:0;height:3px;background:var(--melt)}
+.ut.hot b,.ut.hot .v,.ut.hot small{color:#1a0d00}
+
+.foot{display:flex;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);padding:4px 2px}
+.foot a{color:var(--ink-2)}
+
+@media (max-width:1180px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:720px){
+  .hide-sm{display:none!important}
+  .tbl small.rng{display:block}
+  .sitenav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+  .sitenav::-webkit-scrollbar{display:none}
+  .sitenav a{white-space:nowrap;padding:6px 10px}
+  .eyebrow{letter-spacing:.08em;font-size:11.5px}
+  .sum{font-size:15px}
+  .steps li{min-width:104px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi .v{font-size:28px}
+  .mimic-hint{display:block}
+  .hctl{width:100%}
+  .clock{flex:1}
+  .meas{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .m .v{font-size:23px}
+  .ch h2{font-size:20px}
+}
+@media (min-width:721px){.only-sm{display:none!important}}
+/* below laptop width the wide plant schematics give way to tiles or split views */
+@media (min-width:1024px){.only-md{display:none!important}}
+@media (max-width:1023px){.hide-md{display:none!important}}
+@media (min-width:600px){.ugrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* Layout: the micrograph with its particle overlay is the hero; beside it the result, the sample
+   form and the review trail. Saved results and method notes follow. */
+.lab{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;align-items:start}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 16px 0}
+.tools .sp{flex:1}
+.stage{position:relative;margin:12px 16px 0;border-radius:10px;overflow:hidden;background:#1d1b1a;border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:auto;cursor:crosshair;touch-action:manipulation}
+.stage .tag{position:absolute;left:10px;top:10px;font:700 11px var(--f-mono);letter-spacing:.08em;padding:4px 8px;border-radius:6px;background:rgba(180,83,9,.92);color:#fff}
+.stage .bar{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;align-items:flex-end;gap:3px;font:700 11px var(--f-mono);color:#fff;text-shadow:0 1px 2px #000}
+.stage .bar i{display:block;height:4px;background:#fff;box-shadow:0 1px 2px #000}
+.stage .empty{position:absolute;inset:0;display:grid;place-items:center;color:#cbd5e1;font-size:14px}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);padding:10px 16px 16px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.big b{font:800 64px/1 var(--f-display)}
+.big small{font:600 15px var(--f-ui);color:var(--ink-2)}
+.verdict{margin-top:10px;padding:10px 12px;border-radius:10px;font:800 18px var(--f-display);letter-spacing:.04em;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.verdict small{font:600 12.5px var(--f-ui);letter-spacing:0}
+.verdict.ok{background:color-mix(in srgb,var(--ok) 14%,var(--panel));color:var(--ok);border:1px solid var(--ok)}
+.verdict.no{background:color-mix(in srgb,var(--crit) 10%,var(--panel));color:var(--crit);border:1px solid var(--crit)}
+.verdict.mid{background:color-mix(in srgb,var(--warn) 12%,var(--panel));color:var(--warn);border:1px solid var(--warn)}
+.gauge{position:relative;height:14px;border-radius:7px;background:var(--line-2);margin:14px 0 4px}
+.gauge .fill{position:absolute;left:0;top:0;bottom:0;border-radius:7px;background:var(--ok)}
+.gauge .unc{position:absolute;top:-3px;bottom:-3px;border-radius:4px;background:color-mix(in srgb,var(--ink) 18%,transparent)}
+.gauge .thr{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--crit)}
+.gauge-l{display:flex;justify-content:space-between;font:500 11px var(--f-mono);color:var(--muted)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px;margin-top:12px}
+.kv span{color:var(--ink-2)} .kv b{font:600 13.5px var(--f-mono);text-align:right}
+.form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.form label{display:flex;flex-direction:column;gap:4px;font:600 11px var(--f-mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase;min-width:0}
+.form label.full{grid-column:1/-1}
+.form label small{font:500 11px var(--f-mono);letter-spacing:0;text-transform:none;color:var(--muted)}
+.form input,.form select{font:600 15px var(--f-mono);color:var(--ink);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:42px;width:100%}
+.form input[type=range]{padding:0;min-height:30px;accent-color:var(--accent)}
+.form input:focus,.form select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.rowc{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status{display:flex;gap:4px;margin-bottom:12px}
+.status span{flex:1;text-align:center;font:700 11px var(--f-mono);letter-spacing:.04em;padding:7px 4px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line-2);color:var(--muted)}
+.status span.done{background:color-mix(in srgb,var(--ok) 12%,var(--panel));color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,transparent)}
+.status span.now{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.status span.rej{background:var(--crit);color:#fff;border-color:var(--crit)}
+.acts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:10px}
+.note{font-size:13px;color:var(--ink-2);line-height:1.45;margin:8px 0 0}
+.note b{color:var(--ink)}
+.notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.notes div{background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px}
+.notes h3{margin:0 0 6px;font:800 17px var(--f-display);letter-spacing:.02em}
+.notes p{margin:0;font-size:13.5px;line-height:1.45;color:var(--ink-2)}
+.tbl tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.tbl tbody tr{cursor:pointer}
+input[type=file]{display:none}
+@media (max-width:1100px){.lab{grid-template-columns:minmax(0,1fr)}.notes{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.big b{font-size:52px}.form{grid-template-columns:minmax(0,1fr)}.acts{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="sitenav" aria-label="Dökümhane modülleri"><a class="sn-brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#0a2463"/><rect x="11" y="5" width="10" height="22" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M11 10h10" stroke="#f97316" stroke-width="3"/></svg>DÖKÜMHANE</a><a href="firin.html">Fırınlar</a><a href="dokum.html">Döküm Masası</a><a href="homojen.html">Homojenizasyon ve Testere</a><a href="lab.html" aria-current="page">Laboratuvar</a></nav>
+
+  <header class="head">
+    <div class="title">
+      <div class="eyebrow"><span class="live"></span>OPTİK MİKROSKOP · %0,5 HF DAĞLAMA · ×500–1000 · ŞEKİL TABANLI SINIFLAMA</div>
+      <h1>HOMOJENİZASYON <span>LABORATUVARI</span></h1>
+      <p class="sum">Test logundan alınan numunenin mikroskop görüntüsü yüklenir. Yazılım AlFeSi parçacıklarını bulur, <b>şekillerinden</b> β (iğne) ya da α (yuvarlak, "Çin yazısı") olarak sınıflar ve <span class="nc">β → α</span> dönüşümünü hesaplar. Sonuç teknisyen incelemesi ve laboratuvar sorumlusunun onayı olmadan partiyi serbest bırakmaz.</p>
+      <span class="credit">created by <b>GOTONOM</b></span>
+    </div>
+    <div class="hctl">
+      <span class="demo" id="demoTag">CANLI SAAT · DEMO VERİ</span>
+      <div class="seg" role="group" aria-label="Simülasyon hızı"><button type="button" data-speed="1" title="Gerçek saat">×1</button><button type="button" data-speed="10">×10</button><button type="button" data-speed="60">×60</button></div>
+      <div class="clock"><small id="clockLbl">TESİS SAATİ</small><b class="num" id="clock">00:00:00</b></div>
+      <button type="button" class="ibtn" id="themeBtn" aria-pressed="false" title="Koyu / açık tema"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+  </header>
+
+  <div class="lab">
+    <section class="card" aria-label="Mikroskop görüntüsü ve analiz">
+      <div class="ch"><h2>Mikroskop görüntüsü <small id="imgInfo">—</small></h2><span class="aside">Parçacığa dokunarak sınıfını düzeltin</span></div>
+      <div class="tools">
+        <label class="ibtn primary" for="file"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 20h14v-2H5zm7-16-5 5h3v6h4V9h3z"/></svg>Görüntü yükle</label>
+        <input type="file" id="file" accept="image/*">
+        <button type="button" class="ibtn" id="synthBtn" title="Gerçek görüntü değil; akışı denemek için üretilir">Sentetik örnek üret</button>
+        <button type="button" class="ibtn" id="fieldBtn" title="Bu alanı numuneye ekle ve sıradaki alana geç">+ Alan ekle</button>
+        <span class="pill" id="fieldPill">Alan 1</span>
+        <span class="sp"></span>
+        <div class="seg" role="group" aria-label="Katman"><button type="button" data-ov="1" aria-pressed="true">Katman</button><button type="button" data-ov="0" aria-pressed="false">Ham</button></div>
+      </div>
+      <div class="stage" id="stage"><canvas id="cv" width="1200" height="900" aria-label="Mikroskop görüntüsü ve parçacık sınıfları"></canvas><span class="tag" id="synthTag" hidden>SENTETİK ÖRNEK · GERÇEK GÖRÜNTÜ DEĞİL</span><div class="bar" id="scale"></div><div class="empty" id="empty">Görüntü yükleniyor…</div></div>
+      <div class="legend"><span><i style="background:#22c55e"></i>α-AlFeSi (yuvarlak, Çin yazısı)</span><span><i style="background:#ef4444"></i>β-AlFeSi (iğne)</span><span><i style="background:#94a3b8"></i>kenara değen / artefakt, sayılmaz</span><span><i style="background:transparent;border:2px solid #facc15"></i>elle düzeltildi</span></div>
+    </section>
+
+    <div class="side">
+      <section class="card" aria-label="Sonuç">
+        <div class="ch"><h2>Sonuç <small id="resPos">—</small></h2><span class="aside" id="resMethod">alan tabanlı · optik-şekil</span></div>
+        <div class="cb">
+          <div class="big"><b class="num" id="alpha">—</b><small id="alphaS"></small></div>
+          <div class="gauge" id="gauge"><span class="fill"></span><span class="unc"></span><span class="thr"></span></div>
+          <div class="gauge-l"><span>0</span><span id="thrL"></span><span>100</span></div>
+          <div class="verdict" id="verdict"></div>
+          <div class="kv" id="stats"></div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Numune ve analiz ayarları">
+        <div class="ch"><h2>Numune</h2><span class="aside">Kimlik görüntüye bağlanır</span></div>
+        <div class="cb form">
+          <label class="full">Döküm · parti<select id="cast"></select></label>
+          <label>Konum<select id="pos"><option value="merkez">Merkez</option><option value="yarıçap">½ yarıçap</option><option value="yüzey">Yüzeye yakın</option></select></label>
+          <label><span><span class="nc">µm</span> / piksel</span><input id="cal" type="number" inputmode="decimal" step="0.005" min="0.02" max="2" value="0.10"><small>sertifikalı cetvelle doğrulayın</small></label>
+          <label><span>En-boy eşiği <span class="nc">(R<sub>kritik</sub>)</span> · <span class="nc" id="rcritV"></span></span><input id="rcrit" type="range" min="2.5" max="5" step="0.1" value="3.6"><small>üstü β sayılır (literatür 3,5–3,7)</small></label>
+          <label><span>Gri eşik · <span class="nc" id="thrV"></span></span><input id="thr" type="range" min="40" max="230" step="1"><small id="thrAuto">otomatik</small></label>
+          <label><span>Tesis kabul eşiği (% <span class="nc">α</span>)</span><input id="accept" type="number" min="50" max="100" step="1" value="85"><small>VARSAYIM · tesis ve müşteri belirler</small></label>
+          <label>Yöntem belirsizliği (yp)<input id="unc" type="number" min="3" max="25" step="1" value="10"><small>kalibrasyonsuz şekil ±15 · SEM-EDS ±5</small></label>
+          <label>Ad soyad<input id="who" type="text" autocomplete="name" placeholder="İmza için"></label>
+        </div>
+      </section>
+
+      <section class="card" aria-label="İnceleme ve onay">
+        <div class="ch"><h2>İnceleme ve onay</h2><span class="aside" id="saveInfo">kaydedilmedi</span></div>
+        <div class="cb">
+          <div class="status" id="status"><span>ÖNERİ</span><span>İNCELENDİ</span><span>ONAYLANDI</span></div>
+          <div class="rowc"><span class="note" style="margin:0">Rol</span><div class="seg" role="group" aria-label="Rol"><button type="button" data-role="tek" aria-pressed="true">Teknisyen</button><button type="button" data-role="sor" aria-pressed="false">Lab sorumlusu</button></div></div>
+          <div class="acts">
+            <button type="button" class="ibtn primary" id="aSave">Öneri olarak kaydet</button>
+            <button type="button" class="ibtn" id="aReview">İncele ve kabul et</button>
+            <button type="button" class="ibtn" id="aApprove">Onayla</button>
+            <button type="button" class="ibtn danger" id="aReject">Reddet</button>
+          </div>
+          <p class="note" id="actNote"></p>
+          <ul class="feed" id="audit" style="margin-top:10px"></ul>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card" aria-label="Kayıtlı sonuçlar">
+    <div class="ch"><h2>Kayıtlı sonuçlar <small>BU TARAYICIDA</small></h2><span class="aside">Satıra dokunun, görüntü ve imzalar açılır</span></div>
+    <div class="cb tscroll"><table class="tbl" id="list"></table></div>
+  </section>
+
+  <section class="card" aria-label="Yöntem ve sınırlar">
+    <div class="ch"><h2>Yöntem ve sınırlar</h2><span class="aside">Araştırma raporundan</span></div>
+    <div class="cb notes">
+      <div><h3>Şekil tahmindir</h3><p>Optik mikroskopta β ve α'nın gri tonu neredeyse aynıdır; sınıf şekilden tahmin edilir. Bu yöntemin hatası yaklaşık <b>±15 puan</b> ve %80–90 bölgesinde α'yı fazla gösterir. SEM-EDS ile hata ±5 puana iner.</p></div>
+      <div><h3>Kalibrasyon şart</h3><p>Her alaşım için üç referans numune: döküm hali, 540 °C/20 dk ve 590 °C/32 sa (%100 α). En-boy eşiği bunlarla ayarlanır; dış SEM-EDS denetimi aylık sapmayı ölçer.</p></div>
+      <div><h3>Merkez en kötü konum</h3><p>Dilim test logunun ortasından; merkez ve ½ yarıçap ayrı ölçülür. Konum başına 10–20 alan ve en az 300 parçacık önerilir. 6082'de dönüşüm hızlı biter; orada Mg₂Si ve soğuma hızı öne çıkar.</p></div>
+    </div>
+  </section>
+
+  <footer class="foot"><span>Sonuçlar şimdilik yalnızca bu tarayıcıda saklanır (laboratuvar sunucusu kurulana kadar). Sentetik örnekler gerçek mikroskop görüntüsü değildir.</span><span>created by <b>GOTONOM</b></span></footer>
+</div>
+
+<script>
+/* Plant model shared by every panel. Each unit's state is a pure function of plant time T
+   (minutes since today's 00:00 wall clock), so the control centre and the detail pages always agree.
+   Numbers marked VARSAYIM in the README are assumptions until the plant confirms them. */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const mod = (a, n) => ((a % n) + n) % n;
+const smooth = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
+const NF = [0, 1, 2, 3].map(d => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+const fmt = (x, d = 0) => (x == null || isNaN(x)) ? '—' : NF[d].format(x);
+const pad = (x, n = 2) => String(x).padStart(n, '0');
+const hhmm = T => { const m = mod(Math.floor(T), 1440); return pad(Math.floor(m / 60)) + ':' + pad(m % 60); };
+const dur = m => { m = Math.max(0, Math.round(m)); const h = Math.floor(m / 60); return h ? `${h} sa ${pad(m % 60)} dk` : `${m} dk`; };
+// write markup only when it changed, so hover, focus and CSS animations survive the 4 Hz tick
+const setHTML = (e, html) => { if (e._h !== html) { e._h = html; e.innerHTML = html; } };
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+// stable pseudo-random per (cast, salt) so every page draws the same cast the same way
+const rnd = (n, s) => { const x = Math.sin(n * 127.1 + s * 311.7) * 43758.5453; return x - Math.floor(x); };
+// small live wobble for readings: slow plant drift + a little real-time jitter
+const wob = (T, seed) => { const r = Date.now() / 1000; return Math.sin(T * .7 + seed) * .5 + Math.sin(r / 1.7 + seed * 3) * .35 + Math.sin(r / .6 + seed * 7) * .15; };
+
+const PLANT = {
+  CYCLE: 144,            // one cast every 144 min → 10 casts a day
+  PER_DAY: 10,
+  MOULDS: 64, ROWS: 8,   // 7" hot-top table, 8 × 8
+  DIA: 178, LEN: 7000,
+  CROP_BUTT: 300,        // start end (on the starting head): start-up structure is cut off
+  CROP_HEAD: 200,        // last end cast
+  T_PER_M: Math.PI * 0.089 * 0.089 * 2.70,   // t per metre of Ø178 billet
+  E_CYCLE: 288, H_CYCLE: 720, H_COUNT: 5,
+  // casting table, minutes into the cast cycle
+  PREP_END: 25, CAST_START: 40, UNLOAD_END: 138, FILL_END: 18,
+  POST_WATER: 8,         // water stays on after the metal stops: 6 min full, 2 min taper
+  TILT_MIN: 6,           // table tilts away before the crane lifts the logs
+  // after homogenising: forced cooling, then an ambient buffer until the logs are cool enough for UT
+  COOL_MIN: 60, BUFFER_MIN: 240, SAW_MIN: 100,
+  // metal accounting per cast (t)
+  HEEL_E: 4, HEEL_B: 3, LAUNDER: .45, B1_SKIM: .12,
+  // burners at full fire (Nm³/h): regenerative melters, B1, homogenisers
+  GAS_E: 750, GAS_B: 160, GAS_H: 260,
+  HEEL_DRAIN: .5,        // heel left after draining into sows before an alloy change
+  // casting-water interlock: alarm and trip as a share of setpoint, absolute floor per mould
+  W_ALARM: .90, W_TRIP: .80, W_MIN: 35,
+  H2_START: .30,         // B1 furnace H₂ (Alspek) above this blocks the start
+  MG_FADE: .01,          // Mg lost in B1 fluxing and holding; the melter aims this much higher
+  SLOTS: ['6063', '6063', '6060', '6063', '6082', '6063', '6063', '6060', '6063', '6063'],
+  ALLOYS: {
+    '6063': { v: 123, color: '--a6063', temp: 695, soak: [575, 585, 580], airMax: 600, spec: { Si: [.20, .60, .43], Fe: [0, .35, .20], Cu: [0, .10, .02], Mn: [0, .10, .03], Mg: [.45, .90, .50], Cr: [0, .10, .01], Zn: [0, .10, .02], Ti: [0, .10, .02] } },
+    '6060': { v: 128, color: '--a6060', temp: 692, soak: [575, 585, 580], airMax: 600, spec: { Si: [.30, .60, .42], Fe: [.10, .30, .19], Cu: [0, .10, .02], Mn: [0, .10, .03], Mg: [.35, .60, .46], Cr: [0, .05, .01], Zn: [0, .15, .02], Ti: [0, .10, .02] } },
+    // 6082 starts melting near 580 °C: soak lower and never let the air run hot
+    '6082': { v: 105, color: '--a6082', temp: 700, soak: [550, 565, 560], airMax: 575, spec: { Si: [.70, 1.30, 1.00], Fe: [0, .50, .24], Cu: [0, .10, .04], Mn: [.40, 1.00, .55], Mg: [.60, 1.20, .78], Cr: [0, .25, .04], Zn: [0, .20, .02], Ti: [0, .10, .02] } },
+  },
+};
+PLANT.LOG_T = PLANT.T_PER_M * PLANT.LEN / 1000;
+PLANT.NET_M = (PLANT.LEN - PLANT.CROP_BUTT - PLANT.CROP_HEAD) / 1000;
+PLANT.COOL_AT = PLANT.UNLOAD_END + 640;             // homogeniser unloads 640 min after loading
+PLANT.BUF_AT = PLANT.COOL_AT + PLANT.COOL_MIN;
+PLANT.SAW_AT = PLANT.BUF_AT + PLANT.BUFFER_MIN;
+const alloyColor = a => `var(${PLANT.ALLOYS[a].color})`;
+const mouldName = i => 'K-' + pad(i + 1);
+
+/* ---------- casting recipe: speed by cast length, integrated once per alloy ---------- */
+function vTarget(L, vs) {
+  if (L < 20) return 50;
+  if (L < 250) return 50 + (vs - 50) * (L - 20) / 230;
+  if (L < 6850) return vs;
+  return vs - (vs - 80) * clamp((L - 6850) / 150, 0, 1);
+}
+function wTarget(v, vs) { return 45 + 65 * clamp((v - 50) / (vs - 50), 0, 1); }  // l/min per mould
+const PROFILES = {};
+function profile(alloy) {
+  if (PROFILES[alloy]) return PROFILES[alloy];
+  const vs = PLANT.ALLOYS[alloy].v, Ls = [0], dt = 1 / 60;   // 1 s steps
+  const FILL = .5;                                              // metal fills, platen waits 30 s
+  let L = 0, t = 0, tRamp = 0;
+  for (let i = 0; i < 30; i++) Ls.push(0);
+  t = FILL;
+  while (L < PLANT.LEN) {
+    L = Math.min(PLANT.LEN, L + vTarget(L, vs) * dt); t += dt; Ls.push(L);
+    if (!tRamp && L >= 250) tRamp = t;
+  }
+  return PROFILES[alloy] = { vs, Ls, FILL, tRamp, tEnd: t, tTaper: t + PLANT.POST_WATER };
+}
+function lengthAt(p, tc) { if (tc <= 0) return 0; const i = tc * 60; if (i >= p.Ls.length - 1) return PLANT.LEN; const a = Math.floor(i); return lerp(p.Ls[a], p.Ls[a + 1], i - a); }
+
+/* ---------- alloy correction: what to add to bring a sample back to target ---------- */
+// f = element fraction in the additive, y = recovery into the melt (rest oxidises into the dross)
+const ADDITIVES = {
+  Si: { name: 'Silisyum metal (topak, %98,5)', f: .985, y: .92, how: 'karıştırarak 15–20 dk çözündürülür' },
+  Mg: { name: 'Saf magnezyum külçe (%99,8)', f: .998, y: .90, how: 'en son, çan ile banyo altına daldırılır' },
+  Mn: { name: 'Mn tablet (%75 Mn)', f: .75, y: .95, how: 'karıştırarak 20 dk' },
+  Cu: { name: 'AlCu50 ön alaşım', f: .50, y: .98, how: 'karıştırarak 10 dk' },
+  Fe: { name: 'Fe tablet (%75 Fe)', f: .75, y: .95, how: 'karıştırarak 20 dk', minOnly: true },   // Fe follows the scrap mix; added only below spec min
+};
+const ADD_ORDER = ['Si', 'Fe', 'Mn', 'Cu', 'Mg'];        // Mg last: it burns off if added early
+const chemTol = (lo, hi) => Math.max(.015, (hi - lo) * .05);   // internal window around target
+const addable = el => !!ADDITIVES[el] && !ADDITIVES[el].minOnly;
+function solveLinear(A, b) {                             // Gaussian elimination, small n
+  const n = b.length, M = A.map((r, i) => [...r, b[i]]);
+  for (let c = 0; c < n; c++) {
+    let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+    [M[c], M[p]] = [M[p], M[c]];
+    for (let r = 0; r < n; r++) if (r !== c) { const k = M[r][c] / M[c][c]; for (let j = c; j <= n; j++) M[r][j] -= k * M[c][j]; }
+  }
+  return M.map((r, i) => r[n] / r[i]);
+}
+// chem in wt %, M melt mass in kg, aim = optional per-element furnace aim (defaults to the spec target).
+// Elements below their window are raised to the aim; additions dilute each other, so the amounts are
+// solved together. Nothing can take an element out: above the spec maximum the only fix is diluting
+// with primary metal, after which the alloying elements are re-solved.
+function correction(alloy, chem, M, aim = {}, nested) {
+  const spec = PLANT.ALLOYS[alloy].spec, S = [], high = [], over = [], tgt = {};
+  for (const [el, [lo, hi, tg]] of Object.entries(spec)) {
+    const c = chem[el], tol = chemTol(lo, hi), t = tgt[el] = aim[el] ?? tg;
+    if (c == null || isNaN(c)) continue;
+    if (c > hi) high.push({ el, c, hi, goal: lo > 0 ? t + tol : hi - tol });
+    else if (lo > 0 && ADDITIVES[el] && (ADDITIVES[el].minOnly ? c < lo : c < t - tol)) S.push(el);
+    else if (lo > 0 && addable(el) && c > t + tol) over.push(el);
+  }
+  S.sort((a, b) => ADD_ORDER.indexOf(a) - ADD_ORDER.indexOf(b));
+  const A = S.map((ei, i) => S.map((ej, j) => (i === j ? ADDITIVES[ei].y * ADDITIVES[ei].f * 100 : 0) - tgt[ei]));
+  const x = S.length ? solveLinear(A, S.map(e => M * (tgt[e] - chem[e]))) : [];
+  const adds = S.map((el, i) => ({ el, kg: x[i], from: chem[el], to: tgt[el], ...ADDITIVES[el] }));
+  const total = adds.reduce((s, a) => s + a.kg, 0), M2 = M + total, final = {};
+  for (const el in spec) { const a = adds.find(q => q.el === el); final[el] = (M * chem[el] + (a ? a.kg * a.y * a.f * 100 : 0)) / M2; }
+  // dilution: the worst offender sets the primary needed, then the rest is corrected on the diluted melt
+  let dilute = null;
+  if (high.length && !nested) {
+    const D = Math.max(...high.map(h => M * (h.c / h.goal - 1)));
+    const dil = {}; for (const el in chem) dil[el] = chem[el] * M / (M + D);
+    dilute = { primer: D, after: correction(alloy, dil, M + D, aim, true) };
+  }
+  return { adds, total, final, high, over, M, aim: tgt, dilute };
+}
+// does this melt fit an alloy's spec, counting elements that could still be raised by additions?
+function fitsAlloy(alloy, chem) {
+  return Object.entries(PLANT.ALLOYS[alloy].spec).every(([el, [lo, hi]]) => chem[el] <= hi && (chem[el] >= lo || addable(el)));
+}
+
+/* ---------- wall clock: minutes since today's 00:00, safe across midnight and DST ---------- */
+const DAY0 = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); })();
+const dayIndex = ms => { const d = new Date(ms); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); };
+function wallT(ms = Date.now()) {
+  const d = new Date(ms);
+  return (dayIndex(ms) - dayIndex(DAY0)) * 1440 + d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60 + d.getMilliseconds() / 6e4;
+}
+function plantDate(T) { const d = new Date(DAY0); d.setMinutes(Math.floor(T)); return d; }
+
+/* ---------- burner profiles (shared by the live units and the gas accounting) ---------- */
+const MELT_DEFS = [['ŞARJ', 0, 30], ['ERGİTME', 30, 190], ['ALAŞIM', 190, 222], ['NUMUNE', 222, 250], ['HAZIR', 250, 270], ['TRANSFER', 270, 288]];
+const meltBurn = L => L < 30 ? 20 : L < 150 ? 100 : L < 190 ? 70 : L < 222 ? 35 : L < 250 ? 25 : L < 270 ? 20 : 10;
+const HOMO_DEFS = [['YÜKLEME', 0, 20], ['ISITMA', 20, 260], ['BEKLETME', 260, 620], ['BOŞALTMA', 620, 640], ['BOŞ', 640, 720]];
+const homoBurn = L => L < 20 ? 0 : L < 260 ? 100 - 65 * smooth((L - 20) / 240) : L < 620 ? 10 : L < 640 ? 0 : 6;
+const holdBurn = (c, castEnd) => c < 18 ? 25 : c < 40 ? 45 : c < castEnd ? 30 : 15;
+// Nm³ of gas one cast uses in each unit (each cast gets one melter cycle, one B1 cycle, one homogeniser cycle)
+const GAS = (() => {
+  let e = 0, h = 0, b = 0;
+  for (let L = 0; L < 288; L += .5) e += meltBurn(L) / 100 * PLANT.GAS_E / 120;
+  for (let L = 0; L < 720; L += .5) h += homoBurn(L) / 100 * PLANT.GAS_H / 120;
+  for (let c = 0; c < 144; c += .5) b += holdBurn(c, 100) / 100 * PLANT.GAS_B / 120;
+  return { e, h, b, total: e + h + b };
+})();
+
+/* ---------- per-cast facts (memoised) ---------- */
+const CASTS = new Map();
+const alloyOf = n => PLANT.SLOTS[mod(n, PLANT.PER_DAY)];
+// alloy change: drain a furnace's heel into sows when the old metal would push an element of the new
+// alloy more than half its window (e.g. 6082 → 6063 carries Si, Mg and Mn over)
+function needsDrain(prev, next, heelShare) {
+  if (prev === next) return false;
+  const a = PLANT.ALLOYS[prev].spec, b = PLANT.ALLOYS[next].spec;
+  return Object.keys(b).some(el => heelShare * (a[el][2] - b[el][2]) > chemTol(b[el][0], b[el][1]) / 2);
+}
+function castInfo(n) {
+  if (CASTS.has(n)) return CASTS.get(n);
+  const slot = mod(n, PLANT.PER_DAY), date = plantDate(n * PLANT.CYCLE);
+  const alloy = alloyOf(n), a = PLANT.ALLOYS[alloy], spec = a.spec;
+  const closed = [];
+  if (rnd(n, 1) < .45) closed.push(Math.floor(rnd(n, 2) * PLANT.MOULDS));
+  if (rnd(n, 3) < .15) { const j = Math.floor(rnd(n, 4) * PLANT.MOULDS); if (!closed.includes(j)) closed.push(j); }
+  const logs = PLANT.MOULDS - closed.length;
+  const utRej = rnd(n, 5) < .18 ? 1 : 0;
+  const dross = 15 + rnd(n, 6) * 8;                         // kg per tonne charged
+  const gross = logs * PLANT.LOG_T * (1 + (rnd(n, 7) - .5) * .004);
+  const net = (logs - utRej) * PLANT.T_PER_M * PLANT.NET_M;
+  // previous metal left in each furnace: the melter last made cast n-2, B1 cast n-1
+  const prevE = alloyOf(n - 2), prevB = alloyOf(n - 1);
+  const drainE = needsDrain(prevE, alloy, PLANT.HEEL_E / (PLANT.HEEL_E + 32)), drainB = needsDrain(prevB, alloy, PLANT.HEEL_B / (PLANT.HEEL_B + 32));
+  const heelEt = drainE ? PLANT.HEEL_DRAIN : PLANT.HEEL_E, heelBt = drainB ? PLANT.HEEL_DRAIN : PLANT.HEEL_B;
+  const heelE = PLANT.ALLOYS[prevE].spec, heelB = PLANT.ALLOYS[prevB].spec;
+  // mass balance: B1 ends every cast on its normal heel, the melter every transfer on its normal heel
+  const transfer = gross + PLANT.LAUNDER + PLANT.B1_SKIM + (PLANT.HEEL_B - heelBt);
+  const drossW = dross * transfer / 1000;
+  // chemistry: charge scatter (scrap mix varies, more often low) mixed with the melter heel = first sample.
+  // The melter aims so that, after mixing with B1's heel and the Mg fade, B1 lands on target.
+  const chem1 = {}, aim = {};
+  for (const [el, [lo, hi, tg]] of Object.entries(spec)) {
+    const r = rnd(n, 20 + el.charCodeAt(0) + el.charCodeAt(1));
+    const chg = lo > 0 && addable(el) ? tg + (r - .62) * (hi - lo) * .22 : tg + (r - .5) * Math.max(.01, (hi - lo) * .06);
+    chem1[el] = +((heelEt * heelE[el][2] + 32 * chg) / (heelEt + 32)).toFixed(3);
+    if (lo > 0 && addable(el)) aim[el] = +(((heelBt + transfer) * (tg + (el === 'Mg' ? PLANT.MG_FADE : 0)) - heelBt * heelB[el][2]) / transfer).toFixed(3);
+  }
+  const recipe = correction(alloy, chem1, (PLANT.HEEL_E + transfer + drossW) * 1000, aim), corr = recipe.adds.length > 0;
+  const chem = {}, b1chem = {};
+  for (const el in chem1) {
+    chem[el] = +(recipe.final[el] + (corr && recipe.adds.some(x => x.el === el) ? (rnd(n, 40 + el.charCodeAt(0)) - .5) * .008 : 0)).toFixed(3);
+    b1chem[el] = +((heelBt * heelB[el][2] + transfer * chem[el]) / (heelBt + transfer) - (el === 'Mg' ? PLANT.MG_FADE : 0) + (rnd(n, 60 + el.charCodeAt(0)) - .5) * .004).toFixed(3);
+  }
+  const primer = 34 + rnd(n, 10) * 16, ic = 20 + rnd(n, 11) * 8;
+  const info = {
+    n, slot, id: `D-${pad(date.getDate())}${pad(date.getMonth() + 1)}-${pad(slot + 1)}`, date, alloy, prof: profile(alloy),
+    closed, logs, utRej, dross, gross, net, transfer, drossW, charge: transfer + drossW - recipe.total / 1000 + (PLANT.HEEL_E - heelEt),
+    drainE, drainB, heelEt, heelBt, sows: (PLANT.HEEL_E - heelEt) + (PLANT.HEEL_B - heelBt),
+    castYield: net / gross * 100, meltLoss: (drossW + PLANT.B1_SKIM) / (transfer + drossW) * 100,
+    h2In: .22 + rnd(n, 12) * .08, h2Out: .10 + rnd(n, 13) * .04, grain: 105 + rnd(n, 14) * 35,
+    limca: 4 + rnd(n, 19) * 6,                                // inclusions after the filter, k/kg N20
+    corr, chem, chem1, aim, recipe, b1chem, heelAlloyB: prevB, heelAlloyE: prevE,
+    mix: { primer, ic, dis: 100 - primer - ic },
+    start: n * PLANT.CYCLE + PLANT.CAST_START,
+  };
+  info.gas = GAS.total / gross;                               // Nm³ per tonne cast
+  info.end = info.start + info.prof.tTaper;
+  CASTS.set(n, info);
+  return info;
+}
+
+/* ---------- phase helper ---------- */
+function phaseOf(list, x) { for (let i = 0; i < list.length; i++) if (x < list[i][1]) return i; return list.length - 1; }
+function mkPhases(defs, T0) { return defs.map(([key, a, b]) => ({ key, start: T0 + a, end: T0 + b })); }
+
+/* ---------- casting table + launder ---------- */
+const TABLE_PHASES = ['HAZIRLIK', 'HAZIR', 'BAŞLANGIÇ', 'DÖKÜM', 'BİTİŞ', 'BOŞALTMA'];
+function table(T) {
+  const C = PLANT.CYCLE, n = Math.floor((T - PLANT.UNLOAD_END) / C) + 1, c = T - n * C;
+  const cast = castInfo(n), p = cast.prof, a = PLANT.ALLOYS[cast.alloy], cs = PLANT.CAST_START;
+  const bounds = [['HAZIRLIK', PLANT.UNLOAD_END - C, PLANT.PREP_END], ['HAZIR', PLANT.PREP_END, cs], ['BAŞLANGIÇ', cs, cs + p.tRamp],
+    ['DÖKÜM', cs + p.tRamp, cs + p.tEnd], ['BİTİŞ', cs + p.tEnd, cs + p.tTaper], ['BOŞALTMA', cs + p.tTaper, PLANT.UNLOAD_END]];
+  const phases = mkPhases(bounds, n * C), pi = phaseOf(bounds.map(b => [b[1], b[2]]), c);
+  const tc = c - cs, metal = pi === 2 || pi === 3;
+  const L = pi < 2 ? 0 : lengthAt(p, tc);
+  const vT = metal && tc > p.FILL ? vTarget(L, p.vs) : 0;
+  const v = vT ? vT * (1 + wob(T, 1) * .012) : 0;
+  let wT = 0;
+  if (metal) wT = tc < p.FILL ? 45 : wTarget(vT, p.vs);
+  else if (pi === 4) wT = wTarget(80, p.vs) * clamp((PLANT.POST_WATER - (tc - p.tEnd)) / 2, 0, 1);   // full 6 min, taper 2
+  const w = wT ? wT * (1 + wob(T, 2) * .015) : 0;
+  const logs = cast.logs;
+  const unloadT = c - (cs + p.tTaper), unloadLen = PLANT.UNLOAD_END - cs - p.tTaper;
+  const tilt = pi === 5 ? smooth(unloadT / PLANT.TILT_MIN) : 0;
+  const unload = pi === 5 ? clamp((unloadT - PLANT.TILT_MIN) / (unloadLen - PLANT.TILT_MIN - 1), 0, 1) : 0;   // crane, done 1 min early
+  return {
+    n, cast, c, phase: TABLE_PHASES[pi], pi, phases, L, v, vT, w, wT, logs, metal, tilt, unload,
+    progress: L / PLANT.LEN,
+    tons: L / 1000 * PLANT.T_PER_M * logs,
+    water: w * logs * 60 / 1000,                              // m³/h
+    waterIn: 24 + wob(T, 3) * .6,
+    waterOut: w ? 24 + 14 * (metal ? v / p.vs : clamp(1 - (tc - p.tEnd) / PLANT.POST_WATER, 0, 1) * .6) + wob(T, 4) * .5 : null,
+    pitTemp: 30 + (metal ? 4 * (L / PLANT.LEN) : 0) + wob(T, 17) * .4,
+    launder: metal ? a.temp + wob(T, 5) * 2.2 : null,
+    level: metal ? 75 + wob(T, 6) * 1.6 : 0,                  // mm metal head in the hot-top
+    h2Out: metal ? cast.h2Out + wob(T, 7) * .004 : null,
+    rotor: metal ? 380 + wob(T, 9) * 6 : (pi === 1 ? 120 : 0), argon: metal ? 42 + wob(T, 10) * 1.5 : 0,
+    rod: metal ? .8 + wob(T, 11) * .03 : 0,                   // kg/t AlTi5B1
+    filterDp: metal ? 14 + 10 * clamp(tc / p.tEnd, 0, 1) + wob(T, 12) * .8 : 0,   // mm metal head across the CFF
+    air: metal ? 1.6 + wob(T, 13) * .05 : 0,                  // Nl/min per mould
+    oil: metal ? .5 + wob(T, 14) * .02 : 0,                   // ml/min per mould
+    pit: 1.15 + wob(T, 15) * .01,                             // m standing water
+    tank: 96 + wob(T, 18) * .5,                               // emergency gravity tank, %
+    ph: 7.6 + wob(T, 19) * .05, cond: 410 + wob(T, 20) * 8,   // casting-water quality
+    hyd: 18 + (pi === 5 && unload > 0 ? 6 : 0) + wob(T, 16) * .3,
+  };
+}
+
+/* ---------- melting furnaces E1, E2 ---------- */
+function melter(k, T) {
+  const L = mod(T + (k === 0 ? 270 : 126), PLANT.E_CYCLE), n = Math.round((T - L + 270) / PLANT.CYCLE), cast = castInfo(n);
+  const pi = phaseOf(MELT_DEFS.map(d => [d[1], d[2]]), L), phases = mkPhases(MELT_DEFS, T - L);
+  const heel = cast.heelEt, charge = cast.charge, s = clamp((L - 30) / 160, 0, 1), drain = cast.drainE && L < 5;
+  // OES result comes 6 min after each sample; additions go in right after the first result
+  const sample1 = phases[3].start + 2, corrAt = sample1 + 7, sample2 = corrAt + 14;
+  const full = heel + charge, skim = L >= 216 ? cast.drossW : 0, added = T >= corrAt ? cast.recipe.total / 1000 : 0;
+  let temp, mass, liq;
+  if (pi === 0) {   // a drained furnace first taps its old heel into sows (5 min), then charges
+    const c0 = cast.drainE ? 5 : 0;
+    temp = lerp(718, 682, L / 30); mass = drain ? lerp(PLANT.HEEL_E, heel, L / 5) : heel + charge * smooth((L - c0) / (30 - c0)); liq = (drain ? mass : heel) / mass;
+  }
+  else if (pi === 1) { temp = 672 + 83 * Math.pow(s, 2.2); mass = full; liq = (heel + charge * smooth(s * 1.08)) / mass; }
+  else if (pi === 2) { temp = lerp(755, 748, (L - 190) / 32); mass = full - skim; liq = 1; }
+  else if (pi === 3) { temp = lerp(748, 742, (L - 222) / 28); mass = full - skim + added; liq = 1; }
+  else if (pi === 4) { temp = lerp(742, 738, (L - 250) / 20); mass = full - skim + added; liq = 1; }
+  else { temp = lerp(738, 732, (L - 270) / 18); mass = full - skim + added - cast.transfer * (L - 270) / 18; liq = 1; }
+  temp += wob(T, 30 + k) * 1.4;
+  const burn = meltBurn(L);
+  const chemOk = cast.corr ? T >= sample2 + 6 : T >= sample1 + 6;
+  return {
+    k, name: 'E' + (k + 1), L, n, cast, phase: MELT_DEFS[pi][0], pi, phases, temp, mass, liq, burn,
+    gas: burn / 100 * PLANT.GAS_E * (1 + wob(T, 32 + k) * .02),
+    roof: pi === 1 ? 1060 + 80 * (burn / 100) + wob(T, 34 + k) * 8 : 880 + burn * 2 + wob(T, 34 + k) * 6,
+    stir: pi === 2, door: pi === 0 && !drain, drain, skimmed: L >= 216, sample1, corrAt, sample2, chemOk,
+    pressure: pi === 0 ? 0 : 8 + wob(T, 36 + k) * 1.5,       // Pa
+  };
+}
+
+/* ---------- holding / casting furnace B1 ---------- */
+// ARITMA: argon lance + flux 18–26, skim 26, release sample 27 (result 33), settle until the cast at 40
+const HOLD_DEFS = [['DOLUM', 0, 18], ['ARITMA', 18, 40], ['DÖKÜM', 40, null], ['BEKLEME', null, 144]];
+const B1_SAMPLE = 27, B1_RESULT = 33;
+function holder(T) {
+  const n = Math.floor(T / PLANT.CYCLE), c = T - n * PLANT.CYCLE, cast = castInfo(n), p = cast.prof;
+  const castEnd = PLANT.CAST_START + p.tEnd;
+  const defs = HOLD_DEFS.map(d => [d[0], d[1] ?? castEnd, d[2] ?? castEnd]);
+  const pi = phaseOf(defs.map(d => [d[1], d[2]]), c), phases = mkPhases(defs, n * PLANT.CYCLE);
+  const frac = pi === 2 ? lengthAt(p, c - PLANT.CAST_START) / PLANT.LEN : (pi === 3 ? 1 : 0);
+  const out = cast.gross + PLANT.LAUNDER, poured = frac * cast.gross;
+  const heel = cast.heelBt, full = heel + cast.transfer, skim = c >= 26 ? PLANT.B1_SKIM : 0;
+  // before an alloy change B1 taps its heel into sows at the end of the wait (8 min from c = 130)
+  const next = castInfo(n + 1), drain = pi === 3 && next.drainB && c >= 130;
+  let mass = pi === 0 ? heel + cast.transfer * smooth(c / 18) : full - skim - frac * out;
+  if (drain) mass = lerp(PLANT.HEEL_B, PLANT.HEEL_DRAIN, clamp((c - 130) / 8, 0, 1));
+  const temp = (pi === 0 ? lerp(722, 730, c / 18) : pi === 1 ? lerp(730, 736, (c - 18) / 22) : pi === 2 ? lerp(736, 731, (c - 40) / p.tEnd) : 722) + wob(T, 40) * 1.2;
+  return {
+    name: 'B1', n, cast, c, phase: defs[pi][0], pi, phases, mass, temp, poured,
+    tilt: pi === 2 ? 2 + 22 * frac : 0, burn: holdBurn(c, castEnd), lance: c >= 18 && c < 26,
+    h2: cast.h2In + wob(T, 41) * .004,                       // Alspek in the furnace
+    sampleAt: phases[0].start + B1_SAMPLE, chemOk: c >= B1_RESULT,
+    alloyChange: cast.heelAlloyB !== cast.alloy, drain, nextAlloy: next.alloy,
+  };
+}
+
+/* ---------- homogenising furnaces H1–H5, cooling chamber, buffer, saw ---------- */
+function homoTemp(L, alloy) {   // [air, metal] °C at local time L, per alloy recipe
+  const { soak: [, , st], airMax } = PLANT.ALLOYS[alloy];
+  if (L < 20) return [lerp(520, 470, L / 20), 60];
+  if (L < 260) { const x = L - 20; return [airMax - (airMax - 470) * Math.exp(-x / 22) - (airMax - st - 5) * smooth((x - 120) / 120), st - (st - 60) * Math.exp(-x / 48)]; }
+  if (L < 620) return [st + 5, st];
+  if (L < 640) return [lerp(st + 4, 525, (L - 620) / 20), st - 1];
+  return [520, null];
+}
+function soakFrom(alloy) { const [lo, , st] = PLANT.ALLOYS[alloy].soak; return 20 + 48 * Math.log((st - 60) / (st - lo)); }   // metal enters the soak window
+function homog(k, T) {
+  const L = mod(T - PLANT.UNLOAD_END - k * PLANT.CYCLE, PLANT.H_CYCLE), n = Math.round((T - L - PLANT.UNLOAD_END) / PLANT.CYCLE);
+  const pi = phaseOf(HOMO_DEFS.map(d => [d[1], d[2]]), L), phases = mkPhases(HOMO_DEFS, T - L);
+  const cast = pi === 4 ? null : castInfo(n), alloy = cast ? cast.alloy : alloyOf(n + PLANT.H_COUNT);
+  let [air, metal] = homoTemp(L, alloy);
+  air += wob(T, 50 + k) * 1.5; if (metal != null) metal += wob(T, 55 + k) * (L > 260 ? .8 : 1.2);
+  const sf = soakFrom(alloy), soak = clamp(L - sf, 0, 620 - sf);
+  const burn = homoBurn(L);
+  return { k, name: 'H' + (k + 1), L, n: cast ? n : null, cast, alloy, recipe: PLANT.ALLOYS[alloy].soak, airMax: PLANT.ALLOYS[alloy].airMax, phase: HOMO_DEFS[pi][0], pi, phases, air, metal, soak, soakNeed: 360, burn, gas: burn / 100 * PLANT.GAS_H };
+}
+function homoCurve(L, alloy) { return homoTemp(L, alloy); }
+// β → α estimate from the soak the PLC logged (first-order kinetics, as-cast ≈ 30 % α).
+// Rate constants per hour are VARSAYIM: 6063 reaches ~92 % after 6 h at 580 °C; Mn makes 6082 fast.
+const ALPHA_K = { '6063': .35, '6060': .33, '6082': .8 };
+function alphaEstimate(alloy, soakMin) { return 30 + 70 * (1 - Math.exp(-ALPHA_K[alloy] * Math.max(0, soakMin) / 60)); }
+function cooler(T) {
+  const n = Math.floor((T - PLANT.COOL_AT) / PLANT.CYCLE), t = T - (n * PLANT.CYCLE + PLANT.COOL_AT);
+  const cast = castInfo(n), st = PLANT.ALLOYS[cast.alloy].soak[2];
+  const curve = x => 25 + (st - 25) * Math.exp(-x / 55);
+  const avgRate = (st - 250) / (55 * Math.log((st - 25) / 225)) * 60;
+  if (t >= PLANT.COOL_MIN) return { active: false, n, cast, next: (n + 1) * PLANT.CYCLE + PLANT.COOL_AT, avgRate, curve };
+  return { active: true, n, cast, t, temp: curve(t) + wob(T, 60) * .8, rate: (st - 25) / 55 * Math.exp(-t / 55) * 60, avgRate, curve, fans: 100 };
+}
+// ambient buffer between the cooler and UT: logs drift from ~210 °C to ≤ 60 °C
+const bufferTemp = t => 25 + 186 * Math.exp(-t / 120);
+function buffer(T) {
+  const list = [];
+  for (let n = Math.floor((T - PLANT.SAW_AT) / PLANT.CYCLE); n <= Math.floor((T - PLANT.BUF_AT) / PLANT.CYCLE); n++) {
+    const t = T - (n * PLANT.CYCLE + PLANT.BUF_AT);
+    if (t >= 0 && t < PLANT.BUFFER_MIN) list.push({ cast: castInfo(n), t, temp: bufferTemp(t), out: n * PLANT.CYCLE + PLANT.SAW_AT });
+  }
+  return list;
+}
+function saw(T) {
+  const n = Math.floor((T - PLANT.SAW_AT) / PLANT.CYCLE), t = T - (n * PLANT.CYCLE + PLANT.SAW_AT), cast = castInfo(n);
+  const logTemp = bufferTemp(PLANT.BUFFER_MIN) + wob(T, 61) * .6;
+  if (t >= PLANT.SAW_MIN) return { active: false, n, cast, next: (n + 1) * PLANT.CYCLE + PLANT.SAW_AT, done: cast.logs, logTemp };
+  const done = Math.floor(t / PLANT.SAW_MIN * cast.logs);
+  return { active: true, n, cast, t, done, cur: Math.min(cast.logs, done + 1), rejIdx: cast.utRej ? Math.floor(cast.logs * rnd(n, 18)) : -1, logTemp };
+}
+// which mould a sawn log came from (closed moulds produce none) and its homogenising batch
+function logTrace(cast, idx) {
+  const moulds = [...Array(PLANT.MOULDS).keys()].filter(i => !cast.closed.includes(i));
+  const m = moulds[Math.min(idx, moulds.length - 1)];
+  return { id: `${cast.id}-${mouldName(m)}`, mould: mouldName(m), batch: 'H' + (mod(cast.n, PLANT.H_COUNT) + 1) };
+}
+
+/* ---------- lab results (microscope % α), kept in this browser until a lab backend exists ---------- */
+const LAB_KEY = 'bd-lab-v1', LAB_IMG = 'bd-lab-img-';
+function labAll() { try { return JSON.parse(localStorage.getItem(LAB_KEY) || '[]'); } catch (e) { return []; } }
+function labSaveAll(list) { try { localStorage.setItem(LAB_KEY, JSON.stringify(list)); return true; } catch (e) { return false; } }
+// the result that speaks for a cast: newest approved, else newest still in review (rejected ones never count)
+function labFor(castId, pos) {
+  const r = labAll().filter(x => x.castId === castId && x.status !== 'reddedildi' && (!pos || x.pos === pos)).sort((a, b) => b.created - a.created);
+  return r.find(x => x.status === 'onaylandı') || r[0] || null;
+}
+
+/* ---------- where each cast is on the plant floor ---------- */
+const STAGES = [
+  { key: 'firin', label: 'Ergitme', from: -270, to: PLANT.FILL_END },
+  { key: 'dokum', label: 'Döküm', from: PLANT.FILL_END, to: PLANT.UNLOAD_END },
+  { key: 'homo', label: 'Homojenizasyon', from: PLANT.UNLOAD_END, to: PLANT.COOL_AT },
+  { key: 'sogut', label: 'Soğutma', from: PLANT.COOL_AT, to: PLANT.BUF_AT },
+  { key: 'tampon', label: 'Soğuma tamponu', from: PLANT.BUF_AT, to: PLANT.SAW_AT },
+  { key: 'testere', label: 'UT ve testere', from: PLANT.SAW_AT, to: PLANT.SAW_AT + PLANT.SAW_MIN },
+];
+PLANT.JOURNEY = STAGES[STAGES.length - 1].to - STAGES[0].from;   // minutes from charging to packed
+function castStage(n, T) {
+  const r = T - n * PLANT.CYCLE;
+  for (let i = 0; i < STAGES.length; i++) if (r >= STAGES[i].from && r < STAGES[i].to) return { i, ...STAGES[i], p: (r - STAGES[i].from) / (STAGES[i].to - STAGES[i].from) };
+  return r >= STAGES[STAGES.length - 1].to ? { i: STAGES.length, key: 'stok', label: 'Stok', p: 1 } : null;
+}
+// casts whose casting (incl. the water after it) has finished, newest first
+function doneCasts(T, count = 10) {
+  const out = []; let n = Math.floor((T - PLANT.CAST_START) / PLANT.CYCLE);
+  while (out.length < count) { const c = castInfo(n); if (c.end <= T) out.push(c); n--; }
+  return out;
+}
+const dayStart = T => Math.floor(T / 1440) * 1440;
+// metal poured into the moulds since 00:00 (casts started today, the running one pro rata)
+function pouredToday(T) {
+  let s = 0;
+  for (let n = Math.ceil((dayStart(T) - PLANT.CAST_START) / PLANT.CYCLE); n * PLANT.CYCLE + PLANT.CAST_START <= T; n++) {
+    const c = castInfo(n); s += c.gross * lengthAt(c.prof, T - c.start) / PLANT.LEN;
+  }
+  return s;
+}
+// good billet that left the saw since 00:00, including logs already cut from the running batch
+function shippedToday(T) {
+  const fin = PLANT.SAW_AT + PLANT.SAW_MIN, by = {}; let total = 0, batches = 0;
+  for (let n = Math.floor((dayStart(T) - fin) / PLANT.CYCLE); n * PLANT.CYCLE + PLANT.SAW_AT <= T; n++) {
+    const c = castInfo(n), t0 = n * PLANT.CYCLE + PLANT.SAW_AT, end = t0 + PLANT.SAW_MIN;
+    let logs;
+    if (end <= T) { if (end < dayStart(T)) continue; logs = c.logs - c.utRej; batches++; }
+    else { const s = saw(T); logs = Math.max(0, s.done - (s.rejIdx >= 0 && s.done > s.rejIdx ? 1 : 0)); }
+    const t = logs * PLANT.T_PER_M * PLANT.NET_M; by[c.alloy] = (by[c.alloy] || 0) + t; total += t;
+  }
+  return { total, by, batches };
+}
+function avg(list, f) { return list.reduce((s, x) => s + f(x), 0) / list.length; }
+
+/* ---------- simulated clock (live by default; ×10 / ×60 demo continues across pages) ---------- */
+const SIM = { T0: wallT(), t0: Date.now(), speed: 1 };
+try {
+  const s = JSON.parse(sessionStorage.getItem('bd-sim') || 'null');
+  // saved T is relative to the saving page's day; shift it onto this page's day
+  if (s && s.speed > 1) Object.assign(SIM, s, { T0: s.T0 - (dayIndex(DAY0) - (s.day ?? dayIndex(DAY0))) * 1440 });
+} catch (e) {}
+SIM.T = () => SIM.T0 + (Date.now() - SIM.t0) / 60000 * SIM.speed;
+function simSave() { try { sessionStorage.setItem('bd-sim', JSON.stringify({ T0: SIM.T0, t0: SIM.t0, speed: SIM.speed, day: dayIndex(DAY0) })); } catch (e) {} }
+function simSet(speed, T) {
+  if (speed === 1 && T == null) { SIM.T0 = wallT(); } else SIM.T0 = T ?? SIM.T();
+  SIM.t0 = Date.now(); SIM.speed = speed; simSave(); syncChrome(); tick(true);
+}
+function simJump(T) { simSet(SIM.speed === 1 ? 10 : SIM.speed, T); }
+
+// keep the running step visible when the step row scrolls sideways (phones)
+function focusStep(ol) {
+  const now = ol.querySelector('li.now');
+  if (!now || ol._now === now || ol.scrollWidth <= ol.clientWidth) return;
+  ol._now = now; ol.scrollTo({ left: Math.max(0, now.offsetLeft - ol.offsetLeft - 16), behavior: 'smooth' });
+}
+// heat colour for metal temperatures: cold steel → glowing orange, never through green
+const heat = t => t == null ? 'var(--panel-2)' : `color-mix(in srgb, #f97316 ${Math.round(clamp((t - 40) / 540, 0, 1) * 100)}%, #cbd5e1)`;
+
+/* ---------- page chrome: theme, clock, speed buttons ---------- */
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('bd-theme', t); } catch (e) {}
+  const b = $('#themeBtn'); if (b) b.setAttribute('aria-pressed', t === 'dark');
+  if (window.onTheme) window.onTheme(t);
+}
+try { const t = localStorage.getItem('bd-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+function syncChrome() {
+  $$('[data-speed]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.speed === SIM.speed));
+  const d = $('#demoTag'); if (d) d.textContent = SIM.speed === 1 ? 'CANLI SAAT · DEMO VERİ' : `HIZLI DEMO ×${SIM.speed}`;
+  const l = $('#clockLbl'); if (l) l.textContent = SIM.speed === 1 ? 'TESİS SAATİ' : `DEMO SAATİ ×${SIM.speed}`;
+}
+let lastTick = 0;
+function tick(force) {
+  const T = SIM.T();
+  const c = $('#clock');
+  if (c) { const m = mod(T, 1440); c.textContent = `${pad(Math.floor(m / 60))}:${pad(Math.floor(m % 60))}:${pad(Math.floor((m * 60) % 60))}`; }
+  if (window.onTick) window.onTick(T, force === true);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  $$('[data-speed]').forEach(b => b.addEventListener('click', () => simSet(+b.dataset.speed)));
+  const tb = $('#themeBtn');
+  if (tb) tb.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+  syncChrome();
+  if (window.onInit) window.onInit(SIM.T());
+  tick(true);
+  setInterval(tick, 250);
+});
+
+/* ---------- tiny SVG line chart (string out, sized by viewBox) ---------- */
+// On a phone the chart is drawn on a narrower canvas, so its 11 px labels stay readable once scaled.
+const narrowScreen = () => typeof innerWidth === 'number' && innerWidth <= 720;
+function lineChart(o) {
+  const narrow = narrowScreen(), W = narrow ? Math.min(o.w || 640, 380) : (o.w || 640), H = narrow ? Math.round((o.h || 220) * .85) : (o.h || 220);
+  const m = { l: 40, r: o.y2 ? 36 : 12, t: 14, b: 26, ...(o.m || {}) };
+  const X = x => m.l + (x - o.x[0]) / (o.x[1] - o.x[0]) * (W - m.l - m.r);
+  const Y = (y, ax) => { const r = ax === 2 ? o.y2 : o.y; return H - m.b - (y - r[0]) / (r[1] - r[0]) * (H - m.t - m.b); };
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.label || ''}" style="display:block;width:100%;height:auto">`;
+  for (const z of o.zones || []) s += `<rect x="${X(z.x0)}" y="${m.t}" width="${Math.max(0, X(z.x1) - X(z.x0))}" height="${H - m.t - m.b}" fill="${z.fill || 'var(--panel-2)'}"/>` + (z.label && X(z.x1) - X(z.x0) >= z.label.length * 6.2 ? `<text x="${(X(z.x0) + X(z.x1)) / 2}" y="${m.t + 12}" text-anchor="middle" font-size="11" fill="var(--muted)" font-weight="600">${z.label}</text>` : '');
+  for (const b of o.bands || []) s += `<rect x="${m.l}" y="${Y(b.y1, b.ax)}" width="${W - m.l - m.r}" height="${Y(b.y0, b.ax) - Y(b.y1, b.ax)}" fill="${b.fill}" opacity="${b.op ?? .14}"/>`;
+  for (const t of o.yTicks || []) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line-2)"/><text x="${m.l - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
+  for (const t of o.y2Ticks || []) s += `<text x="${W - m.r + 6}" y="${Y(t, 2) + 4}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t}</text>`;
+  const xt = o.xTicks || [], step = narrow && xt.length > 5 ? 2 : 1;   // thin out x labels on a phone
+  xt.forEach((t, i) => { if (i % step === 0 || i === xt.length - 1) s += `<text x="${X(t.x ?? t)}" y="${H - 8}" text-anchor="${i === 0 ? 'start' : i === xt.length - 1 ? 'end' : 'middle'}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t.l ?? t}</text>`; });
+  s += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="var(--line)"/>`;
+  for (const se of o.series) {
+    if (!se.pts.length) continue;
+    const d = se.pts.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1], se.ax).toFixed(1)).join('');
+    if (se.area) s += `<path d="${d}L${X(se.pts[se.pts.length - 1][0])} ${H - m.b}L${X(se.pts[0][0])} ${H - m.b}Z" fill="${se.color}" opacity=".12"/>`;
+    s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="${se.width || 2}" ${se.dash ? `stroke-dasharray="${se.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  if (o.marker != null) s += `<line x1="${X(o.marker)}" x2="${X(o.marker)}" y1="${m.t}" y2="${H - m.b}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  for (const d of o.dots || []) s += `<circle cx="${X(d[0])}" cy="${Y(d[1], d.ax)}" r="5" fill="${d.color || 'var(--accent)'}" stroke="var(--panel)" stroke-width="2"/>`;
+  return s + '</svg>';
+}
+
+/* ---------- image analysis: find AlFeSi particles and classify them by shape ---------- */
+const MAX_SIDE = 1200;                 // work resolution; calibration scales with it
+const MIN_UM2 = .25;                   // smaller blobs are noise
+// grey image → flat field → dark particles → connected components → shape features
+function analyse(img, opt) {
+  const W = img.width, H = img.height, N = W * H, d = img.data, g = new Float32Array(N);
+  for (let i = 0, j = 0; i < N; i++, j += 4) g[i] = .299 * d[j] + .587 * d[j + 1] + .114 * d[j + 2];
+  // uneven illumination: divide by a wide box blur (integral image)
+  const r = Math.max(20, Math.round(Math.min(W, H) / 12)), W1 = W + 1, I = new Float64Array(W1 * (H + 1));
+  for (let y = 0; y < H; y++) { let row = 0; for (let x = 0; x < W; x++) { row += g[y * W + x]; I[(y + 1) * W1 + x + 1] = I[y * W1 + x + 1] + row; } }
+  const mean = I[H * W1 + W] / N, f = new Float32Array(N);
+  for (let y = 0; y < H; y++) {
+    const y0 = Math.max(0, y - r), y1 = Math.min(H, y + r + 1);
+    for (let x = 0; x < W; x++) {
+      const x0 = Math.max(0, x - r), x1 = Math.min(W, x + r + 1);
+      const bg = (I[y1 * W1 + x1] - I[y0 * W1 + x1] - I[y1 * W1 + x0] + I[y0 * W1 + x0]) / ((y1 - y0) * (x1 - x0));
+      f[y * W + x] = Math.min(255, g[y * W + x] / Math.max(1, bg) * mean);
+    }
+  }
+  // threshold below the matrix: median minus a robust spread (particles are a few % of the field)
+  const hist = new Uint32Array(256); for (let i = 0; i < N; i++) hist[f[i] | 0]++;
+  const pct = q => { let c = 0; for (let v = 0; v < 256; v++) { c += hist[v]; if (c >= q * N) return v; } return 255; };
+  const med = pct(.5), mad = (pct(.75) - pct(.25)) / 1.349;
+  const auto = Math.round(clamp(med - Math.max(28, 6 * mad), 30, 230)), thr = opt.thr ?? auto;
+  // connected components, 8-neighbour, union-find
+  const lab = new Int32Array(N), parent = [0];
+  const find = x => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
+  const union = (a, b) => { a = find(a); b = find(b); if (a !== b) parent[Math.max(a, b)] = Math.min(a, b); };
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x; if (f[i] >= thr) continue;
+    let m = 0;
+    const nb = [x > 0 ? i - 1 : -1, y > 0 && x > 0 ? i - W - 1 : -1, y > 0 ? i - W : -1, y > 0 && x < W - 1 ? i - W + 1 : -1];
+    for (const k of nb) if (k >= 0 && lab[k]) { if (!m) m = lab[k]; else union(m, lab[k]); }
+    if (!m) { m = parent.length; parent.push(m); }
+    lab[i] = m;
+  }
+  const ids = new Int32Array(parent.length); let nc = 0;
+  for (let i = 0; i < N; i++) if (lab[i]) { const root = find(lab[i]); if (!ids[root]) ids[root] = ++nc; lab[i] = ids[root]; }
+  // moments, border contact, boundary pixels
+  const A = new Float64Array(nc + 1), SX = new Float64Array(nc + 1), SY = new Float64Array(nc + 1), SXX = new Float64Array(nc + 1), SYY = new Float64Array(nc + 1), SXY = new Float64Array(nc + 1), BD = new Uint8Array(nc + 1), PER = new Float64Array(nc + 1);
+  const edge = Array.from({ length: nc + 1 }, () => []);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x, c = lab[i]; if (!c) continue;
+    A[c]++; SX[c] += x; SY[c] += y; SXX[c] += x * x; SYY[c] += y * y; SXY[c] += x * y;
+    if (x === 0 || y === 0 || x === W - 1 || y === H - 1) BD[c] = 1;
+    if (x === 0 || y === 0 || x === W - 1 || y === H - 1 || !lab[i - 1] || !lab[i + 1] || !lab[i - W] || !lab[i + W]) { PER[c]++; edge[c].push(x, y); }
+  }
+  const um = opt.cal, minPx = MIN_UM2 / (um * um), maxPx = N * .02, parts = [null];
+  for (let c = 1; c <= nc; c++) {
+    const n = A[c];
+    if (n < minPx) { parts.push({ c, cls: 0 }); continue; }
+    const mx = SX[c] / n, my = SY[c] / n, a = SXX[c] / n - mx * mx + 1 / 12, b = SXY[c] / n - mx * my, e = SYY[c] / n - my * my + 1 / 12;
+    const t = Math.sqrt(((a - e) / 2) ** 2 + b * b), l1 = (a + e) / 2 + t, l2 = Math.max(1 / 12, (a + e) / 2 - t);
+    const major = 4 * Math.sqrt(l1), minor = 4 * Math.sqrt(l2), aspect = major / minor;
+    const solidity = n / hullArea(edge[c]);
+    const p = { c, n, x: mx, y: my, aspect, solidity, len: major * um, area: n * um * um };
+    p.auto = BD[c] || n > maxPx ? 3 : aspect >= opt.rcrit && solidity >= .55 ? 2 : 1;   // 1 α, 2 β, 3 not counted
+    p.cls = opt.fix && opt.fix[c] ? opt.fix[c] : p.auto;
+    parts.push(p);
+  }
+  return { W, H, lab, parts, thr, auto };
+}
+// convex hull area of the pixel squares on a particle's edge (monotone chain on their corners)
+function hullArea(xy) {
+  const P = [];
+  for (let i = 0; i < xy.length; i += 2) { const x = xy[i], y = xy[i + 1]; P.push([x, y], [x + 1, y], [x, y + 1], [x + 1, y + 1]); }
+  P.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]), lo = [], up = [];
+  for (const p of P) { while (lo.length >= 2 && cross(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+  for (let i = P.length - 1; i >= 0; i--) { const p = P[i]; while (up.length >= 2 && cross(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+  const h = lo.slice(0, -1).concat(up.slice(0, -1)); let s = 0;
+  for (let i = 0; i < h.length; i++) { const [x1, y1] = h[i], [x2, y2] = h[(i + 1) % h.length]; s += x1 * y2 - x2 * y1; }
+  return Math.max(1, Math.abs(s) / 2);
+}
+// per-field sums, so several fields of one sample can be pooled
+function sums(parts) {
+  const f = { aA: 0, aB: 0, nA: 0, nB: 0, s2: 0, maxB: 0, fixed: 0, excluded: 0 };
+  for (const p of parts) {
+    if (!p || !p.cls) continue;
+    if (p.cls === 3) { f.excluded++; continue; }
+    if (p.cls === 1) { f.aA += p.area; f.nA++; } else { f.aB += p.area; f.nB++; f.maxB = Math.max(f.maxB, p.len); }
+    f.s2 += p.area * p.area; if (p.cls !== p.auto) f.fixed++;
+  }
+  return f;
+}
+// area-based % α with a statistical error from the particle count (Kish effective n)
+function combine(list) {
+  const t = list.reduce((a, f) => ({ aA: a.aA + f.aA, aB: a.aB + f.aB, nA: a.nA + f.nA, nB: a.nB + f.nB, s2: a.s2 + f.s2, maxB: Math.max(a.maxB, f.maxB), fixed: a.fixed + f.fixed, excluded: a.excluded + f.excluded }), { aA: 0, aB: 0, nA: 0, nB: 0, s2: 0, maxB: 0, fixed: 0, excluded: 0 });
+  const tot = t.aA + t.aB, pA = tot ? t.aA / tot : 0, neff = tot * tot / Math.max(1e-9, t.s2);
+  return { ...t, alpha: pA * 100, alphaCount: t.nA + t.nB ? t.nA / (t.nA + t.nB) * 100 : 0, n: t.nA + t.nB, se: Math.sqrt(pA * (1 - pA) / Math.max(1, neff)) * 100, fields: list.length };
+}
+const MIN_PARTICLES = 300;
+
+/* ---------- synthetic micrograph so the flow can be tried without a microscope ---------- */
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function synth(fAlpha, cal, seed, W = 1200, H = 900) {
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d'), R = mulberry(seed), um = v => v / cal;
+  const grd = x.createRadialGradient(W * .42, H * .38, 40, W * .5, H * .5, W * .78);
+  grd.addColorStop(0, 'rgb(216,212,205)'); grd.addColorStop(1, 'rgb(176,172,166)');
+  x.fillStyle = grd; x.fillRect(0, 0, W, H);
+  for (let i = 0; i < 16; i++) { x.strokeStyle = `rgba(${R() < .5 ? '255,255,255' : '80,80,80'},.07)`; x.lineWidth = 1 + R() * 2; x.beginPath(); const y0 = R() * H; x.moveTo(0, y0); x.lineTo(W, y0 + (R() - .5) * H * .6); x.stroke(); }
+  if ('filter' in x) x.filter = 'blur(0.7px)';
+  // AlFeSi sits on the boundaries of the as-cast cells (~25 µm): place particles near a Voronoi network
+  const seeds = Array.from({ length: Math.round(W * H / (um(25) ** 2)) + 4 }, () => [R() * W, R() * H]);
+  const nearest2 = (px, py) => { let a = 1e12, b = 1e12, ia = 0, ib = 0; seeds.forEach((s, i) => { const d = (s[0] - px) ** 2 + (s[1] - py) ** 2; if (d < a) { b = a; ib = ia; a = d; ia = i; } else if (d < b) { b = d; ib = i; } }); return [Math.sqrt(a), Math.sqrt(b), seeds[ia], seeds[ib]]; };
+  const placed = [], fits = (px, py, r) => px > r + 4 && py > r + 4 && px < W - r - 4 && py < H - r - 4 && placed.every(p => (p.x - px) ** 2 + (p.y - py) ** 2 > (p.r + r + 5) ** 2);
+  const target = .022 * W * H, aT = fAlpha / 100 * target, bT = target - aT; let aA = 0, aB = 0;
+  for (let tries = 0; (aA < aT || aB < bT) && tries < 60000; tries++) {
+    const beta = aB < bT && (aA >= aT || R() < bT / target);
+    const px = R() * W, py = R() * H, [d1, d2, s1, s2] = nearest2(px, py);
+    if (d2 - d1 > um(1.6)) continue;               // only on a cell boundary
+    const along = Math.atan2(s2[1] - s1[1], s2[0] - s1[0]) + Math.PI / 2;
+    if (beta) {                                   // β: thin straight plates along the boundary, seen as needles
+      const L = um(2 + R() * 6.5), w = um(.3 + R() * .25), r = L / 2;
+      if (!fits(px, py, r)) continue;
+      x.save(); x.translate(px, py); x.rotate(along + (R() - .5) * .5); x.fillStyle = 'rgb(54,51,49)';
+      x.beginPath(); x.roundRect ? x.roundRect(-L / 2, -w / 2, L, w, w / 2) : x.rect(-L / 2, -w / 2, L, w); x.fill(); x.restore();
+      placed.push({ x: px, y: py, r }); aB += L * w;
+    } else if (R() < .55) {                       // α: rounded, sometimes elongated
+      const rx = um(.38 + R() * .85), ry = rx * (R() < .12 ? .26 + R() * .14 : .55 + R() * .4), r = rx;
+      if (!fits(px, py, r)) continue;
+      const rot = along + (R() - .5) * 1.2; x.fillStyle = 'rgb(112,106,101)'; x.beginPath();
+      for (let k = 0; k <= 18; k++) { const t = k / 18 * Math.PI * 2, j = 1 + (R() - .5) * .22, ex = Math.cos(t) * rx * j, ey = Math.sin(t) * ry * j; x.lineTo(px + ex * Math.cos(rot) - ey * Math.sin(rot), py + ex * Math.sin(rot) + ey * Math.cos(rot)); }
+      x.fill(); placed.push({ x: px, y: py, r }); aA += Math.PI * rx * ry;
+    } else {                                      // α: branched "Chinese script"
+      const lw = um(.4 + R() * .25), arms = 3 + Math.floor(R() * 3), arm = um(.7 + R() * 1.05), r = arm + lw;
+      if (!fits(px, py, r)) continue;
+      x.strokeStyle = 'rgb(108,102,97)'; x.lineWidth = lw; x.lineCap = 'round'; x.beginPath();
+      for (let k = 0; k < arms; k++) { const t = k / arms * Math.PI * 2 + R() * .6, ex = px + Math.cos(t) * arm, ey = py + Math.sin(t) * arm; x.moveTo(px, py); x.lineTo(ex, ey); if (R() < .5) { const t2 = t + (R() < .5 ? .9 : -.9); x.moveTo((px + ex) / 2, (py + ey) / 2); x.lineTo((px + ex) / 2 + Math.cos(t2) * arm * .5, (py + ey) / 2 + Math.sin(t2) * arm * .5); } }
+      x.stroke(); placed.push({ x: px, y: py, r }); aA += arms * arm * lw * 1.1;
+    }
+  }
+  if ('filter' in x) x.filter = 'none';
+  const im = x.getImageData(0, 0, W, H), d = im.data;
+  for (let i = 0; i < d.length; i += 4) { const nz = (R() - .5) * 14; d[i] += nz; d[i + 1] += nz; d[i + 2] += nz; }
+  x.putImageData(im, 0, 0);
+  return { canvas: cv, truth: aA / (aA + aB) * 100 };
+}
+
+/* ---------- page state ---------- */
+const S = { src: null, cal: .1, fix: {}, res: null, st: null, fields: [], cur: null, overlay: true, synthetic: false, truth: null, saved: null, role: 'tek' };
+const cv = $('#cv'), ctx = cv.getContext('2d');
+let thrManual = false, debounce = 0, nextKeep = false;
+
+function castOptions(T) {   // casts whose homogenising has finished, newest first
+  const out = []; let n = Math.floor((T - PLANT.UNLOAD_END - 640) / PLANT.CYCLE);
+  while (out.length < 12) { out.push(castInfo(n)); n--; }
+  return out;
+}
+const curCast = () => castInfo(+$('#cast').value);
+function workImage(source, cal) {   // draw any image/canvas into a ≤ MAX_SIDE canvas; scale the calibration with it
+  const k = Math.min(1, MAX_SIDE / Math.max(source.width, source.height)), w = Math.round(source.width * k), h = Math.round(source.height * k);
+  const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(source, 0, 0, w, h);
+  return { canvas: c, k, cal: cal / k, img: c.getContext('2d').getImageData(0, 0, w, h) };
+}
+function run() {
+  if (!S.src) return;
+  S.res = analyse(S.src.img, { cal: S.cal, rcrit: +$('#rcrit').value, thr: thrManual ? +$('#thr').value : null, fix: S.fix });
+  if (!thrManual) $('#thr').value = S.res.auto;
+  S.cur = sums(S.res.parts); S.st = combine([...S.fields, S.cur]);
+  draw(); renderResult();
+}
+function draw() {
+  const { W, H, lab, parts } = S.res;
+  cv.width = W; cv.height = H;
+  const base = S.src.img, out = new ImageData(new Uint8ClampedArray(base.data), W, H), o = out.data;
+  if (S.overlay) {
+    const col = { 1: [34, 197, 94], 2: [239, 68, 68], 3: [148, 163, 184] };
+    for (let i = 0, j = 0; i < W * H; i++, j += 4) {
+      const p = parts[lab[i]]; if (!p || !p.cls) continue;
+      const c = col[p.cls], a = p.cls === 3 ? .45 : .6;
+      o[j] = o[j] * (1 - a) + c[0] * a; o[j + 1] = o[j + 1] * (1 - a) + c[1] * a; o[j + 2] = o[j + 2] * (1 - a) + c[2] * a;
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+  if (S.overlay) { ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; for (const p of parts) if (p && p.cls && p.cls !== p.auto) { ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(10, Math.sqrt(p.n) * .9), 0, Math.PI * 2); ctx.stroke(); } }
+  // 10 µm scale bar
+  const px10 = 10 / S.cal, wPct = px10 / W * 100;
+  $('#scale').innerHTML = `<span>10 µm</span><i style="width:${(wPct / 100 * cv.clientWidth).toFixed(0)}px"></i>`;
+  $('#imgInfo').textContent = `${W} × ${H} px · ${fmt(S.cal, 3)} µm/px · ${fmt(W * S.cal, 0)} × ${fmt(H * S.cal, 0)} µm`;
+  $('#empty').hidden = true; $('#synthTag').hidden = !S.synthetic;
+}
+function renderResult() {
+  const st = S.st, acc = +$('#accept').value, c = curCast(), method = clamp(+$('#unc').value || 10, 3, 25);
+  const tot = Math.sqrt(st.se ** 2 + method ** 2);
+  $('#alpha').textContent = st.n ? '%' + fmt(st.alpha, 1) : '—';
+  $('#alphaS').innerHTML = st.n ? `± ${fmt(st.se, 1)} istatistik · ±${method} yöntem` : 'parçacık bulunamadı';
+  $('#resPos').textContent = `${c.id} · ${$('#pos').selectedOptions[0].textContent.toUpperCase()}`;
+  const g = $('#gauge');
+  g.querySelector('.fill').style.width = st.alpha + '%';
+  g.querySelector('.fill').style.background = st.alpha >= acc + tot ? 'var(--ok)' : st.alpha >= acc ? 'var(--warn)' : 'var(--crit)';
+  g.querySelector('.unc').style.left = clamp(st.alpha - tot, 0, 100) + '%'; g.querySelector('.unc').style.width = (clamp(st.alpha + tot, 0, 100) - clamp(st.alpha - tot, 0, 100)) + '%';
+  g.querySelector('.thr').style.left = acc + '%';
+  $('#thrL').textContent = `eşik %${acc}`;
+  const v = $('#verdict');
+  if (!st.n) { v.className = 'verdict mid'; v.innerHTML = 'ÖLÇÜM YOK<small>Eşik veya kalibrasyonu kontrol edin</small>'; }
+  else if (st.alpha - tot >= acc) { v.className = 'verdict ok'; v.innerHTML = `EŞİĞİN ÜSTÜNDE<small>belirsizlik dahil</small>`; }
+  else if (st.alpha >= acc) { v.className = 'verdict mid'; v.innerHTML = `KARAR BÖLGESİNDE<small>SEM-EDS ile doğrulanmalı</small>`; }
+  else { v.className = 'verdict no'; v.innerHTML = `EŞİĞİN ALTINDA<small>bekletme / reçete incelenmeli</small>`; }
+  const est = alphaEstimate(c.alloy, homog(mod(c.n, PLANT.H_COUNT), c.n * PLANT.CYCLE + PLANT.UNLOAD_END + 619).soak);
+  const need = Math.max(0, MIN_PARTICLES - st.n), perField = S.cur && (S.cur.nA + S.cur.nB) || 1;
+  $('#fieldPill').textContent = `Alan ${st.fields} · n ${st.n}`; $('#fieldPill').className = 'pill ' + (need ? 'warn' : 'ok');
+  $('#stats').innerHTML = [
+    ['Alan · parçacık (α / β)', `${st.fields} · ${st.n} (${st.nA} / ${st.nB})`],
+    ['Yeterlilik', need ? `<span style="color:var(--warn)">${need} parçacık daha · ~${Math.ceil(need / perField)} alan</span>` : `<span style="color:var(--ok)">≥ ${MIN_PARTICLES} parçacık</span>`],
+    ['% α sayı tabanlı', '%' + fmt(st.alphaCount, 1)],
+    ['En uzun β iğnesi', st.nB ? fmt(st.maxB, 1) + ' µm' : '—'],
+    ['Sayılmayan (kenar, artefakt)', String(st.excluded)],
+    ['Elle düzeltilen', String(st.fixed)],
+    ['PLC tahmini (bekletmeden)', '%' + fmt(est, 0)],
+    ...(S.synthetic ? [['Sentetik örneğin gerçek değeri', '%' + fmt(S.truth, 1)]] : []),
+    ['Gri eşik', `${S.res.thr}${thrManual ? ' (elle)' : ' (oto)'}`],
+  ].map(([a, b]) => `<span>${a}</span><b>${b}</b>`).join('');
+  $('#rcritV').textContent = fmt(+$('#rcrit').value, 1); $('#thrV').textContent = S.res.thr; $('#thrAuto').textContent = thrManual ? 'elle · otomatiğe dönmek için çift dokunun' : 'otomatik';
+  renderReview();
+}
+
+/* ---------- review workflow: proposal → reviewed → approved (four eyes), every step signed ---------- */
+const STEPS = ['önerildi', 'incelendi', 'onaylandı'];
+const who = () => ($('#who').value || '').trim();
+function sign(rec, action, note) { rec.audit.push({ t: Date.now(), plantT: SIM.T(), who: who() || '(imzasız)', role: S.role === 'sor' ? 'Lab sorumlusu' : 'Teknisyen', action, note: note || '' }); }
+function persist(rec, img) {
+  const all = labAll().filter(x => x.id !== rec.id); all.push(rec);
+  if (img) { try { localStorage.setItem(LAB_IMG + rec.id, img); } catch (e) {
+    // browser storage full: drop the oldest stored images, keep their records
+    for (const old of labAll().sort((a, b) => a.created - b.created)) { localStorage.removeItem(LAB_IMG + old.id); try { localStorage.setItem(LAB_IMG + rec.id, img); break; } catch (e2) {} }
+  } }
+  if (!labSaveAll(all)) $('#actNote').textContent = 'Tarayıcı deposu dolu: kayıt saklanamadı.';
+  S.saved = rec; renderList();
+}
+function snapshot() {
+  const c = curCast(), st = S.st;
+  return { prevFields: S.fields.map(f => ({ ...f })), fields: S.st.fields, castN: c.n, castId: c.id, alloy: c.alloy, batch: 'H' + (mod(c.n, PLANT.H_COUNT) + 1), pos: $('#pos').value, alpha: +st.alpha.toFixed(1), alphaCount: +st.alphaCount.toFixed(1), n: st.n, nA: st.nA, nB: st.nB, se: +st.se.toFixed(1), maxB: +st.maxB.toFixed(1), method: 'optik-şekil', basis: 'alan', rcrit: +$('#rcrit').value, thr: S.res.thr, thrManual, cal: S.cal, fix: { ...S.fix }, synthetic: S.synthetic, truth: S.truth, accept: +$('#accept').value, unc: clamp(+$('#unc').value || 10, 3, 25) };
+}
+function renderReview() {
+  const rec = S.saved, st = rec ? rec.status : null, idx = STEPS.indexOf(st), sor = S.role === 'sor';
+  $$('#status span').forEach((s, i) => s.className = st === 'reddedildi' ? (i === 0 ? 'rej' : '') : i < idx ? 'done' : i === idx ? 'now' : '');
+  $('#status span').textContent = st === 'reddedildi' ? 'REDDEDİLDİ' : 'ÖNERİ';
+  const reviewer = rec && rec.audit.find(a => a.action === 'incelendi');
+  $('#aSave').disabled = !S.st || !S.st.n || (rec && st !== 'önerildi');
+  $('#aSave').textContent = rec && st === 'önerildi' ? 'Düzeltmeleri kaydet' : 'Öneri olarak kaydet';
+  $('#aReview').disabled = !rec || st !== 'önerildi';
+  $('#aApprove').disabled = !rec || st !== 'incelendi' || !sor;
+  $('#aReject').disabled = !rec || !sor || st === 'onaylandı' || st === 'reddedildi';
+  $('#aApprove').title = !sor ? 'Yalnızca laboratuvar sorumlusu onaylar' : '';
+  $('#saveInfo').textContent = rec ? `${rec.castId} · ${rec.pos} · ${new Date(rec.created).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}` : 'kaydedilmedi';
+  $('#actNote').textContent = !rec ? 'Analizi kontrol edin, gerekirse parçacıklara dokunarak düzeltin, sonra öneri olarak kaydedin.' :
+    st === 'önerildi' ? 'Teknisyen görüntüyü ve sınıfları inceleyip kabul eder. Düzeltmeler bu aşamada yapılır.' :
+    st === 'incelendi' ? `İnceleyen: ${reviewer ? reviewer.who : '—'}. Onayı başka bir kişi, laboratuvar sorumlusu verir.` :
+    st === 'onaylandı' ? 'Onaylandı: sonuç homojenizasyon panelinde bu partinin ölçümü olarak görünür. Değiştirilemez.' : 'Reddedildi: numune yeniden hazırlanmalı. Kayıt silinmez.';
+  $('#audit').innerHTML = rec ? rec.audit.slice().reverse().map(a => `<li class="${a.action === 'reddedildi' ? 'crit' : a.action === 'onaylandı' ? 'ok' : 'info'}"><time>${hhmm(a.plantT)}</time><span><b>${a.action}</b> · ${esc(a.who)} (${a.role})${a.note ? ' · ' + esc(a.note) : ''}</span></li>`).join('') : '';
+}
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+function renderList() {
+  const all = labAll().sort((a, b) => b.created - a.created);
+  $('#list').innerHTML = `<thead><tr><th>Döküm</th><th>Parti</th><th>Konum</th><th class="r">% <span class="nc">α</span></th><th class="r hide-sm">Alan · n</th><th class="hide-sm">Yöntem</th><th>Durum</th><th class="hide-sm">Kayıt</th></tr></thead><tbody>` +
+    (all.length ? all.map(r => `<tr data-id="${r.id}" class="${S.saved && S.saved.id === r.id ? 'sel' : ''}"><td class="mono">${r.castId}</td><td class="mono">${r.batch}</td><td>${r.pos}</td><td class="r mono">%${fmt(r.alpha, 1)} <span style="color:var(--muted)">±${fmt(Math.sqrt(r.se ** 2 + (r.unc || 15) ** 2), 0)}</span></td><td class="r mono hide-sm">${r.fields || 1} · ${r.n}</td><td class="hide-sm">${r.method}${r.synthetic ? ' · sentetik' : ''}</td><td><span class="pill ${r.status === 'onaylandı' ? 'ok' : r.status === 'reddedildi' ? 'crit' : 'run'}"><i></i>${r.status}</span></td><td class="mono hide-sm">${new Date(r.created).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}</td></tr>`).join('')
+      : '<tr><td colspan="8" class="empty">Henüz kayıt yok. Bir analizi öneri olarak kaydedin.</td></tr>') + '</tbody>';
+  $$('#list tbody tr[data-id]').forEach(tr => tr.addEventListener('click', () => openRecord(tr.dataset.id)));
+}
+function openRecord(id) {
+  const rec = labAll().find(r => r.id === id); if (!rec) return;
+  const data = localStorage.getItem(LAB_IMG + id);
+  $('#cast').value = rec.castN; $('#pos').value = rec.pos; $('#rcrit').value = rec.rcrit; $('#accept').value = rec.accept; $('#unc').value = rec.unc || 15;
+  thrManual = rec.thrManual; $('#thr').value = rec.thr;
+  S.saved = rec; S.fix = { ...rec.fix }; S.synthetic = rec.synthetic; S.truth = rec.truth; S.fields = (rec.prevFields || []).map(f => ({ ...f }));
+  if (!data) { $('#actNote').textContent = 'Bu kaydın görüntüsü tarayıcı deposundan silinmiş; sayılar ve imzalar duruyor.'; renderReview(); renderList(); return; }
+  const im = new Image(); im.onload = () => { const w = workImage(im, rec.cal); S.src = w; S.cal = w.cal; $('#cal').value = rec.cal; run(); renderList(); }; im.src = data;
+}
+
+/* ---------- inputs ---------- */
+function loadSource(source, cal, synthetic, truth, keepFields) {
+  const w = workImage(source, cal); S.src = w; S.cal = w.cal; S.fix = {}; S.saved = null; S.synthetic = synthetic; S.truth = truth ?? null;
+  if (!keepFields) S.fields = [];
+  run(); renderList();
+}
+function makeSynth(keepFields) {
+  const c = curCast(), pos = $('#pos').value, soak = homog(mod(c.n, PLANT.H_COUNT), c.n * PLANT.CYCLE + PLANT.UNLOAD_END + 619).soak;
+  // the centre lags, the surface leads; each sample scatters a little
+  const f = clamp(alphaEstimate(c.alloy, soak) + { merkez: -4, 'yarıçap': 0, 'yüzey': 2 }[pos] + (rnd(c.n, 77 + pos.length) - .5) * 6, 40, 99.5);
+  const s = synth(f, .1, c.n * 31 + pos.length * 7 + Math.floor(Math.random() * 1e6));
+  $('#cal').value = '0.10'; thrManual = false;
+  loadSource(s.canvas, .1, true, s.truth, keepFields === true);
+}
+window.onInit = T => {
+  const sel = $('#cast'), opts = castOptions(T), q = new URLSearchParams(location.search);
+  sel.innerHTML = opts.map(c => `<option value="${c.n}">${c.id} · ${c.alloy} · H${mod(c.n, PLANT.H_COUNT) + 1}</option>`).join('');
+  if (q.get('n') && !opts.some(c => c.n === +q.get('n'))) { const c = castInfo(+q.get('n')); sel.insertAdjacentHTML('afterbegin', `<option value="${c.n}">${c.id} · ${c.alloy} · H${mod(c.n, PLANT.H_COUNT) + 1}</option>`); }
+  if (q.get('n')) sel.value = q.get('n');
+  if (q.get('pos')) $('#pos').value = q.get('pos');
+  try { $('#who').value = localStorage.getItem('bd-who') || ''; $('#accept').value = localStorage.getItem('bd-accept') || 85; } catch (e) {}
+  $('#who').addEventListener('change', () => { try { localStorage.setItem('bd-who', who()); } catch (e) {} });
+  $('#unc').addEventListener('input', () => { if (S.st) renderResult(); });
+  $('#accept').addEventListener('input', () => { try { localStorage.setItem('bd-accept', $('#accept').value); } catch (e) {} if (S.st) renderResult(); });
+  $('#file').addEventListener('change', e => {
+    const file = e.target.files[0]; if (!file) return;
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { const keep = nextKeep; nextKeep = false; thrManual = false; loadSource(im, Math.max(.02, +$('#cal').value || .1), false, null, keep); URL.revokeObjectURL(url); };
+    im.onerror = () => { $('#actNote').textContent = 'Görüntü açılamadı. JPEG, PNG veya TIFF dışa aktarımı deneyin.'; };
+    im.src = url; e.target.value = '';
+  });
+  $('#synthBtn').addEventListener('click', () => makeSynth(false));
+  // pool this field into the sample and move to the next one (synthetic: generated; real: pick the next image)
+  $('#fieldBtn').addEventListener('click', () => {
+    if (!S.cur || (S.saved && S.saved.status !== 'önerildi') || !(S.cur.nA + S.cur.nB)) return;
+    S.fields.push({ ...S.cur });
+    if (S.synthetic) makeSynth(true); else { nextKeep = true; $('#file').click(); }
+  });
+  const rerun = () => { clearTimeout(debounce); debounce = setTimeout(run, 120); };
+  $('#rcrit').addEventListener('input', () => { S.fix = {}; rerun(); });
+  $('#thr').addEventListener('input', () => { thrManual = true; S.fix = {}; rerun(); });
+  $('#thr').addEventListener('dblclick', () => { thrManual = false; S.fix = {}; run(); });
+  $('#cal').addEventListener('change', () => { if (!S.src) return; const v = Math.max(.02, +$('#cal').value || .1); S.cal = v / S.src.k; run(); });
+  // a new sample identity starts a new field set
+  $('#cast').addEventListener('change', () => { if (S.synthetic) makeSynth(false); else { S.saved = null; S.fields = []; run(); } });
+  $('#pos').addEventListener('change', () => { if (S.synthetic) makeSynth(false); else { S.saved = null; S.fields = []; run(); } });
+  $$('[data-ov]').forEach(b => b.addEventListener('click', () => { S.overlay = b.dataset.ov === '1'; $$('[data-ov]').forEach(x => x.setAttribute('aria-pressed', x === b)); draw(); }));
+  $$('[data-role]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.role; $$('[data-role]').forEach(x => x.setAttribute('aria-pressed', x === b)); renderReview(); }));
+  // tap a particle to flip α ↔ β (only before review)
+  cv.addEventListener('click', e => {
+    if (!S.res || (S.saved && S.saved.status !== 'önerildi')) return;
+    const r = cv.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) * S.res.W / r.width), y = Math.floor((e.clientY - r.top) * S.res.H / r.height);
+    let best = S.res.lab[y * S.res.W + x];
+    if (!best) {   // forgiving touch: nearest particle within ~18 screen px
+      const R0 = Math.min(80, Math.ceil(18 * S.res.W / r.width)); let bd = R0 * R0;
+      for (let dy = -R0; dy <= R0; dy++) for (let dx = -R0; dx <= R0; dx++) { const yy = y + dy, xx = x + dx; if (yy < 0 || xx < 0 || yy >= S.res.H || xx >= S.res.W) continue; const l = S.res.lab[yy * S.res.W + xx]; if (l && dx * dx + dy * dy < bd) { bd = dx * dx + dy * dy; best = l; } }
+    }
+    const p = S.res.parts[best]; if (!p || !p.cls || p.cls === 3) return;
+    const to = p.cls === 1 ? 2 : 1; if (to === p.auto) delete S.fix[p.c]; else S.fix[p.c] = to;
+    p.cls = to; S.cur = sums(S.res.parts); S.st = combine([...S.fields, S.cur]); draw(); renderResult();
+  });
+  $('#aSave').addEventListener('click', () => {
+    if (!S.st || !S.st.n) return;
+    if (S.saved && S.saved.status === 'önerildi') {   // corrections before review
+      Object.assign(S.saved, snapshot()); sign(S.saved, 'düzeltildi', `${S.st.fixed} parçacık elle düzeltildi`); persist(S.saved); renderReview(); return;
+    }
+    const rec = { id: 'L' + Date.now().toString(36), created: Date.now(), status: 'önerildi', audit: [], ...snapshot() };
+    sign(rec, 'önerildi', `otomatik analiz · %${fmt(rec.alpha, 1)} · ${rec.fields} alan · ${rec.n} parçacık${rec.n < MIN_PARTICLES ? ' (300 altı)' : ''}`);
+    persist(rec, S.src.canvas.toDataURL('image/jpeg', .72)); renderReview();
+  });
+  $('#aReview').addEventListener('click', () => { const r = S.saved; if (!r || r.status !== 'önerildi') return; if (!who()) { $('#actNote').textContent = 'İmza için adınızı yazın.'; $('#who').focus(); return; } r.status = 'incelendi'; sign(r, 'incelendi'); persist(r); renderReview(); });
+  $('#aApprove').addEventListener('click', () => {
+    const r = S.saved; if (!r || r.status !== 'incelendi' || S.role !== 'sor') return;
+    if (!who()) { $('#actNote').textContent = 'İmza için adınızı yazın.'; $('#who').focus(); return; }
+    const rev = r.audit.find(a => a.action === 'incelendi');
+    if (rev && rev.who === who()) { $('#actNote').textContent = 'Dört göz kuralı: inceleyen kişi aynı sonucu onaylayamaz.'; return; }
+    r.status = 'onaylandı'; sign(r, 'onaylandı', r.alpha >= r.accept ? 'eşiğin üstünde' : 'eşiğin altında, bilinçli onay'); persist(r); renderReview();
+  });
+  $('#aReject').addEventListener('click', () => {
+    const r = S.saved; if (!r || S.role !== 'sor') return;
+    const note = prompt('Red gerekçesi (ör. dağlama yetersiz, odak bozuk):'); if (note == null) return;
+    r.status = 'reddedildi'; sign(r, 'reddedildi', note); persist(r); renderReview();
+  });
+  window.addEventListener('resize', () => { if (S.res) draw(); });
+  renderList();
+  makeSynth(false);   // a synthetic sample so the page is never empty; clearly tagged as such
+};
+window.onTick = () => {};
+</script>
+</body>
+</html>

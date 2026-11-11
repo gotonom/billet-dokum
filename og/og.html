@@ -69,6 +69,7 @@ const V = {
   firin:   { eyebrow:'ERGİTME · DÖKÜM FIRINI', title:'Ergitme <span>Fırınları</span>', badges:[['#f97316','2 × 36 t','ERGİTME'], ['#15803d','730–750 °C','TRANSFER']] },
   dokum:   { eyebrow:'HOT-TOP DC DÖKÜM', title:'Döküm <span>Masası</span>', badges:[['#f97316','64 × Ø178','KALIP'], ['#0ea5e9','123 mm/dk','6063 HIZI']] },
   homojen: { eyebrow:'HOMOJENİZASYON · TESTERE', title:'Homojenizasyon', badges:[['#f97316','580 °C × 6 sa','BEKLETME'], ['#0ea5e9','> 250 °C/sa','SOĞUMA']] },
+  lab:     { eyebrow:'MİKROSKOP · β → α', title:'Laboratuvar', badges:[['#22c55e','% α','ŞEKİLDEN OTOMATİK'], ['#0b6fd9','4 göz','İNCELEME VE ONAY']] },
 };
 const key = (location.hash || '#index').slice(1), v = V[key] || V.index;
 document.getElementById('eyebrow').textContent = v.eyebrow;
@@ -119,6 +120,9 @@ if (key === 'dokum'){
   screen({src:'/docs/dokum.html', x:60, y:6, w:1080, rx:18, pick: section('#mimic'), at: midCast});
 } else if (key === 'firin'){
   screen({src:'/docs/firin.html#e1', x:60, y:6, w:1080, rx:18, pick: d => d.querySelector('#fx').closest('.grid2'), at: melting});
+} else if (key === 'lab'){
+  // the synthetic sample the page opens with, with its α / β overlay
+  screen({src:'/docs/lab.html', x:60, y:6, w:1080, rx:18, pick: section('#cv'), at: w => w.eval('SIM.T()')});
 } else if (key === 'homojen'){
   screen({src:'/docs/homojen.html', x:60, y:6, w:1080, rx:18, pick: section('#line'), at: cooling});
 } else {

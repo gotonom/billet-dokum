@@ -1,0 +1,519 @@
+<title>Laboratuvar · Billet Dökümhanesi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/*@COMMON_CSS*/
+/* Layout: the micrograph with its particle overlay is the hero; beside it the result, the sample
+   form and the review trail. Saved results and method notes follow. */
+.lab{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;align-items:start}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 16px 0}
+.tools .sp{flex:1}
+.stage{position:relative;margin:12px 16px 0;border-radius:10px;overflow:hidden;background:#1d1b1a;border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:auto;cursor:crosshair;touch-action:manipulation}
+.stage .tag{position:absolute;left:10px;top:10px;font:700 11px var(--f-mono);letter-spacing:.08em;padding:4px 8px;border-radius:6px;background:rgba(180,83,9,.92);color:#fff}
+.stage .bar{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;align-items:flex-end;gap:3px;font:700 11px var(--f-mono);color:#fff;text-shadow:0 1px 2px #000}
+.stage .bar i{display:block;height:4px;background:#fff;box-shadow:0 1px 2px #000}
+.stage .empty{position:absolute;inset:0;display:grid;place-items:center;color:#cbd5e1;font-size:14px}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);padding:10px 16px 16px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.big b{font:800 64px/1 var(--f-display)}
+.big small{font:600 15px var(--f-ui);color:var(--ink-2)}
+.verdict{margin-top:10px;padding:10px 12px;border-radius:10px;font:800 18px var(--f-display);letter-spacing:.04em;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.verdict small{font:600 12.5px var(--f-ui);letter-spacing:0}
+.verdict.ok{background:color-mix(in srgb,var(--ok) 14%,var(--panel));color:var(--ok);border:1px solid var(--ok)}
+.verdict.no{background:color-mix(in srgb,var(--crit) 10%,var(--panel));color:var(--crit);border:1px solid var(--crit)}
+.verdict.mid{background:color-mix(in srgb,var(--warn) 12%,var(--panel));color:var(--warn);border:1px solid var(--warn)}
+.gauge{position:relative;height:14px;border-radius:7px;background:var(--line-2);margin:14px 0 4px}
+.gauge .fill{position:absolute;left:0;top:0;bottom:0;border-radius:7px;background:var(--ok)}
+.gauge .unc{position:absolute;top:-3px;bottom:-3px;border-radius:4px;background:color-mix(in srgb,var(--ink) 18%,transparent)}
+.gauge .thr{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--crit)}
+.gauge-l{display:flex;justify-content:space-between;font:500 11px var(--f-mono);color:var(--muted)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px;margin-top:12px}
+.kv span{color:var(--ink-2)} .kv b{font:600 13.5px var(--f-mono);text-align:right}
+.form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.form label{display:flex;flex-direction:column;gap:4px;font:600 11px var(--f-mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase;min-width:0}
+.form label.full{grid-column:1/-1}
+.form label small{font:500 11px var(--f-mono);letter-spacing:0;text-transform:none;color:var(--muted)}
+.form input,.form select{font:600 15px var(--f-mono);color:var(--ink);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:42px;width:100%}
+.form input[type=range]{padding:0;min-height:30px;accent-color:var(--accent)}
+.form input:focus,.form select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.rowc{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status{display:flex;gap:4px;margin-bottom:12px}
+.status span{flex:1;text-align:center;font:700 11px var(--f-mono);letter-spacing:.04em;padding:7px 4px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line-2);color:var(--muted)}
+.status span.done{background:color-mix(in srgb,var(--ok) 12%,var(--panel));color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,transparent)}
+.status span.now{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.status span.rej{background:var(--crit);color:#fff;border-color:var(--crit)}
+.acts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:10px}
+.note{font-size:13px;color:var(--ink-2);line-height:1.45;margin:8px 0 0}
+.note b{color:var(--ink)}
+.notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.notes div{background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px}
+.notes h3{margin:0 0 6px;font:800 17px var(--f-display);letter-spacing:.02em}
+.notes p{margin:0;font-size:13.5px;line-height:1.45;color:var(--ink-2)}
+.tbl tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.tbl tbody tr{cursor:pointer}
+input[type=file]{display:none}
+@media (max-width:1100px){.lab{grid-template-columns:minmax(0,1fr)}.notes{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.big b{font-size:52px}.form{grid-template-columns:minmax(0,1fr)}.acts{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<div class="wrap">
+  <nav class="sitenav" aria-label="Dökümhane modülleri"><a class="sn-brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#0a2463"/><rect x="11" y="5" width="10" height="22" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M11 10h10" stroke="#f97316" stroke-width="3"/></svg>DÖKÜMHANE</a><a href="firin.html">Fırınlar</a><a href="dokum.html">Döküm Masası</a><a href="homojen.html">Homojenizasyon ve Testere</a><a href="lab.html" aria-current="page">Laboratuvar</a></nav>
+
+  <header class="head">
+    <div class="title">
+      <div class="eyebrow"><span class="live"></span>OPTİK MİKROSKOP · %0,5 HF DAĞLAMA · ×500–1000 · ŞEKİL TABANLI SINIFLAMA</div>
+      <h1>HOMOJENİZASYON <span>LABORATUVARI</span></h1>
+      <p class="sum">Test logundan alınan numunenin mikroskop görüntüsü yüklenir. Yazılım AlFeSi parçacıklarını bulur, <b>şekillerinden</b> β (iğne) ya da α (yuvarlak, "Çin yazısı") olarak sınıflar ve <span class="nc">β → α</span> dönüşümünü hesaplar. Sonuç teknisyen incelemesi ve laboratuvar sorumlusunun onayı olmadan partiyi serbest bırakmaz.</p>
+      <span class="credit">created by <b>GOTONOM</b></span>
+    </div>
+    <div class="hctl">
+      <span class="demo" id="demoTag">CANLI SAAT · DEMO VERİ</span>
+      <div class="seg" role="group" aria-label="Simülasyon hızı"><button type="button" data-speed="1" title="Gerçek saat">×1</button><button type="button" data-speed="10">×10</button><button type="button" data-speed="60">×60</button></div>
+      <div class="clock"><small id="clockLbl">TESİS SAATİ</small><b class="num" id="clock">00:00:00</b></div>
+      <button type="button" class="ibtn" id="themeBtn" aria-pressed="false" title="Koyu / açık tema"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+  </header>
+
+  <div class="lab">
+    <section class="card" aria-label="Mikroskop görüntüsü ve analiz">
+      <div class="ch"><h2>Mikroskop görüntüsü <small id="imgInfo">—</small></h2><span class="aside">Parçacığa dokunarak sınıfını düzeltin</span></div>
+      <div class="tools">
+        <label class="ibtn primary" for="file"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 20h14v-2H5zm7-16-5 5h3v6h4V9h3z"/></svg>Görüntü yükle</label>
+        <input type="file" id="file" accept="image/*">
+        <button type="button" class="ibtn" id="synthBtn" title="Gerçek görüntü değil; akışı denemek için üretilir">Sentetik örnek üret</button>
+        <button type="button" class="ibtn" id="fieldBtn" title="Bu alanı numuneye ekle ve sıradaki alana geç">+ Alan ekle</button>
+        <span class="pill" id="fieldPill">Alan 1</span>
+        <span class="sp"></span>
+        <div class="seg" role="group" aria-label="Katman"><button type="button" data-ov="1" aria-pressed="true">Katman</button><button type="button" data-ov="0" aria-pressed="false">Ham</button></div>
+      </div>
+      <div class="stage" id="stage"><canvas id="cv" width="1200" height="900" aria-label="Mikroskop görüntüsü ve parçacık sınıfları"></canvas><span class="tag" id="synthTag" hidden>SENTETİK ÖRNEK · GERÇEK GÖRÜNTÜ DEĞİL</span><div class="bar" id="scale"></div><div class="empty" id="empty">Görüntü yükleniyor…</div></div>
+      <div class="legend"><span><i style="background:#22c55e"></i>α-AlFeSi (yuvarlak, Çin yazısı)</span><span><i style="background:#ef4444"></i>β-AlFeSi (iğne)</span><span><i style="background:#94a3b8"></i>kenara değen / artefakt, sayılmaz</span><span><i style="background:transparent;border:2px solid #facc15"></i>elle düzeltildi</span></div>
+    </section>
+
+    <div class="side">
+      <section class="card" aria-label="Sonuç">
+        <div class="ch"><h2>Sonuç <small id="resPos">—</small></h2><span class="aside" id="resMethod">alan tabanlı · optik-şekil</span></div>
+        <div class="cb">
+          <div class="big"><b class="num" id="alpha">—</b><small id="alphaS"></small></div>
+          <div class="gauge" id="gauge"><span class="fill"></span><span class="unc"></span><span class="thr"></span></div>
+          <div class="gauge-l"><span>0</span><span id="thrL"></span><span>100</span></div>
+          <div class="verdict" id="verdict"></div>
+          <div class="kv" id="stats"></div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Numune ve analiz ayarları">
+        <div class="ch"><h2>Numune</h2><span class="aside">Kimlik görüntüye bağlanır</span></div>
+        <div class="cb form">
+          <label class="full">Döküm · parti<select id="cast"></select></label>
+          <label>Konum<select id="pos"><option value="merkez">Merkez</option><option value="yarıçap">½ yarıçap</option><option value="yüzey">Yüzeye yakın</option></select></label>
+          <label><span><span class="nc">µm</span> / piksel</span><input id="cal" type="number" inputmode="decimal" step="0.005" min="0.02" max="2" value="0.10"><small>sertifikalı cetvelle doğrulayın</small></label>
+          <label><span>En-boy eşiği <span class="nc">(R<sub>kritik</sub>)</span> · <span class="nc" id="rcritV"></span></span><input id="rcrit" type="range" min="2.5" max="5" step="0.1" value="3.6"><small>üstü β sayılır (literatür 3,5–3,7)</small></label>
+          <label><span>Gri eşik · <span class="nc" id="thrV"></span></span><input id="thr" type="range" min="40" max="230" step="1"><small id="thrAuto">otomatik</small></label>
+          <label><span>Tesis kabul eşiği (% <span class="nc">α</span>)</span><input id="accept" type="number" min="50" max="100" step="1" value="85"><small>VARSAYIM · tesis ve müşteri belirler</small></label>
+          <label>Yöntem belirsizliği (yp)<input id="unc" type="number" min="3" max="25" step="1" value="10"><small>kalibrasyonsuz şekil ±15 · SEM-EDS ±5</small></label>
+          <label>Ad soyad<input id="who" type="text" autocomplete="name" placeholder="İmza için"></label>
+        </div>
+      </section>
+
+      <section class="card" aria-label="İnceleme ve onay">
+        <div class="ch"><h2>İnceleme ve onay</h2><span class="aside" id="saveInfo">kaydedilmedi</span></div>
+        <div class="cb">
+          <div class="status" id="status"><span>ÖNERİ</span><span>İNCELENDİ</span><span>ONAYLANDI</span></div>
+          <div class="rowc"><span class="note" style="margin:0">Rol</span><div class="seg" role="group" aria-label="Rol"><button type="button" data-role="tek" aria-pressed="true">Teknisyen</button><button type="button" data-role="sor" aria-pressed="false">Lab sorumlusu</button></div></div>
+          <div class="acts">
+            <button type="button" class="ibtn primary" id="aSave">Öneri olarak kaydet</button>
+            <button type="button" class="ibtn" id="aReview">İncele ve kabul et</button>
+            <button type="button" class="ibtn" id="aApprove">Onayla</button>
+            <button type="button" class="ibtn danger" id="aReject">Reddet</button>
+          </div>
+          <p class="note" id="actNote"></p>
+          <ul class="feed" id="audit" style="margin-top:10px"></ul>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card" aria-label="Kayıtlı sonuçlar">
+    <div class="ch"><h2>Kayıtlı sonuçlar <small>BU TARAYICIDA</small></h2><span class="aside">Satıra dokunun, görüntü ve imzalar açılır</span></div>
+    <div class="cb tscroll"><table class="tbl" id="list"></table></div>
+  </section>
+
+  <section class="card" aria-label="Yöntem ve sınırlar">
+    <div class="ch"><h2>Yöntem ve sınırlar</h2><span class="aside">Araştırma raporundan</span></div>
+    <div class="cb notes">
+      <div><h3>Şekil tahmindir</h3><p>Optik mikroskopta β ve α'nın gri tonu neredeyse aynıdır; sınıf şekilden tahmin edilir. Bu yöntemin hatası yaklaşık <b>±15 puan</b> ve %80–90 bölgesinde α'yı fazla gösterir. SEM-EDS ile hata ±5 puana iner.</p></div>
+      <div><h3>Kalibrasyon şart</h3><p>Her alaşım için üç referans numune: döküm hali, 540 °C/20 dk ve 590 °C/32 sa (%100 α). En-boy eşiği bunlarla ayarlanır; dış SEM-EDS denetimi aylık sapmayı ölçer.</p></div>
+      <div><h3>Merkez en kötü konum</h3><p>Dilim test logunun ortasından; merkez ve ½ yarıçap ayrı ölçülür. Konum başına 10–20 alan ve en az 300 parçacık önerilir. 6082'de dönüşüm hızlı biter; orada Mg₂Si ve soğuma hızı öne çıkar.</p></div>
+    </div>
+  </section>
+
+  <footer class="foot"><span>Sonuçlar şimdilik yalnızca bu tarayıcıda saklanır (laboratuvar sunucusu kurulana kadar). Sentetik örnekler gerçek mikroskop görüntüsü değildir.</span><span>created by <b>GOTONOM</b></span></footer>
+</div>
+
+<script>
+//@COMMON_JS
+/* ---------- image analysis: find AlFeSi particles and classify them by shape ---------- */
+const MAX_SIDE = 1200;                 // work resolution; calibration scales with it
+const MIN_UM2 = .25;                   // smaller blobs are noise
+// grey image → flat field → dark particles → connected components → shape features
+function analyse(img, opt) {
+  const W = img.width, H = img.height, N = W * H, d = img.data, g = new Float32Array(N);
+  for (let i = 0, j = 0; i < N; i++, j += 4) g[i] = .299 * d[j] + .587 * d[j + 1] + .114 * d[j + 2];
+  // uneven illumination: divide by a wide box blur (integral image)
+  const r = Math.max(20, Math.round(Math.min(W, H) / 12)), W1 = W + 1, I = new Float64Array(W1 * (H + 1));
+  for (let y = 0; y < H; y++) { let row = 0; for (let x = 0; x < W; x++) { row += g[y * W + x]; I[(y + 1) * W1 + x + 1] = I[y * W1 + x + 1] + row; } }
+  const mean = I[H * W1 + W] / N, f = new Float32Array(N);
+  for (let y = 0; y < H; y++) {
+    const y0 = Math.max(0, y - r), y1 = Math.min(H, y + r + 1);
+    for (let x = 0; x < W; x++) {
+      const x0 = Math.max(0, x - r), x1 = Math.min(W, x + r + 1);
+      const bg = (I[y1 * W1 + x1] - I[y0 * W1 + x1] - I[y1 * W1 + x0] + I[y0 * W1 + x0]) / ((y1 - y0) * (x1 - x0));
+      f[y * W + x] = Math.min(255, g[y * W + x] / Math.max(1, bg) * mean);
+    }
+  }
+  // threshold below the matrix: median minus a robust spread (particles are a few % of the field)
+  const hist = new Uint32Array(256); for (let i = 0; i < N; i++) hist[f[i] | 0]++;
+  const pct = q => { let c = 0; for (let v = 0; v < 256; v++) { c += hist[v]; if (c >= q * N) return v; } return 255; };
+  const med = pct(.5), mad = (pct(.75) - pct(.25)) / 1.349;
+  const auto = Math.round(clamp(med - Math.max(28, 6 * mad), 30, 230)), thr = opt.thr ?? auto;
+  // connected components, 8-neighbour, union-find
+  const lab = new Int32Array(N), parent = [0];
+  const find = x => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
+  const union = (a, b) => { a = find(a); b = find(b); if (a !== b) parent[Math.max(a, b)] = Math.min(a, b); };
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x; if (f[i] >= thr) continue;
+    let m = 0;
+    const nb = [x > 0 ? i - 1 : -1, y > 0 && x > 0 ? i - W - 1 : -1, y > 0 ? i - W : -1, y > 0 && x < W - 1 ? i - W + 1 : -1];
+    for (const k of nb) if (k >= 0 && lab[k]) { if (!m) m = lab[k]; else union(m, lab[k]); }
+    if (!m) { m = parent.length; parent.push(m); }
+    lab[i] = m;
+  }
+  const ids = new Int32Array(parent.length); let nc = 0;
+  for (let i = 0; i < N; i++) if (lab[i]) { const root = find(lab[i]); if (!ids[root]) ids[root] = ++nc; lab[i] = ids[root]; }
+  // moments, border contact, boundary pixels
+  const A = new Float64Array(nc + 1), SX = new Float64Array(nc + 1), SY = new Float64Array(nc + 1), SXX = new Float64Array(nc + 1), SYY = new Float64Array(nc + 1), SXY = new Float64Array(nc + 1), BD = new Uint8Array(nc + 1), PER = new Float64Array(nc + 1);
+  const edge = Array.from({ length: nc + 1 }, () => []);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x, c = lab[i]; if (!c) continue;
+    A[c]++; SX[c] += x; SY[c] += y; SXX[c] += x * x; SYY[c] += y * y; SXY[c] += x * y;
+    if (x === 0 || y === 0 || x === W - 1 || y === H - 1) BD[c] = 1;
+    if (x === 0 || y === 0 || x === W - 1 || y === H - 1 || !lab[i - 1] || !lab[i + 1] || !lab[i - W] || !lab[i + W]) { PER[c]++; edge[c].push(x, y); }
+  }
+  const um = opt.cal, minPx = MIN_UM2 / (um * um), maxPx = N * .02, parts = [null];
+  for (let c = 1; c <= nc; c++) {
+    const n = A[c];
+    if (n < minPx) { parts.push({ c, cls: 0 }); continue; }
+    const mx = SX[c] / n, my = SY[c] / n, a = SXX[c] / n - mx * mx + 1 / 12, b = SXY[c] / n - mx * my, e = SYY[c] / n - my * my + 1 / 12;
+    const t = Math.sqrt(((a - e) / 2) ** 2 + b * b), l1 = (a + e) / 2 + t, l2 = Math.max(1 / 12, (a + e) / 2 - t);
+    const major = 4 * Math.sqrt(l1), minor = 4 * Math.sqrt(l2), aspect = major / minor;
+    const solidity = n / hullArea(edge[c]);
+    const p = { c, n, x: mx, y: my, aspect, solidity, len: major * um, area: n * um * um };
+    p.auto = BD[c] || n > maxPx ? 3 : aspect >= opt.rcrit && solidity >= .55 ? 2 : 1;   // 1 α, 2 β, 3 not counted
+    p.cls = opt.fix && opt.fix[c] ? opt.fix[c] : p.auto;
+    parts.push(p);
+  }
+  return { W, H, lab, parts, thr, auto };
+}
+// convex hull area of the pixel squares on a particle's edge (monotone chain on their corners)
+function hullArea(xy) {
+  const P = [];
+  for (let i = 0; i < xy.length; i += 2) { const x = xy[i], y = xy[i + 1]; P.push([x, y], [x + 1, y], [x, y + 1], [x + 1, y + 1]); }
+  P.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+  const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]), lo = [], up = [];
+  for (const p of P) { while (lo.length >= 2 && cross(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+  for (let i = P.length - 1; i >= 0; i--) { const p = P[i]; while (up.length >= 2 && cross(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+  const h = lo.slice(0, -1).concat(up.slice(0, -1)); let s = 0;
+  for (let i = 0; i < h.length; i++) { const [x1, y1] = h[i], [x2, y2] = h[(i + 1) % h.length]; s += x1 * y2 - x2 * y1; }
+  return Math.max(1, Math.abs(s) / 2);
+}
+// per-field sums, so several fields of one sample can be pooled
+function sums(parts) {
+  const f = { aA: 0, aB: 0, nA: 0, nB: 0, s2: 0, maxB: 0, fixed: 0, excluded: 0 };
+  for (const p of parts) {
+    if (!p || !p.cls) continue;
+    if (p.cls === 3) { f.excluded++; continue; }
+    if (p.cls === 1) { f.aA += p.area; f.nA++; } else { f.aB += p.area; f.nB++; f.maxB = Math.max(f.maxB, p.len); }
+    f.s2 += p.area * p.area; if (p.cls !== p.auto) f.fixed++;
+  }
+  return f;
+}
+// area-based % α with a statistical error from the particle count (Kish effective n)
+function combine(list) {
+  const t = list.reduce((a, f) => ({ aA: a.aA + f.aA, aB: a.aB + f.aB, nA: a.nA + f.nA, nB: a.nB + f.nB, s2: a.s2 + f.s2, maxB: Math.max(a.maxB, f.maxB), fixed: a.fixed + f.fixed, excluded: a.excluded + f.excluded }), { aA: 0, aB: 0, nA: 0, nB: 0, s2: 0, maxB: 0, fixed: 0, excluded: 0 });
+  const tot = t.aA + t.aB, pA = tot ? t.aA / tot : 0, neff = tot * tot / Math.max(1e-9, t.s2);
+  return { ...t, alpha: pA * 100, alphaCount: t.nA + t.nB ? t.nA / (t.nA + t.nB) * 100 : 0, n: t.nA + t.nB, se: Math.sqrt(pA * (1 - pA) / Math.max(1, neff)) * 100, fields: list.length };
+}
+const MIN_PARTICLES = 300;
+
+/* ---------- synthetic micrograph so the flow can be tried without a microscope ---------- */
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function synth(fAlpha, cal, seed, W = 1200, H = 900) {
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d'), R = mulberry(seed), um = v => v / cal;
+  const grd = x.createRadialGradient(W * .42, H * .38, 40, W * .5, H * .5, W * .78);
+  grd.addColorStop(0, 'rgb(216,212,205)'); grd.addColorStop(1, 'rgb(176,172,166)');
+  x.fillStyle = grd; x.fillRect(0, 0, W, H);
+  for (let i = 0; i < 16; i++) { x.strokeStyle = `rgba(${R() < .5 ? '255,255,255' : '80,80,80'},.07)`; x.lineWidth = 1 + R() * 2; x.beginPath(); const y0 = R() * H; x.moveTo(0, y0); x.lineTo(W, y0 + (R() - .5) * H * .6); x.stroke(); }
+  if ('filter' in x) x.filter = 'blur(0.7px)';
+  // AlFeSi sits on the boundaries of the as-cast cells (~25 µm): place particles near a Voronoi network
+  const seeds = Array.from({ length: Math.round(W * H / (um(25) ** 2)) + 4 }, () => [R() * W, R() * H]);
+  const nearest2 = (px, py) => { let a = 1e12, b = 1e12, ia = 0, ib = 0; seeds.forEach((s, i) => { const d = (s[0] - px) ** 2 + (s[1] - py) ** 2; if (d < a) { b = a; ib = ia; a = d; ia = i; } else if (d < b) { b = d; ib = i; } }); return [Math.sqrt(a), Math.sqrt(b), seeds[ia], seeds[ib]]; };
+  const placed = [], fits = (px, py, r) => px > r + 4 && py > r + 4 && px < W - r - 4 && py < H - r - 4 && placed.every(p => (p.x - px) ** 2 + (p.y - py) ** 2 > (p.r + r + 5) ** 2);
+  const target = .022 * W * H, aT = fAlpha / 100 * target, bT = target - aT; let aA = 0, aB = 0;
+  for (let tries = 0; (aA < aT || aB < bT) && tries < 60000; tries++) {
+    const beta = aB < bT && (aA >= aT || R() < bT / target);
+    const px = R() * W, py = R() * H, [d1, d2, s1, s2] = nearest2(px, py);
+    if (d2 - d1 > um(1.6)) continue;               // only on a cell boundary
+    const along = Math.atan2(s2[1] - s1[1], s2[0] - s1[0]) + Math.PI / 2;
+    if (beta) {                                   // β: thin straight plates along the boundary, seen as needles
+      const L = um(2 + R() * 6.5), w = um(.3 + R() * .25), r = L / 2;
+      if (!fits(px, py, r)) continue;
+      x.save(); x.translate(px, py); x.rotate(along + (R() - .5) * .5); x.fillStyle = 'rgb(54,51,49)';
+      x.beginPath(); x.roundRect ? x.roundRect(-L / 2, -w / 2, L, w, w / 2) : x.rect(-L / 2, -w / 2, L, w); x.fill(); x.restore();
+      placed.push({ x: px, y: py, r }); aB += L * w;
+    } else if (R() < .55) {                       // α: rounded, sometimes elongated
+      const rx = um(.38 + R() * .85), ry = rx * (R() < .12 ? .26 + R() * .14 : .55 + R() * .4), r = rx;
+      if (!fits(px, py, r)) continue;
+      const rot = along + (R() - .5) * 1.2; x.fillStyle = 'rgb(112,106,101)'; x.beginPath();
+      for (let k = 0; k <= 18; k++) { const t = k / 18 * Math.PI * 2, j = 1 + (R() - .5) * .22, ex = Math.cos(t) * rx * j, ey = Math.sin(t) * ry * j; x.lineTo(px + ex * Math.cos(rot) - ey * Math.sin(rot), py + ex * Math.sin(rot) + ey * Math.cos(rot)); }
+      x.fill(); placed.push({ x: px, y: py, r }); aA += Math.PI * rx * ry;
+    } else {                                      // α: branched "Chinese script"
+      const lw = um(.4 + R() * .25), arms = 3 + Math.floor(R() * 3), arm = um(.7 + R() * 1.05), r = arm + lw;
+      if (!fits(px, py, r)) continue;
+      x.strokeStyle = 'rgb(108,102,97)'; x.lineWidth = lw; x.lineCap = 'round'; x.beginPath();
+      for (let k = 0; k < arms; k++) { const t = k / arms * Math.PI * 2 + R() * .6, ex = px + Math.cos(t) * arm, ey = py + Math.sin(t) * arm; x.moveTo(px, py); x.lineTo(ex, ey); if (R() < .5) { const t2 = t + (R() < .5 ? .9 : -.9); x.moveTo((px + ex) / 2, (py + ey) / 2); x.lineTo((px + ex) / 2 + Math.cos(t2) * arm * .5, (py + ey) / 2 + Math.sin(t2) * arm * .5); } }
+      x.stroke(); placed.push({ x: px, y: py, r }); aA += arms * arm * lw * 1.1;
+    }
+  }
+  if ('filter' in x) x.filter = 'none';
+  const im = x.getImageData(0, 0, W, H), d = im.data;
+  for (let i = 0; i < d.length; i += 4) { const nz = (R() - .5) * 14; d[i] += nz; d[i + 1] += nz; d[i + 2] += nz; }
+  x.putImageData(im, 0, 0);
+  return { canvas: cv, truth: aA / (aA + aB) * 100 };
+}
+
+/* ---------- page state ---------- */
+const S = { src: null, cal: .1, fix: {}, res: null, st: null, fields: [], cur: null, overlay: true, synthetic: false, truth: null, saved: null, role: 'tek' };
+const cv = $('#cv'), ctx = cv.getContext('2d');
+let thrManual = false, debounce = 0, nextKeep = false;
+
+function castOptions(T) {   // casts whose homogenising has finished, newest first
+  const out = []; let n = Math.floor((T - PLANT.UNLOAD_END - 640) / PLANT.CYCLE);
+  while (out.length < 12) { out.push(castInfo(n)); n--; }
+  return out;
+}
+const curCast = () => castInfo(+$('#cast').value);
+function workImage(source, cal) {   // draw any image/canvas into a ≤ MAX_SIDE canvas; scale the calibration with it
+  const k = Math.min(1, MAX_SIDE / Math.max(source.width, source.height)), w = Math.round(source.width * k), h = Math.round(source.height * k);
+  const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(source, 0, 0, w, h);
+  return { canvas: c, k, cal: cal / k, img: c.getContext('2d').getImageData(0, 0, w, h) };
+}
+function run() {
+  if (!S.src) return;
+  S.res = analyse(S.src.img, { cal: S.cal, rcrit: +$('#rcrit').value, thr: thrManual ? +$('#thr').value : null, fix: S.fix });
+  if (!thrManual) $('#thr').value = S.res.auto;
+  S.cur = sums(S.res.parts); S.st = combine([...S.fields, S.cur]);
+  draw(); renderResult();
+}
+function draw() {
+  const { W, H, lab, parts } = S.res;
+  cv.width = W; cv.height = H;
+  const base = S.src.img, out = new ImageData(new Uint8ClampedArray(base.data), W, H), o = out.data;
+  if (S.overlay) {
+    const col = { 1: [34, 197, 94], 2: [239, 68, 68], 3: [148, 163, 184] };
+    for (let i = 0, j = 0; i < W * H; i++, j += 4) {
+      const p = parts[lab[i]]; if (!p || !p.cls) continue;
+      const c = col[p.cls], a = p.cls === 3 ? .45 : .6;
+      o[j] = o[j] * (1 - a) + c[0] * a; o[j + 1] = o[j + 1] * (1 - a) + c[1] * a; o[j + 2] = o[j + 2] * (1 - a) + c[2] * a;
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+  if (S.overlay) { ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3; for (const p of parts) if (p && p.cls && p.cls !== p.auto) { ctx.beginPath(); ctx.arc(p.x, p.y, Math.max(10, Math.sqrt(p.n) * .9), 0, Math.PI * 2); ctx.stroke(); } }
+  // 10 µm scale bar
+  const px10 = 10 / S.cal, wPct = px10 / W * 100;
+  $('#scale').innerHTML = `<span>10 µm</span><i style="width:${(wPct / 100 * cv.clientWidth).toFixed(0)}px"></i>`;
+  $('#imgInfo').textContent = `${W} × ${H} px · ${fmt(S.cal, 3)} µm/px · ${fmt(W * S.cal, 0)} × ${fmt(H * S.cal, 0)} µm`;
+  $('#empty').hidden = true; $('#synthTag').hidden = !S.synthetic;
+}
+function renderResult() {
+  const st = S.st, acc = +$('#accept').value, c = curCast(), method = clamp(+$('#unc').value || 10, 3, 25);
+  const tot = Math.sqrt(st.se ** 2 + method ** 2);
+  $('#alpha').textContent = st.n ? '%' + fmt(st.alpha, 1) : '—';
+  $('#alphaS').innerHTML = st.n ? `± ${fmt(st.se, 1)} istatistik · ±${method} yöntem` : 'parçacık bulunamadı';
+  $('#resPos').textContent = `${c.id} · ${$('#pos').selectedOptions[0].textContent.toUpperCase()}`;
+  const g = $('#gauge');
+  g.querySelector('.fill').style.width = st.alpha + '%';
+  g.querySelector('.fill').style.background = st.alpha >= acc + tot ? 'var(--ok)' : st.alpha >= acc ? 'var(--warn)' : 'var(--crit)';
+  g.querySelector('.unc').style.left = clamp(st.alpha - tot, 0, 100) + '%'; g.querySelector('.unc').style.width = (clamp(st.alpha + tot, 0, 100) - clamp(st.alpha - tot, 0, 100)) + '%';
+  g.querySelector('.thr').style.left = acc + '%';
+  $('#thrL').textContent = `eşik %${acc}`;
+  const v = $('#verdict');
+  if (!st.n) { v.className = 'verdict mid'; v.innerHTML = 'ÖLÇÜM YOK<small>Eşik veya kalibrasyonu kontrol edin</small>'; }
+  else if (st.alpha - tot >= acc) { v.className = 'verdict ok'; v.innerHTML = `EŞİĞİN ÜSTÜNDE<small>belirsizlik dahil</small>`; }
+  else if (st.alpha >= acc) { v.className = 'verdict mid'; v.innerHTML = `KARAR BÖLGESİNDE<small>SEM-EDS ile doğrulanmalı</small>`; }
+  else { v.className = 'verdict no'; v.innerHTML = `EŞİĞİN ALTINDA<small>bekletme / reçete incelenmeli</small>`; }
+  const est = alphaEstimate(c.alloy, homog(mod(c.n, PLANT.H_COUNT), c.n * PLANT.CYCLE + PLANT.UNLOAD_END + 619).soak);
+  const need = Math.max(0, MIN_PARTICLES - st.n), perField = S.cur && (S.cur.nA + S.cur.nB) || 1;
+  $('#fieldPill').textContent = `Alan ${st.fields} · n ${st.n}`; $('#fieldPill').className = 'pill ' + (need ? 'warn' : 'ok');
+  $('#stats').innerHTML = [
+    ['Alan · parçacık (α / β)', `${st.fields} · ${st.n} (${st.nA} / ${st.nB})`],
+    ['Yeterlilik', need ? `<span style="color:var(--warn)">${need} parçacık daha · ~${Math.ceil(need / perField)} alan</span>` : `<span style="color:var(--ok)">≥ ${MIN_PARTICLES} parçacık</span>`],
+    ['% α sayı tabanlı', '%' + fmt(st.alphaCount, 1)],
+    ['En uzun β iğnesi', st.nB ? fmt(st.maxB, 1) + ' µm' : '—'],
+    ['Sayılmayan (kenar, artefakt)', String(st.excluded)],
+    ['Elle düzeltilen', String(st.fixed)],
+    ['PLC tahmini (bekletmeden)', '%' + fmt(est, 0)],
+    ...(S.synthetic ? [['Sentetik örneğin gerçek değeri', '%' + fmt(S.truth, 1)]] : []),
+    ['Gri eşik', `${S.res.thr}${thrManual ? ' (elle)' : ' (oto)'}`],
+  ].map(([a, b]) => `<span>${a}</span><b>${b}</b>`).join('');
+  $('#rcritV').textContent = fmt(+$('#rcrit').value, 1); $('#thrV').textContent = S.res.thr; $('#thrAuto').textContent = thrManual ? 'elle · otomatiğe dönmek için çift dokunun' : 'otomatik';
+  renderReview();
+}
+
+/* ---------- review workflow: proposal → reviewed → approved (four eyes), every step signed ---------- */
+const STEPS = ['önerildi', 'incelendi', 'onaylandı'];
+const who = () => ($('#who').value || '').trim();
+function sign(rec, action, note) { rec.audit.push({ t: Date.now(), plantT: SIM.T(), who: who() || '(imzasız)', role: S.role === 'sor' ? 'Lab sorumlusu' : 'Teknisyen', action, note: note || '' }); }
+function persist(rec, img) {
+  const all = labAll().filter(x => x.id !== rec.id); all.push(rec);
+  if (img) { try { localStorage.setItem(LAB_IMG + rec.id, img); } catch (e) {
+    // browser storage full: drop the oldest stored images, keep their records
+    for (const old of labAll().sort((a, b) => a.created - b.created)) { localStorage.removeItem(LAB_IMG + old.id); try { localStorage.setItem(LAB_IMG + rec.id, img); break; } catch (e2) {} }
+  } }
+  if (!labSaveAll(all)) $('#actNote').textContent = 'Tarayıcı deposu dolu: kayıt saklanamadı.';
+  S.saved = rec; renderList();
+}
+function snapshot() {
+  const c = curCast(), st = S.st;
+  return { prevFields: S.fields.map(f => ({ ...f })), fields: S.st.fields, castN: c.n, castId: c.id, alloy: c.alloy, batch: 'H' + (mod(c.n, PLANT.H_COUNT) + 1), pos: $('#pos').value, alpha: +st.alpha.toFixed(1), alphaCount: +st.alphaCount.toFixed(1), n: st.n, nA: st.nA, nB: st.nB, se: +st.se.toFixed(1), maxB: +st.maxB.toFixed(1), method: 'optik-şekil', basis: 'alan', rcrit: +$('#rcrit').value, thr: S.res.thr, thrManual, cal: S.cal, fix: { ...S.fix }, synthetic: S.synthetic, truth: S.truth, accept: +$('#accept').value, unc: clamp(+$('#unc').value || 10, 3, 25) };
+}
+function renderReview() {
+  const rec = S.saved, st = rec ? rec.status : null, idx = STEPS.indexOf(st), sor = S.role === 'sor';
+  $$('#status span').forEach((s, i) => s.className = st === 'reddedildi' ? (i === 0 ? 'rej' : '') : i < idx ? 'done' : i === idx ? 'now' : '');
+  $('#status span').textContent = st === 'reddedildi' ? 'REDDEDİLDİ' : 'ÖNERİ';
+  const reviewer = rec && rec.audit.find(a => a.action === 'incelendi');
+  $('#aSave').disabled = !S.st || !S.st.n || (rec && st !== 'önerildi');
+  $('#aSave').textContent = rec && st === 'önerildi' ? 'Düzeltmeleri kaydet' : 'Öneri olarak kaydet';
+  $('#aReview').disabled = !rec || st !== 'önerildi';
+  $('#aApprove').disabled = !rec || st !== 'incelendi' || !sor;
+  $('#aReject').disabled = !rec || !sor || st === 'onaylandı' || st === 'reddedildi';
+  $('#aApprove').title = !sor ? 'Yalnızca laboratuvar sorumlusu onaylar' : '';
+  $('#saveInfo').textContent = rec ? `${rec.castId} · ${rec.pos} · ${new Date(rec.created).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}` : 'kaydedilmedi';
+  $('#actNote').textContent = !rec ? 'Analizi kontrol edin, gerekirse parçacıklara dokunarak düzeltin, sonra öneri olarak kaydedin.' :
+    st === 'önerildi' ? 'Teknisyen görüntüyü ve sınıfları inceleyip kabul eder. Düzeltmeler bu aşamada yapılır.' :
+    st === 'incelendi' ? `İnceleyen: ${reviewer ? reviewer.who : '—'}. Onayı başka bir kişi, laboratuvar sorumlusu verir.` :
+    st === 'onaylandı' ? 'Onaylandı: sonuç homojenizasyon panelinde bu partinin ölçümü olarak görünür. Değiştirilemez.' : 'Reddedildi: numune yeniden hazırlanmalı. Kayıt silinmez.';
+  $('#audit').innerHTML = rec ? rec.audit.slice().reverse().map(a => `<li class="${a.action === 'reddedildi' ? 'crit' : a.action === 'onaylandı' ? 'ok' : 'info'}"><time>${hhmm(a.plantT)}</time><span><b>${a.action}</b> · ${esc(a.who)} (${a.role})${a.note ? ' · ' + esc(a.note) : ''}</span></li>`).join('') : '';
+}
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+function renderList() {
+  const all = labAll().sort((a, b) => b.created - a.created);
+  $('#list').innerHTML = `<thead><tr><th>Döküm</th><th>Parti</th><th>Konum</th><th class="r">% <span class="nc">α</span></th><th class="r hide-sm">Alan · n</th><th class="hide-sm">Yöntem</th><th>Durum</th><th class="hide-sm">Kayıt</th></tr></thead><tbody>` +
+    (all.length ? all.map(r => `<tr data-id="${r.id}" class="${S.saved && S.saved.id === r.id ? 'sel' : ''}"><td class="mono">${r.castId}</td><td class="mono">${r.batch}</td><td>${r.pos}</td><td class="r mono">%${fmt(r.alpha, 1)} <span style="color:var(--muted)">±${fmt(Math.sqrt(r.se ** 2 + (r.unc || 15) ** 2), 0)}</span></td><td class="r mono hide-sm">${r.fields || 1} · ${r.n}</td><td class="hide-sm">${r.method}${r.synthetic ? ' · sentetik' : ''}</td><td><span class="pill ${r.status === 'onaylandı' ? 'ok' : r.status === 'reddedildi' ? 'crit' : 'run'}"><i></i>${r.status}</span></td><td class="mono hide-sm">${new Date(r.created).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' })}</td></tr>`).join('')
+      : '<tr><td colspan="8" class="empty">Henüz kayıt yok. Bir analizi öneri olarak kaydedin.</td></tr>') + '</tbody>';
+  $$('#list tbody tr[data-id]').forEach(tr => tr.addEventListener('click', () => openRecord(tr.dataset.id)));
+}
+function openRecord(id) {
+  const rec = labAll().find(r => r.id === id); if (!rec) return;
+  const data = localStorage.getItem(LAB_IMG + id);
+  $('#cast').value = rec.castN; $('#pos').value = rec.pos; $('#rcrit').value = rec.rcrit; $('#accept').value = rec.accept; $('#unc').value = rec.unc || 15;
+  thrManual = rec.thrManual; $('#thr').value = rec.thr;
+  S.saved = rec; S.fix = { ...rec.fix }; S.synthetic = rec.synthetic; S.truth = rec.truth; S.fields = (rec.prevFields || []).map(f => ({ ...f }));
+  if (!data) { $('#actNote').textContent = 'Bu kaydın görüntüsü tarayıcı deposundan silinmiş; sayılar ve imzalar duruyor.'; renderReview(); renderList(); return; }
+  const im = new Image(); im.onload = () => { const w = workImage(im, rec.cal); S.src = w; S.cal = w.cal; $('#cal').value = rec.cal; run(); renderList(); }; im.src = data;
+}
+
+/* ---------- inputs ---------- */
+function loadSource(source, cal, synthetic, truth, keepFields) {
+  const w = workImage(source, cal); S.src = w; S.cal = w.cal; S.fix = {}; S.saved = null; S.synthetic = synthetic; S.truth = truth ?? null;
+  if (!keepFields) S.fields = [];
+  run(); renderList();
+}
+function makeSynth(keepFields) {
+  const c = curCast(), pos = $('#pos').value, soak = homog(mod(c.n, PLANT.H_COUNT), c.n * PLANT.CYCLE + PLANT.UNLOAD_END + 619).soak;
+  // the centre lags, the surface leads; each sample scatters a little
+  const f = clamp(alphaEstimate(c.alloy, soak) + { merkez: -4, 'yarıçap': 0, 'yüzey': 2 }[pos] + (rnd(c.n, 77 + pos.length) - .5) * 6, 40, 99.5);
+  const s = synth(f, .1, c.n * 31 + pos.length * 7 + Math.floor(Math.random() * 1e6));
+  $('#cal').value = '0.10'; thrManual = false;
+  loadSource(s.canvas, .1, true, s.truth, keepFields === true);
+}
+window.onInit = T => {
+  const sel = $('#cast'), opts = castOptions(T), q = new URLSearchParams(location.search);
+  sel.innerHTML = opts.map(c => `<option value="${c.n}">${c.id} · ${c.alloy} · H${mod(c.n, PLANT.H_COUNT) + 1}</option>`).join('');
+  if (q.get('n') && !opts.some(c => c.n === +q.get('n'))) { const c = castInfo(+q.get('n')); sel.insertAdjacentHTML('afterbegin', `<option value="${c.n}">${c.id} · ${c.alloy} · H${mod(c.n, PLANT.H_COUNT) + 1}</option>`); }
+  if (q.get('n')) sel.value = q.get('n');
+  if (q.get('pos')) $('#pos').value = q.get('pos');
+  try { $('#who').value = localStorage.getItem('bd-who') || ''; $('#accept').value = localStorage.getItem('bd-accept') || 85; } catch (e) {}
+  $('#who').addEventListener('change', () => { try { localStorage.setItem('bd-who', who()); } catch (e) {} });
+  $('#unc').addEventListener('input', () => { if (S.st) renderResult(); });
+  $('#accept').addEventListener('input', () => { try { localStorage.setItem('bd-accept', $('#accept').value); } catch (e) {} if (S.st) renderResult(); });
+  $('#file').addEventListener('change', e => {
+    const file = e.target.files[0]; if (!file) return;
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { const keep = nextKeep; nextKeep = false; thrManual = false; loadSource(im, Math.max(.02, +$('#cal').value || .1), false, null, keep); URL.revokeObjectURL(url); };
+    im.onerror = () => { $('#actNote').textContent = 'Görüntü açılamadı. JPEG, PNG veya TIFF dışa aktarımı deneyin.'; };
+    im.src = url; e.target.value = '';
+  });
+  $('#synthBtn').addEventListener('click', () => makeSynth(false));
+  // pool this field into the sample and move to the next one (synthetic: generated; real: pick the next image)
+  $('#fieldBtn').addEventListener('click', () => {
+    if (!S.cur || (S.saved && S.saved.status !== 'önerildi') || !(S.cur.nA + S.cur.nB)) return;
+    S.fields.push({ ...S.cur });
+    if (S.synthetic) makeSynth(true); else { nextKeep = true; $('#file').click(); }
+  });
+  const rerun = () => { clearTimeout(debounce); debounce = setTimeout(run, 120); };
+  $('#rcrit').addEventListener('input', () => { S.fix = {}; rerun(); });
+  $('#thr').addEventListener('input', () => { thrManual = true; S.fix = {}; rerun(); });
+  $('#thr').addEventListener('dblclick', () => { thrManual = false; S.fix = {}; run(); });
+  $('#cal').addEventListener('change', () => { if (!S.src) return; const v = Math.max(.02, +$('#cal').value || .1); S.cal = v / S.src.k; run(); });
+  // a new sample identity starts a new field set
+  $('#cast').addEventListener('change', () => { if (S.synthetic) makeSynth(false); else { S.saved = null; S.fields = []; run(); } });
+  $('#pos').addEventListener('change', () => { if (S.synthetic) makeSynth(false); else { S.saved = null; S.fields = []; run(); } });
+  $$('[data-ov]').forEach(b => b.addEventListener('click', () => { S.overlay = b.dataset.ov === '1'; $$('[data-ov]').forEach(x => x.setAttribute('aria-pressed', x === b)); draw(); }));
+  $$('[data-role]').forEach(b => b.addEventListener('click', () => { S.role = b.dataset.role; $$('[data-role]').forEach(x => x.setAttribute('aria-pressed', x === b)); renderReview(); }));
+  // tap a particle to flip α ↔ β (only before review)
+  cv.addEventListener('click', e => {
+    if (!S.res || (S.saved && S.saved.status !== 'önerildi')) return;
+    const r = cv.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) * S.res.W / r.width), y = Math.floor((e.clientY - r.top) * S.res.H / r.height);
+    let best = S.res.lab[y * S.res.W + x];
+    if (!best) {   // forgiving touch: nearest particle within ~18 screen px
+      const R0 = Math.min(80, Math.ceil(18 * S.res.W / r.width)); let bd = R0 * R0;
+      for (let dy = -R0; dy <= R0; dy++) for (let dx = -R0; dx <= R0; dx++) { const yy = y + dy, xx = x + dx; if (yy < 0 || xx < 0 || yy >= S.res.H || xx >= S.res.W) continue; const l = S.res.lab[yy * S.res.W + xx]; if (l && dx * dx + dy * dy < bd) { bd = dx * dx + dy * dy; best = l; } }
+    }
+    const p = S.res.parts[best]; if (!p || !p.cls || p.cls === 3) return;
+    const to = p.cls === 1 ? 2 : 1; if (to === p.auto) delete S.fix[p.c]; else S.fix[p.c] = to;
+    p.cls = to; S.cur = sums(S.res.parts); S.st = combine([...S.fields, S.cur]); draw(); renderResult();
+  });
+  $('#aSave').addEventListener('click', () => {
+    if (!S.st || !S.st.n) return;
+    if (S.saved && S.saved.status === 'önerildi') {   // corrections before review
+      Object.assign(S.saved, snapshot()); sign(S.saved, 'düzeltildi', `${S.st.fixed} parçacık elle düzeltildi`); persist(S.saved); renderReview(); return;
+    }
+    const rec = { id: 'L' + Date.now().toString(36), created: Date.now(), status: 'önerildi', audit: [], ...snapshot() };
+    sign(rec, 'önerildi', `otomatik analiz · %${fmt(rec.alpha, 1)} · ${rec.fields} alan · ${rec.n} parçacık${rec.n < MIN_PARTICLES ? ' (300 altı)' : ''}`);
+    persist(rec, S.src.canvas.toDataURL('image/jpeg', .72)); renderReview();
+  });
+  $('#aReview').addEventListener('click', () => { const r = S.saved; if (!r || r.status !== 'önerildi') return; if (!who()) { $('#actNote').textContent = 'İmza için adınızı yazın.'; $('#who').focus(); return; } r.status = 'incelendi'; sign(r, 'incelendi'); persist(r); renderReview(); });
+  $('#aApprove').addEventListener('click', () => {
+    const r = S.saved; if (!r || r.status !== 'incelendi' || S.role !== 'sor') return;
+    if (!who()) { $('#actNote').textContent = 'İmza için adınızı yazın.'; $('#who').focus(); return; }
+    const rev = r.audit.find(a => a.action === 'incelendi');
+    if (rev && rev.who === who()) { $('#actNote').textContent = 'Dört göz kuralı: inceleyen kişi aynı sonucu onaylayamaz.'; return; }
+    r.status = 'onaylandı'; sign(r, 'onaylandı', r.alpha >= r.accept ? 'eşiğin üstünde' : 'eşiğin altında, bilinçli onay'); persist(r); renderReview();
+  });
+  $('#aReject').addEventListener('click', () => {
+    const r = S.saved; if (!r || S.role !== 'sor') return;
+    const note = prompt('Red gerekçesi (ör. dağlama yetersiz, odak bozuk):'); if (note == null) return;
+    r.status = 'reddedildi'; sign(r, 'reddedildi', note); persist(r); renderReview();
+  });
+  window.addEventListener('resize', () => { if (S.res) draw(); });
+  renderList();
+  makeSynth(false);   // a synthetic sample so the page is never empty; clearly tagged as such
+};
+window.onTick = () => {};
+</script>

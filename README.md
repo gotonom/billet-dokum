@@ -7,6 +7,7 @@ Alüminyum billet dökümhanesi için otomasyon panelleri ve süreç simülasyon
 | `/` | `src/index.html` | Kontrol merkezi: canlı saha planı ve ünite inceleme paneli, metal yolculuğu, sıradaki işlemler, olay akışı, günlük döküm takvimi, son 10 dökümün kalitesi |
 | `/firin.html` | `src/firin.html` | E1, E2 ergitme fırınları ve B1 döküm fırını: kesit görünümü, sıcaklık eğrisi, şarj karışımı, OES kimya analizi ve düzeltme reçetesi (hangi malzemeden kaç kg), elle alaşım düzeltme hesabı, "döküme hazır" kapısı, doğalgaz tüketimi |
 | `/dokum.html` | `src/dokum.html` | D1 hot-top döküm masası: pit kesiti, 64 kalıbın üstten görünümü, hız ve su reçetesi, anlık ölçümler, manuel müdahale (operatör ve yönetici yetkisi), alarm senaryoları, PLC kilitleri, döküm kayıtları |
+| `/lab.html` | `src/lab.html` | Homojenizasyon laboratuvarı: mikroskop görüntüsü yükleme, AlFeSi parçacıklarını şekilden β / α sınıflama, % α (alan ve sayı tabanlı) ve belirsizliği, birden fazla alanı birleştirme, parçacığa dokunarak düzeltme, teknisyen incelemesi ve dört göz onayı, imza kaydı. Gerçek görüntü olmadan denemek için sentetik örnek üretir |
 | `/homojen.html` | `src/homojen.html` | H1–H5 homojenizasyon fırınları (alaşıma özel reçete), soğutma odası, soğuma tamponu, ultrasonik muayene, testere, log izlenebilirliği ve stok |
 
 - **Canlı (Railway):** https://billet-dokum-production.up.railway.app
@@ -56,6 +57,15 @@ Railway projesi `billet-dokum`, servis `billet-dokum` ("Ezagor's Projects"). Ser
 - **Göstergeler:** döküm verimi = iyi billet / brüt döküm; ergitme kaybı = (ergitme + B1 cürufu) / şarj; doğalgaz = ergitme + B1 + homojenizasyon / brüt döküm. Hepsi aynı modelden hesaplanır.
 - **Kilitler:** acil bitiş "metal kesik, su açık" güvenli durumuna geçer. Kilidi yalnızca yönetici kaldırır; kilit sonraki döküme taşınır ve onu başlatmaz, demo etap atlaması da kilitliyken çalışmaz.
 
+## Laboratuvar: β → α ölçümü
+
+- **Analiz:** görüntü 1200 px'e indirilir, ışık farkı geniş bir kutu bulanıklığıyla düzeltilir, matrisin medyanının altındaki koyu pikseller parçacık sayılır, 8-komşulukla bileşenler ayrılır. Her parçacık için ikinci momentlerden en-boy oranı, köşe noktalı dışbükey zarftan doluluk hesaplanır. En-boy ≥ R<sub>kritik</sub> (varsayılan 3,6) ve doluluk ≥ 0,55 ise β, değilse α. Kenara değen ve görüntünün %2'sinden büyük lekeler sayılmaz.
+- **Sonuç:** alan tabanlı % α; istatistik hata Kish etkin parçacık sayısından, yöntem belirsizliği ayrı girilir (kalibrasyonsuz şekil yöntemi ±15, SEM-EDS ±5 yp). Konum başına en az 300 parçacık için alanlar birleştirilir.
+- **Akış:** öneri → inceleme (teknisyen) → onay (laboratuvar sorumlusu, inceleyenden farklı kişi). Onaylanan sonuç değiştirilemez; reddedilen silinmez. Her adım ad, rol ve tesis saatiyle imzalanır.
+- **Panel:** fırın doluyken β → α kutucuğu PLC bekletmesinden tahmin gösterir; numune soğumadan sonra alındığı için boş fırın son partinin laboratuvar sonucunu, testere kartı da sevkiyat kapısı olarak onay durumunu gösterir.
+- **Saklama:** sonuçlar ve görüntüler şimdilik tarayıcıda (localStorage). Gerçek kullanımda laboratuvar sunucusu, orijinal dosya + OME-TIFF, hash ve yalnızca eklenebilen imza tablosu gerekir.
+- **Araştırma:** yöntem, kabul kriterleri ve entegrasyon önerileri `reports/Homojenizasyon testi ve mikroskop analizi.md` içinde.
+
 ## Varsayımlar (tesisle doğrulanacak)
 
 Hiçbir değer henüz bir tesisten gelmedi. Aşağıdakiler sektör kaynaklarına ve Kasım 2026 denetimine dayanan başlangıç varsayımlarıdır.
@@ -79,5 +89,6 @@ Hiçbir değer henüz bir tesisten gelmedi. Aşağıdakiler sektör kaynakların
 | Katkı malzemeleri (verim) | Si metal %98,5 (%92) · saf Mg %99,8 (%90, en son, banyo altına) · Mn tablet %75 (%95) · AlCu50 (%98) · Fe tablet %75 (%95) | Varsayım, tesisin kendi verimleriyle güncellenecek |
 | Homojenizasyon | 5 parti fırını (2,6 MW), 12 sa çevrim, ≥ 6 sa bekletme. 6063/6060: 575–585 °C, hava ≤ 600 °C. 6082: 550–565 °C, hava ≤ 575 °C (katılaşma bitişi ~580 °C) | 6082 endüstriyel pratiği ~550 °C × 5 sa (UQAC tezi); fırınlar %100 dolu, bakım payı yok |
 | Soğutma | Fan ve su sisi 60 dk, bekletme sıcaklığından 250 °C'ye ~400 °C/sa; sonra 4 sa soğuma tamponu, UT girişi ≤ 60 °C | > 200–300 °C/sa önerilir; su temaslı UT sıcak logda çalışmaz |
+| β → α kinetiği ve kabul | PLC tahmini: %30 + %70 (1 − e<sup>−k·t</sup>), k = 0,35/sa (6063), 0,33 (6060), 0,8 (6082); kabul eşiği %85, yöntem belirsizliği 10 yp | 6063'te 580 °C × 6 sa ≈ %88–92 (NALCO, ICSOBA 2025); kamuya açık kabul standardı yok |
 | Testere ve kalite | Dip (başlangıç ucu) 300 mm, baş 200 mm kesim; ürün 6.500 mm; ~%18 dökümde 1 log UT reddi. Her döküm için LiMCA N20 (4–10 k/kg), her parti için β → α AlFeSi dönüşümü (≥ %90) | Varsayım |
 | Verim ve enerji | Cüruf 15–23 kg/t, ergitme kaybı ~%2,2, döküm verimi ~%91, doğalgaz ~108 Nm³/t brüt | Ergitme kaybı %1,5–2,5, döküm verimi %90–93 tipik |

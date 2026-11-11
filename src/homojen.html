@@ -31,7 +31,7 @@
 </style>
 
 <div class="wrap">
-  <nav class="sitenav" aria-label="Dökümhane modülleri"><a class="sn-brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#0a2463"/><rect x="11" y="5" width="10" height="22" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M11 10h10" stroke="#f97316" stroke-width="3"/></svg>DÖKÜMHANE</a><a href="firin.html">Fırınlar</a><a href="dokum.html">Döküm Masası</a><a href="homojen.html" aria-current="page">Homojenizasyon ve Testere</a></nav>
+  <nav class="sitenav" aria-label="Dökümhane modülleri"><a class="sn-brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#0a2463"/><rect x="11" y="5" width="10" height="22" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M11 10h10" stroke="#f97316" stroke-width="3"/></svg>DÖKÜMHANE</a><a href="firin.html">Fırınlar</a><a href="dokum.html">Döküm Masası</a><a href="homojen.html" aria-current="page">Homojenizasyon ve Testere</a><a href="lab.html">Laboratuvar</a></nav>
 
   <header class="head">
     <div class="title">
@@ -149,6 +149,25 @@ function buildLine() {
 }
 function select(k) { cur = k; history.replaceState(null, '', '#h' + (k + 1)); tick(true); }
 
+// β → α: the lab's measurement when there is one, otherwise an estimate from the soak the PLC logged
+// While the batch soaks there is only the PLC estimate; the lab sample is taken after cooling, so an
+// empty furnace shows its last batch's result.
+function alphaTile(h, M) {
+  const last = h.cast || castInfo(Math.round((h.phases[0].start - PLANT.UNLOAD_END) / PLANT.CYCLE));
+  const lab = labFor(last.id), link = `<a href="lab.html?n=${last.n}&pos=merkez">`, who = h.cast ? '' : `son parti ${last.id.slice(-5)} · `;
+  if (lab) return M('<span class="nc">β → α</span> · laboratuvar', fmt(lab.alpha, 0), '%', `${who}${lab.pos} · ${lab.status} · ${link}aç →</a>`, lab.alpha < lab.accept ? 'warn' : lab.status === 'onaylandı' ? '' : 'idle');
+  const soak = h.cast ? h.soak : 360;
+  return M('<span class="nc">β → α</span> · tahmin', h.pi >= 1 || !h.cast ? '~' + fmt(alphaEstimate(last.alloy, soak), 0) : '—', '%', `${who}PLC bekletmesinden · ${link}numune ekle →</a>`, 'idle');
+}
+
+// release gate on the saw: an approved lab result for the batch, or say what is missing
+function labCell(c) {
+  const r = labFor(c.id), a = `<a href="lab.html?n=${c.n}&pos=merkez" style="color:inherit">`;
+  if (!r) return `${a}<span style="color:var(--warn)">numune bekleniyor →</span></a>`;
+  const col = r.status !== 'onaylandı' ? 'var(--warn)' : r.alpha < r.accept ? 'var(--crit)' : 'var(--ok)';
+  return `${a}<span style="color:${col}">%${fmt(r.alpha, 0)} · ${r.status}</span></a>`;
+}
+
 let stepsKey = '';
 window.onTick = (T, force) => {
   const H = [0, 1, 2, 3, 4].map(k => homog(k, T));
@@ -226,7 +245,7 @@ window.onTick = (T, force) => {
     M('Brülör', fmt(h.burn), '%', `${fmt(h.gas)} Nm³/h doğalgaz`, h.burn ? '' : 'idle'),
     M('Sirkülasyon fanı', h.pi >= 1 && h.pi <= 2 ? '100' : h.pi === 4 ? '30' : '0', '%', 'yüksek hızlı konveksiyon'),
     M('Çıkış', hhmm(h.phases[3].start), '', 'soğutma odasına'),
-    M('<span class="nc">β → α</span> dönüşümü', h.cast && h.pi >= 3 ? fmt(h.cast.alpha) : '—', '%', 'parti numunesi · en az %90', !h.cast || h.pi < 3 ? 'idle' : h.cast.alpha < 90 ? 'warn' : ''),
+    alphaTile(h, M),
   ].join('');
 
   // cooling chamber
@@ -255,7 +274,7 @@ window.onTick = (T, force) => {
   const rejSeen = sw.active ? (sw.rejIdx >= 0 && sw.done > sw.rejIdx) : c.utRej;
   const tr = logTrace(c, sw.active ? sw.cur - 1 : c.logs - 1);
   $('#saw').innerHTML = `<div class="rate"><b class="num">${sw.active ? sw.done : c.logs}</b><small>/ ${c.logs} log ${sw.active ? 'işlendi' : '· son parti tamam'}</small></div>${viz}
-    <div class="kv"><span>${sw.active ? 'Kesimdeki log' : 'Son log'}</span><b>${tr.id}</b><span>Kalıp · homojenizasyon</span><b>${tr.mould} · ${tr.batch}</b><span>UT girişi sıcaklık</span><b style="color:${sw.logTemp <= 60 ? 'var(--ok)' : 'var(--warn)'}">${fmt(sw.logTemp)} °C (≤ 60)</b><span>UT muayenesi</span><b style="color:${rejSeen ? 'var(--crit)' : 'var(--ok)'}">${rejSeen ? '1 red · merkez çatlağı' : 'temiz'}</b><span>Sevke hazır</span><b>${fmt((sw.active ? Math.max(0, sw.done - (rejSeen ? 1 : 0)) : c.logs - c.utRej) * PLANT.T_PER_M * PLANT.NET_M, 1)} t</b><span>İç hurda (kesim + red)</span><b>${fmt(((sw.active ? sw.done : c.logs)) * PLANT.T_PER_M * (PLANT.CROP_BUTT + PLANT.CROP_HEAD) / 1000 + (rejSeen ? PLANT.T_PER_M * PLANT.NET_M : 0), 2)} t</b><span>${sw.active ? 'Bitiş' : 'Sonraki parti'}</span><b>${hhmm(sw.active ? T - sw.t + PLANT.SAW_MIN : sw.next)}</b></div>
+    <div class="kv"><span>${sw.active ? 'Kesimdeki log' : 'Son log'}</span><b>${tr.id}</b><span>Kalıp · homojenizasyon</span><b>${tr.mould} · ${tr.batch}</b><span>UT girişi sıcaklık</span><b style="color:${sw.logTemp <= 60 ? 'var(--ok)' : 'var(--warn)'}">${fmt(sw.logTemp)} °C (≤ 60)</b><span>UT muayenesi</span><b style="color:${rejSeen ? 'var(--crit)' : 'var(--ok)'}">${rejSeen ? '1 red · merkez çatlağı' : 'temiz'}</b><span><span class="nc">β → α</span> (laboratuvar)</span><b>${labCell(c)}</b><span>Sevke hazır</span><b>${fmt((sw.active ? Math.max(0, sw.done - (rejSeen ? 1 : 0)) : c.logs - c.utRej) * PLANT.T_PER_M * PLANT.NET_M, 1)} t</b><span>İç hurda (kesim + red)</span><b>${fmt(((sw.active ? sw.done : c.logs)) * PLANT.T_PER_M * (PLANT.CROP_BUTT + PLANT.CROP_HEAD) / 1000 + (rejSeen ? PLANT.T_PER_M * PLANT.NET_M : 0), 2)} t</b><span>${sw.active ? 'Bitiş' : 'Sonraki parti'}</span><b>${hhmm(sw.active ? T - sw.t + PLANT.SAW_MIN : sw.next)}</b></div>
     <p class="note">Her log döküm numarası, kalıp ve homojenizasyon partisiyle etiketlenir. Dip ve baş kesimi ile reddedilen loglar <b>iç hurda</b> olarak ergitme fırınına döner.</p>`;
 
   // stock today

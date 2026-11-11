@@ -10,14 +10,14 @@
 <meta property="og:title" content="Billet Dökümhanesi · Fırınlar">
 <meta property="og:description" content="İki ergitme fırını ve döküm fırını: şarj, ergitme, alaşım, kimya onayı ve döküme hazır kapısı. Created by GOTONOM.">
 <meta property="og:url" content="https://billet-dokum-production.up.railway.app/firin.html">
-<meta property="og:image" content="https://billet-dokum-production.up.railway.app/og/firin.png?v=2">
+<meta property="og:image" content="https://billet-dokum-production.up.railway.app/og/firin.png?v=3">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Billet Dökümhanesi · Fırınlar">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Billet Dökümhanesi · Fırınlar">
 <meta name="twitter:description" content="İki ergitme fırını ve döküm fırını: şarj, ergitme, alaşım, kimya onayı ve döküme hazır kapısı. Created by GOTONOM.">
-<meta name="twitter:image" content="https://billet-dokum-production.up.railway.app/og/firin.png?v=2">
+<meta name="twitter:image" content="https://billet-dokum-production.up.railway.app/og/firin.png?v=3">
 <meta name="theme-color" content="#0a2463">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a2463'/%3E%3Crect x='11' y='5' width='10' height='22' rx='2' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Cpath d='M11 10h10' stroke='%23f97316' stroke-width='3'/%3E%3C/svg%3E">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -130,6 +130,7 @@ h1 span{color:var(--melt)}
 .m .v{font:700 26px/1.05 var(--f-display);white-space:nowrap}
 .m .v small{font-size:14px;color:var(--ink-2);font-weight:600;margin-left:3px}
 .m .t{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m .t a{color:var(--accent);font-weight:700;text-decoration:none}
 .m.warn{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 9%,var(--panel-2))}
 .m.warn .v{color:var(--warn)}
 .m.crit{border-color:var(--crit);background:color-mix(in srgb,var(--crit) 10%,var(--panel-2))}
@@ -312,7 +313,7 @@ svg text{font-family:var(--f-ui)}
 </head>
 <body>
 <div class="wrap">
-  <nav class="sitenav" aria-label="Dökümhane modülleri"><a class="sn-brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#0a2463"/><rect x="11" y="5" width="10" height="22" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M11 10h10" stroke="#f97316" stroke-width="3"/></svg>DÖKÜMHANE</a><a href="firin.html" aria-current="page">Fırınlar</a><a href="dokum.html">Döküm Masası</a><a href="homojen.html">Homojenizasyon ve Testere</a></nav>
+  <nav class="sitenav" aria-label="Dökümhane modülleri"><a class="sn-brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#0a2463"/><rect x="11" y="5" width="10" height="22" rx="2" fill="none" stroke="#fff" stroke-width="3"/><path d="M11 10h10" stroke="#f97316" stroke-width="3"/></svg>DÖKÜMHANE</a><a href="firin.html" aria-current="page">Fırınlar</a><a href="dokum.html">Döküm Masası</a><a href="homojen.html">Homojenizasyon ve Testere</a><a href="lab.html">Laboratuvar</a></nav>
 
   <header class="head">
     <div class="title">
@@ -610,7 +611,6 @@ function castInfo(n) {
     castYield: net / gross * 100, meltLoss: (drossW + PLANT.B1_SKIM) / (transfer + drossW) * 100,
     h2In: .22 + rnd(n, 12) * .08, h2Out: .10 + rnd(n, 13) * .04, grain: 105 + rnd(n, 14) * 35,
     limca: 4 + rnd(n, 19) * 6,                                // inclusions after the filter, k/kg N20
-    alpha: 89 + rnd(n, 21) * 8,                               // β→α AlFeSi after homogenising, %
     corr, chem, chem1, aim, recipe, b1chem, heelAlloyB: prevB, heelAlloyE: prevE,
     mix: { primer, ic, dis: 100 - primer - ic },
     start: n * PLANT.CYCLE + PLANT.CAST_START,
@@ -745,6 +745,10 @@ function homog(k, T) {
   return { k, name: 'H' + (k + 1), L, n: cast ? n : null, cast, alloy, recipe: PLANT.ALLOYS[alloy].soak, airMax: PLANT.ALLOYS[alloy].airMax, phase: HOMO_DEFS[pi][0], pi, phases, air, metal, soak, soakNeed: 360, burn, gas: burn / 100 * PLANT.GAS_H };
 }
 function homoCurve(L, alloy) { return homoTemp(L, alloy); }
+// β → α estimate from the soak the PLC logged (first-order kinetics, as-cast ≈ 30 % α).
+// Rate constants per hour are VARSAYIM: 6063 reaches ~92 % after 6 h at 580 °C; Mn makes 6082 fast.
+const ALPHA_K = { '6063': .35, '6060': .33, '6082': .8 };
+function alphaEstimate(alloy, soakMin) { return 30 + 70 * (1 - Math.exp(-ALPHA_K[alloy] * Math.max(0, soakMin) / 60)); }
 function cooler(T) {
   const n = Math.floor((T - PLANT.COOL_AT) / PLANT.CYCLE), t = T - (n * PLANT.CYCLE + PLANT.COOL_AT);
   const cast = castInfo(n), st = PLANT.ALLOYS[cast.alloy].soak[2];
@@ -775,6 +779,16 @@ function logTrace(cast, idx) {
   const moulds = [...Array(PLANT.MOULDS).keys()].filter(i => !cast.closed.includes(i));
   const m = moulds[Math.min(idx, moulds.length - 1)];
   return { id: `${cast.id}-${mouldName(m)}`, mould: mouldName(m), batch: 'H' + (mod(cast.n, PLANT.H_COUNT) + 1) };
+}
+
+/* ---------- lab results (microscope % α), kept in this browser until a lab backend exists ---------- */
+const LAB_KEY = 'bd-lab-v1', LAB_IMG = 'bd-lab-img-';
+function labAll() { try { return JSON.parse(localStorage.getItem(LAB_KEY) || '[]'); } catch (e) { return []; } }
+function labSaveAll(list) { try { localStorage.setItem(LAB_KEY, JSON.stringify(list)); return true; } catch (e) { return false; } }
+// the result that speaks for a cast: newest approved, else newest still in review (rejected ones never count)
+function labFor(castId, pos) {
+  const r = labAll().filter(x => x.castId === castId && x.status !== 'reddedildi' && (!pos || x.pos === pos)).sort((a, b) => b.created - a.created);
+  return r.find(x => x.status === 'onaylandı') || r[0] || null;
 }
 
 /* ---------- where each cast is on the plant floor ---------- */

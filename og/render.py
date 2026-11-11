@@ -16,7 +16,7 @@ server = subprocess.Popen(["python3", "-m", "http.server", str(PORT), "--bind", 
                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 try:
     time.sleep(1)
-    for page in ["index", "firin", "dokum", "homojen"]:
+    for page in ["index", "firin", "dokum", "homojen", "lab"]:
         with tempfile.TemporaryDirectory() as profile:   # own profile, so a running Chrome is not disturbed
             subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
                             f"--user-data-dir={profile}", "--window-size=1200,630", "--virtual-time-budget=12000",

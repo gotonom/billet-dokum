@@ -215,7 +215,6 @@ function castInfo(n) {
     castYield: net / gross * 100, meltLoss: (drossW + PLANT.B1_SKIM) / (transfer + drossW) * 100,
     h2In: .22 + rnd(n, 12) * .08, h2Out: .10 + rnd(n, 13) * .04, grain: 105 + rnd(n, 14) * 35,
     limca: 4 + rnd(n, 19) * 6,                                // inclusions after the filter, k/kg N20
-    alpha: 89 + rnd(n, 21) * 8,                               // β→α AlFeSi after homogenising, %
     corr, chem, chem1, aim, recipe, b1chem, heelAlloyB: prevB, heelAlloyE: prevE,
     mix: { primer, ic, dis: 100 - primer - ic },
     start: n * PLANT.CYCLE + PLANT.CAST_START,
@@ -350,6 +349,10 @@ function homog(k, T) {
   return { k, name: 'H' + (k + 1), L, n: cast ? n : null, cast, alloy, recipe: PLANT.ALLOYS[alloy].soak, airMax: PLANT.ALLOYS[alloy].airMax, phase: HOMO_DEFS[pi][0], pi, phases, air, metal, soak, soakNeed: 360, burn, gas: burn / 100 * PLANT.GAS_H };
 }
 function homoCurve(L, alloy) { return homoTemp(L, alloy); }
+// β → α estimate from the soak the PLC logged (first-order kinetics, as-cast ≈ 30 % α).
+// Rate constants per hour are VARSAYIM: 6063 reaches ~92 % after 6 h at 580 °C; Mn makes 6082 fast.
+const ALPHA_K = { '6063': .35, '6060': .33, '6082': .8 };
+function alphaEstimate(alloy, soakMin) { return 30 + 70 * (1 - Math.exp(-ALPHA_K[alloy] * Math.max(0, soakMin) / 60)); }
 function cooler(T) {
   const n = Math.floor((T - PLANT.COOL_AT) / PLANT.CYCLE), t = T - (n * PLANT.CYCLE + PLANT.COOL_AT);
   const cast = castInfo(n), st = PLANT.ALLOYS[cast.alloy].soak[2];
@@ -380,6 +383,16 @@ function logTrace(cast, idx) {
   const moulds = [...Array(PLANT.MOULDS).keys()].filter(i => !cast.closed.includes(i));
   const m = moulds[Math.min(idx, moulds.length - 1)];
   return { id: `${cast.id}-${mouldName(m)}`, mould: mouldName(m), batch: 'H' + (mod(cast.n, PLANT.H_COUNT) + 1) };
+}
+
+/* ---------- lab results (microscope % α), kept in this browser until a lab backend exists ---------- */
+const LAB_KEY = 'bd-lab-v1', LAB_IMG = 'bd-lab-img-';
+function labAll() { try { return JSON.parse(localStorage.getItem(LAB_KEY) || '[]'); } catch (e) { return []; } }
+function labSaveAll(list) { try { localStorage.setItem(LAB_KEY, JSON.stringify(list)); return true; } catch (e) { return false; } }
+// the result that speaks for a cast: newest approved, else newest still in review (rejected ones never count)
+function labFor(castId, pos) {
+  const r = labAll().filter(x => x.castId === castId && x.status !== 'reddedildi' && (!pos || x.pos === pos)).sort((a, b) => b.created - a.created);
+  return r.find(x => x.status === 'onaylandı') || r[0] || null;
 }
 
 /* ---------- where each cast is on the plant floor ---------- */
